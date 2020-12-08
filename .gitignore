@@ -9,7 +9,8 @@ __pycache__
 .fseventsd
 .Spotlight-V100
 
-# This should be turned on before launching.
+# .env should be added to gitnore (uncomment out below) before launching.
+# .env files are currently used by python-decouple for security.
 # # Env
 # .env
 myvenv/
@@ -25,3 +26,7 @@ $RECYCLE.BIN/
 .vscode/
 .history/
 *.code-workspace
+
+# Personal Ignore
+
+

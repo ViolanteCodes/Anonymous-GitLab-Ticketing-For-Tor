@@ -2,6 +2,16 @@ from django.db import models
 
 # Create your models here.
 
+class AnonUser(models.Model):
+    """Representation of a user identifier."""
+    user_identifer = models.CharField(max_length=200)
+
+    def publish(self):
+        self.save()
+
+    def __str__(self):
+        return self.user_identifer
+
 class Project(models.Model):
     """Representation of a project in the database."""
     project_name = models.CharField(max_length=200)
@@ -19,21 +29,24 @@ class Issue(models.Model):
     """A representation of a user reported issue."""
     issue_title = models.CharField(max_length=200)
     linked_project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    linked_user = models.ForeignKey(AnonUser, on_delete=models.CASCADE, default=1)
     issue_description= models.TextField()
-
-    ISSUE_STATUS_CHOICES = [
+    
+    # The following fields related to reviewer status:
+    # Django recommends defining choice_list outside of CharField.
+    REVIEWER_STATUS_CHOICES = [
         ('P', 'Pending Review'),
         ('A', 'Approved'),
-        ('R', 'Rejected')
+        ('R', 'Rejected'),
     ]
-
-    issue_status = models.CharField(
+    # Reviewer 
+    reviewer_status = models.CharField(
         max_length=3,
-        choices=ISSUE_STATUS_CHOICES,
+        choices=REVIEWER_STATUS_CHOICES,
         default='P',  
     )
-
-    issue_user_key = ''
+    # Fields related to GitLab status
+    posted_to_GitLab = models.BooleanField(default=False)
 
     def publish(self):
         self.save()
