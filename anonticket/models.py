@@ -4,7 +4,7 @@ from django.db import models
 
 class AnonUser(models.Model):
     """Representation of a user identifier."""
-    user_identifer = ""
+    user_identifer = models.CharField(max_length=200)
 
     def publish(self):
         self.save()
@@ -29,7 +29,7 @@ class Issue(models.Model):
     """A representation of a user reported issue."""
     issue_title = models.CharField(max_length=200)
     linked_project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    linked_user = models.ForeignKey(AnonUser, on_delete=models.CASCADE)
+    linked_user = models.ForeignKey(AnonUser, on_delete=models.CASCADE, default=1)
     issue_description= models.TextField()
     
     # The following fields related to reviewer status:
