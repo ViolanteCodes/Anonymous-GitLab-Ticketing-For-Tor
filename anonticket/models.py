@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 
-class User(models.Model):
+class AnonUser(models.Model):
     """Representation of a user identifier."""
     user_identifer = ""
 
@@ -29,7 +29,7 @@ class Issue(models.Model):
     """A representation of a user reported issue."""
     issue_title = models.CharField(max_length=200)
     linked_project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    linked_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    linked_user = models.ForeignKey(AnonUser, on_delete=models.CASCADE)
     issue_description= models.TextField()
     
     # The following fields related to reviewer status:
