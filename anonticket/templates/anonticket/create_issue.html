@@ -1,0 +1,30 @@
+{% extends 'shared/base.html' %}
+***If you're seeing this, the base template has been extended.***
+{% block content %}
+  <h2>Create an Anonymous Issue Report Directly GitLab (no database)</h2>
+  ***User note about ticket creation.***
+  <form method="get">
+    {{ form.as_p }}
+    <button type="submit">Create Issue</button>
+  </form>
+
+  {% if results %}
+    <hr>
+    <h2>Result of this attempt was: {{results.status|title}}</h2>
+    <p>Details: {{results.message}}</p>
+    <h3>Project Details</h3>
+    {% if results.project_name %}
+    <ul>
+      <li>Project Name: {{results.project_name}}</li>
+      <li>Project Description: {{results.project_description}}</li>
+    </ul>
+    {% endif %}
+    {% if results.issue_title %}
+    <h3>Issue Details</h3>
+    <ul>
+      <li>Issue Title: {{results.issue_title}}</li>
+      <li>Issue Description: {{results.description}}</li>
+    </ul>
+    {% endif %}
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'shared/base.html' %}
+***If you're seeing this, the base template has been extended.***
+{% block content %}
+  <h2>Create an Anonymous Issue Report and Save to Database</h2>
+  ***User note about ticket creation.***
+  <form method="POST">
+    {{ form.as_p }}
+    {% csrf_token %}
+    <button type="submit">Create Issue</button>
+  </form>
+
+{% endblock %}

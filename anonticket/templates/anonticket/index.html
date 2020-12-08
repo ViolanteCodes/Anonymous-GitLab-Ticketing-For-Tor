@@ -1,0 +1,26 @@
+{% extends 'shared/base.html' %}
+***If you're seeing this, the base template has been extended.***
+{% block content %}
+  <h1>Tor Project GitLab Ticket Lobby</h1>
+  <blockquote>
+    ***Note: This is a work in progress.***
+  </blockquote>
+
+  <ul>
+      <li>
+          <a href="{% url 'search-by-id' %}">
+            Search for an issue.</a> Requires issue_iid.
+          </a>
+      </li>
+      <li>
+        <a href="{% url 'create-issue' %}">
+          Write an issue</a> directly to GitLab by selecting project and inputting issue
+          title and description.
+    </li>
+    <li>
+      <a href="{% url 'save-issue' %}">
+        Save an issue</a> to database for approval selecting project and inputting issue
+        title and description.
+  </li>
+  </ul>
+{% endblock %}
