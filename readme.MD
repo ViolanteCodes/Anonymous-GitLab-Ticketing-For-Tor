@@ -91,7 +91,7 @@ If you want to ever exit your virtual environment, just type
 Tests currently live in the tests.py files that are automatically set up
 when the apps are created (e.g., the anonticket folder has a tests.py file
 specifically for functions in the anonticket app. In the future, tests
-will likely be moved to a Django testing package, such as django-test-plus==1.3.
+will likely be moved to a Django testing package, such as django-test-plus.
 
 For now, you can run the tests from the command line, with:
 
