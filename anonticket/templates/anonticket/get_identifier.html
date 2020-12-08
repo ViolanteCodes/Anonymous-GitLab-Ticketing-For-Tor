@@ -1,0 +1,18 @@
+{% extends 'shared/base.html' %}
+***If you're seeing this, the base template has been extended.***
+{% block content %}
+  <h2>Create A User Identifier Code</h2>
+  ***Note, you can only search for tickets the anonymous interface would have
+  access to--e.g., no secret tickets, etc.***
+
+  ***This form is a temporary/in-between form used during development only.***
+  <hr>
+  
+  <form method="get">
+    {{ form.as_p }}
+  </form>
+
+  {% if results %}
+    {{results.chosen_words}}
+  {% endif %}
+{% endblock %}

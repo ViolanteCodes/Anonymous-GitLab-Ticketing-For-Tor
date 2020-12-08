@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     Create_Anonymous_Issue_Form,
-    Save_Anonymous_Ticket)
-from anonticket.models import Issue
+    Save_Anonymous_Ticket,
+    Generate_User_Identifier_Form)
+from anonticket.models import Issue, AnonUser
 
 def search_by_id(request):
     results = {}
@@ -37,3 +38,10 @@ def save_issue(request):
     else: 
         form = Save_Anonymous_Ticket
     return render(request, 'anonticket/save_issue.html', {'form': form})
+
+def create_identifier(request):
+    # Check to see if this is a GET request. If so, run the method. If not
+    results = {}
+    form  = Generate_User_Identifier_Form(request.GET)
+    results = form.get_user_identifer()
+    return render(request, 'anonticket/get_identifier.html', {'form': form, 'results': results})
