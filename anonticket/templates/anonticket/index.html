@@ -11,22 +11,12 @@
   <ul>
       <li>
           <a href="{% url 'search-by-id' %}">
-            Search for an issue.</a> Requires issue_iid.
+            Create an Identifier.</a>
           </a>
       </li>
       <li>
-        <a href="{% url 'create-issue' %}">
-          Write an issue</a> directly to GitLab by selecting project and inputting issue
-          title and description.
-    </li>
-    <li>
-      <a href="{% url 'save-issue' %}">
-        Save an issue</a> to database for approval selecting project and inputting issue
-        title and description.
-    </li>
-    <li>
-      <a href="{% url 'create-identifier' %}">
-        Create an identifier</a> to allow you to anonymously create a ticket. 
-    </li>
+        <a href="{% url 'search-by-id' %}">
+          Enter an Identifier</a> to access other system functions, such as creating a new issue.
+      </li>
   </ul>
 {% endblock %}
