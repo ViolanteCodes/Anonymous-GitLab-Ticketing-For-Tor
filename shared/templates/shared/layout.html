@@ -13,16 +13,41 @@
           {% include 'shared/navbar-min.html' %}
         </header>
         <div class="page">
-          <div class="container-fluid">
-            <div class="row flex-xl-nowrap">
-              <nav id="sidenav-topics" class="border bg-white p-4 sticky-top">
-                 <ul class="nav bd-toc flex-column">
-                 </ul>
-               </nav>
-               {% block content %}{% endblock %}
+            <div class="container-fluid">
+                <div class="row flex-xl-nowrap">
+                <nav id="sidenav-topics" class="border bg-white p-4 sticky-top">
+                    <ul class="nav bd-toc flex-column">
+                        <li class="nav-item">
+                            <a href="{% url 'search-by-id' %}">
+                                Search By Issue IID.
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'create-issue' %}">
+                                Create Issue on Gitlab.
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'save-issue' %}">
+                                Create Issue in Database
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'create-identifier' %}">
+                                Generate Identifier
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                    <div class="row col-sm-12 col-xs-12 ml-sm-auto col-md-9 col-lg-9 mx-auto">   
+                        <main role="main" class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content" data-spy="scroll" data-target="#components-nav" data-offset="0">
+                            {% block content %}
+                            Body Text Goes here
+                            {% endblock %}
+                        </main>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-        <!-- include 'footer.html' -->
-      </body>
+    </body>
 </html>
