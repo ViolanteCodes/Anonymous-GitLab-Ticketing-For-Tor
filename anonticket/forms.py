@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from django.conf import settings
 import gitlab
 import random
-from .models import Project, Issue, AnonUser
+from .models import Project, Issue, UserIdentifier
 
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
 

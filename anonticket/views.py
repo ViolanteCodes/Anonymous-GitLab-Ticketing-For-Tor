@@ -4,7 +4,7 @@ from .forms import (
     Create_Anonymous_Issue_Form,
     Save_Anonymous_Ticket,
     Generate_User_Identifier_Form)
-from anonticket.models import Issue, AnonUser
+from anonticket.models import Issue, UserIdentifier
 
 def search_by_id(request):
     results = {}
@@ -45,3 +45,7 @@ def create_identifier(request):
     form  = Generate_User_Identifier_Form(request.GET)
     results = form.get_user_identifer()
     return render(request, 'anonticket/get_identifier.html', {'form': form, 'results': results})
+
+def user_landing(request):
+    """Check to see if the user_identifier string matches a User Identifier in database. If so, 
+    route to user_identifier landing page. If not, route to a different page."""
