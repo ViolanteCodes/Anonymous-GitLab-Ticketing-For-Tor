@@ -1,0 +1,28 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'shared/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'shared/css/stle.css' %}">
+        <title>{% block title %} | Tor Anonymous Ticket Lobby | The Tor Project {% endblock %}</title>
+    </head>
+    <body class="no-gutters">
+        <header>
+          {% include 'shared/navbar-min.html' %}
+        </header>
+        <div class="page">
+          <div class="container-fluid">
+            <div class="row flex-xl-nowrap">
+              <nav id="sidenav-topics" class="border bg-white p-4 sticky-top">
+                 <ul class="nav bd-toc flex-column">
+                 </ul>
+               </nav>
+               {% block content %}{% endblock %}
+            </div>
+          </div>
+        </div>
+        <!-- include 'footer.html' -->
+      </body>
+</html>

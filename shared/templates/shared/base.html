@@ -1,26 +1,13 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'shared/css/bootstrap-grid.css' %}">
-    <link rel="stylesheet" href="{% static 'shared/css/boostrap-grid.css.map' %}">
-    <link rel="stylesheet" href="{% static 'shared/css/bootstrap-reboot.css' %}">
-    <link rel="stylesheet" href="{% static 'shared/css/bootstrap-reboot.css.map' %}">
-    <link rel="stylesheet" href="{% static 'shared/css/bootstrap.css' %}">
-    <link rel="stylesheet" href="{% static 'shared/css/bootstrap.css.map' %}">
-    <link rel="stylesheet" href="{% static 'shared/css/style.css' %}">  
-    <title>Ticket Lobby</title>
-</head>
-<body>
-****If you're seeing this message, your template was successfully extended
-from the base template.***
-
-<blockquote>
-    At any time, you can <a href="{% url 'home' %}">go back to the lobby.</a>
-</blockquote>
-    {% block content %}
-    {% endblock %}
-</body>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'shared/css/bootstrap.css' %}">
+        <title>{% block title %} | Tor Styleguide | The Tor Project {% endblock %}</title>
+    </head>
+    <body>
+        {% block content %}{% endblock %}
+    </body>
 </html>

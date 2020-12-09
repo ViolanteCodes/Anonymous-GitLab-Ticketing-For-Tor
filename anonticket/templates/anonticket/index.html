@@ -1,13 +1,8 @@
-{% extends 'shared/base.html' %}
+{% extends 'shared/layout.html' %}
 {% load static %}
-***If you're seeing this, the base template has been extended.***
 {% block content %}
   <h1>Tor Project GitLab Ticket Lobby</h1>
   <blockquote>
-    ***Note: This is a work in progress. Many of the views/urls below will
-    no longer exist in final product.***
-  </blockquote>
-
   <ul>
       <li>
           <a href="{% url 'search-by-id' %}">
