@@ -1,7 +1,13 @@
 {% extends 'shared/layout.html' %}
 {% load static %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Create an Anonymous Issue Report Directly GitLab (no database)
+{% endblock %}
+
 {% block content %}
-  <h1>Tor Project GitLab Ticket Lobby</h1>
   <ul>
       <li>
           <a href="{% url 'search-by-id' %}">

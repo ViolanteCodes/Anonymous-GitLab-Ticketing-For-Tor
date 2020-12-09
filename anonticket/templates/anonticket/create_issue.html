@@ -1,11 +1,16 @@
 {% extends 'shared/layout.html' %}
-***If you're seeing this, the base template has been extended.***
+{% load static %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Create an Anonymous Issue Report Directly on GitLab (Does not touch database.)
+{% endblock %}
+
 {% block content %}
-  <h2>Create an Anonymous Issue Report Directly GitLab (no database)</h2>
-  ***User note about ticket creation.***
-  <form method="get">
+  <form method="get" class="bg-light p-5">
     {{ form.as_p }}
-    <button type="submit">Create Issue</button>
+    <button class="btn btn-lg btn-primary mr-2" type="submit">Create Issue</button>
   </form>
 
   {% if results %}

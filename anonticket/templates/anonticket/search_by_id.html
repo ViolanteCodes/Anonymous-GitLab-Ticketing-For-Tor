@@ -1,11 +1,18 @@
 {% extends 'shared/layout.html' %}
-***If you're seeing this, the base template has been extended.***
+{% load static %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Search for an issue on GitLab with a given issue_iid
+{% endblock %}
+
 {% block content %}
   <div class="row">
     <div class="col-12">
-      <form method="get">
+      <form method="get" class="bg-light p-5">
         {{ form.as_p }}
-        <button type="submit">search</button>
+        <button type="submit" class="btn btn-lg btn-primary mr-2">search</button>
       </form>
     
       {% if results %}

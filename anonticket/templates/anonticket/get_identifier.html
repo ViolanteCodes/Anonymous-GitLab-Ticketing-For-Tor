@@ -1,10 +1,13 @@
 {% extends 'shared/layout.html' %}
-***If you're seeing this, the base template has been extended.***
-{% block content %}
-  <h2>Create A User Identifier Code</h2>
-  ***Note, you can only search for tickets the anonymous interface would have
-  access to--e.g., no secret tickets, etc.***
+{% load static %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Generate an Anonymous Identifier
+{% endblock %}
 
+{% block content %}
   ***This form is a temporary/in-between form used during development only.***
   <hr>
   
@@ -13,6 +16,8 @@
   </form>
 
   {% if results %}
+  <div class="row bg-light p-5">
     {{results.chosen_words}}
+  </div>
   {% endif %}
 {% endblock %}

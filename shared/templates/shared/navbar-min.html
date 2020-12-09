@@ -1,3 +1,4 @@
+{% load static %}
 {% if not this.color %}
 <div class="container-fluid bg-primary">
   <nav class="navbar no-background navbar-expand-lg navbar-dark bg-primary p-2">
@@ -9,9 +10,8 @@
   <nav class="navbar no-background navbar-expand-lg navbar-dark bg-dark p-2">
 {% endif %}
     <a class="navbar-brand" href="{% url 'home' %}">
-      <img alt="" src="" >
+      <img alt="The Tor Logo" src="{% static 'shared/images/tor-logo@2x.png' %}">
       <span class="sr-only">Tor Logo</span>
-      Home
     </a>
   </nav>
 </div>
