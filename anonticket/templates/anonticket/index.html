@@ -1,12 +1,13 @@
-{% extends 'shared/base.html' %}
-***If you're seeing this, the base template has been extended.***
-{% block content %}
-  <h1>Tor Project GitLab Ticket Lobby</h1>
-  <blockquote>
-    ***Note: This is a work in progress. Many of the views/urls below will
-    no longer exist in final product.***
-  </blockquote>
+{% extends 'shared/layout.html' %}
+{% load static %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Create an Anonymous Issue Report Directly GitLab (no database)
+{% endblock %}
 
+{% block content %}
   <ul>
       <li>
           <a href="{% url 'search-by-id' %}">
