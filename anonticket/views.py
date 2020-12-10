@@ -43,7 +43,7 @@ def save_issue(request):
         form = Save_Anonymous_Ticket
     return render(request, 'anonticket/save_issue.html', {'form': form})
 
-class CreateIdentifier(TemplateView):
+class CreateIdentifierView(TemplateView):
     """Class-based view that randomly samples a word_list and passes the
     new user_identifier into a context dictionary for the template, 
     including a string version and a link."""
@@ -82,7 +82,29 @@ class CreateIdentifier(TemplateView):
         context = self.context_dict(word_list=chosen_words)
         return context
     
-def user_landing(request):
-    """Check to see if the user_identifier string matches a User Identifier in database. If so, 
-    route to user_identifier landing page. If not, route to a different page."""
+class UserLandingView(TemplateView):
+    """doc-string pending"""
+
+    template_name = "anonticket/user_landing.html"
+
+    def user_identifier_in_database(self, find_user):
+        """See if user_identifier is in database."""
+
+        user_not_found_message = """Nothing to see here! You have
+        either not taken an action, or this is not a valid code-phrase."""
+        
+        try:
+            find_user = UserIdentifier.objects.get(user_identifier=find_user)
+            user_found = """Code-phrase Found! You have taken the following actions:"""
+        except:
+            user_found = user_not_found_message
+        return user_found
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_identifier = kwargs['user_identifier']
+        user_found = self.user_identifier_in_database(find_user=user_identifier)
+        context['user_found'] = user_found
+        return context
+
 

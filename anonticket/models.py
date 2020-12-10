@@ -4,13 +4,13 @@ from django.db import models
 
 class UserIdentifier(models.Model):
     """Representation of a user identifier."""
-    user_identifer = models.CharField(max_length=200)
+    user_identifier = models.CharField(max_length=200)
 
     def publish(self):
         self.save()
 
     def __str__(self):
-        return self.user_identifer
+        return self.user_identifier
 
 class Project(models.Model):
     """Representation of a project in the database."""
