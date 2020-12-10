@@ -81,7 +81,7 @@ class CreateIdentifier(TemplateView):
         chosen_words = self.generate_user_identifier_list(word_list=word_list)
         context = self.context_dict(word_list=chosen_words)
         return context
-
+    
 def user_landing(request):
     """Check to see if the user_identifier string matches a User Identifier in database. If so, 
     route to user_identifier landing page. If not, route to a different page."""
