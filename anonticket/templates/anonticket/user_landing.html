@@ -1,0 +1,26 @@
+<!-- Extend the layout template -->
+<!-- Can leave any of these as default -->
+{% extends 'shared/layout.html' %}
+<!-- Load static method for templates -->
+{% load static %}
+<!-- title block sets the main title on the page (in browser bar)-->
+{% block title %}
+  Anon Ticket
+{% endblock %}
+<!-- h3 block sets the main title -->
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+<!-- Subheader block sets the subheader -->
+{% block subheader %} 
+  User Landing Page for:
+{% endblock %}
+<!-- Content block  -->
+{% block content %}
+{% if user_identifier %}
+  <p>{{user_identifier}}</p>
+{% endif %}
+{% if user_found %}
+  <p>{{user_found}}</p>
+{% endif %}
+{% endblock %}

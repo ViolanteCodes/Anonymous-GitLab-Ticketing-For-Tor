@@ -1,0 +1,44 @@
+{% extends 'shared/layout.html' %}
+{% load static %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Generate an Anonymous Identifier
+{% endblock %}
+
+{% block content %}
+  <p> Tor's anonymous GitLab ticketing system uses code-phrase user identifer composed of 
+    six words randomly chosen from a dictionary.</p>
+  <p>A code-phrase has been generated for you below. If you don't like this identifer 
+    and want a different one, you can <a href="{% url 'create-identifier' %}">reload the page</a>,
+  and another identifier will be generated for you.</p>
+  <p>When you have a code-phrase you like, make sure to <mark>save</mark> the below code-phrase somewhere. 
+    A lost code-phrase <mark>cannot be looked up.</mark></p>
+  <p>Identifier code-phrases are not saved in the database until either an issue or comment is opened.</p>
+  <div class="p-5">
+    <div class="row bg-light p-3">
+      <p>
+      {% for word in chosen_words %}
+      <div class="p-2">
+        {{word}}
+      </div>
+      {% endfor %}
+      </p>
+    </div>
+  </div>
+  <p>
+  <div class="row">
+    <form action="{% url 'create-identifier' %}" class="col-4">
+      <button type="submit" class="btn btn-lg btn-primary mr-2">
+        Choose a Different Identifier
+      </button>
+    </form>
+    <form action="{{user_link}}" class="col-4">
+      <button type="submit" class="btn btn-lg btn-primary mr-2">
+        Login With This Identifier
+      </button>
+    </form>
+  </div>
+  </p>
+{% endblock %}
