@@ -141,34 +141,4 @@ class Save_Anonymous_Ticket(ModelForm):
         model = Issue
         fields = ['linked_project', 'issue_title', 'issue_description']
 
-class Generate_User_Identifier_Form(forms.Form):
-    """Form that allows for generation of the anonymous user identifier."""
-
-    def get_wordlist(self):
-        """Fetches the wordlist."""
-        word_list_path = settings.WORD_LIST_PATH
-        with open(word_list_path) as f:
-            wordlist_as_list = f.read().splitlines()
-            return wordlist_as_list
-
-    def generate_user_identifier_list(self, word_list=[]):
-        """Generates the list of words used in user identifier"""
-        user_list = random.sample(word_list, settings.DICE_ROLLS)
-        return user_list
-
-    def list_to_dict(self, word_list=[]):
-        chosen_words = {}
-        chosen_words['chosen_words'] = word_list
-        return chosen_words
-    
-    def get_user_identifer(self):
-        """Fetch wordlist, pull out words at random, convert to dictionary
-        for rendering in django template."""
-        word_list = self.get_wordlist()
-        chosen_words = self.generate_user_identifier_list(word_list=word_list)
-        chosen_words_as_dict = self.list_to_dict(word_list=chosen_words)
-        return chosen_words_as_dict
-
-
-
 

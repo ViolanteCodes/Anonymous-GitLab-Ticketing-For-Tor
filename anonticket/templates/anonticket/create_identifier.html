@@ -1,0 +1,32 @@
+{% extends 'shared/layout.html' %}
+{% load static %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Generate an Anonymous Identifier
+{% endblock %}
+
+{% block content %}
+  <p> Tor's anonymous GitLab ticketing system uses code-phrase user identifer composed of 
+    six words randomly chosen from a dictionary.</p>
+  <p>Make sure to <mark>save</mark> the below code-phrase somewhere. A lost code-phrase <mark>cannot be looked up.</mark></p>
+  <div class="p-5">
+    <div class="row bg-light p-3">
+      <p>
+      {% for word in chosen_words %}
+      <div class="p-2">
+        {{word}}
+      </div>
+      {% endfor %}
+      </p>
+    </div>
+  </div>
+  <p>
+  <form action="{{user_link}}">
+    <button type="submit" class="btn btn-lg btn-primary mr-2">
+      Login With This Identifier
+    </button>
+  </form>
+  </p>
+{% endblock %}
