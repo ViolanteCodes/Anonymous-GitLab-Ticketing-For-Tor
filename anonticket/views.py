@@ -70,7 +70,7 @@ class CreateIdentifier(TemplateView):
         join_character = '-'
         user_identifer_string = join_character.join(word_list)
         context['user_identifier_string'] = user_identifer_string
-        user_link = f"/{user_identifer_string}/"
+        user_link = f"/user/{user_identifer_string}/"
         context['user_link'] = user_link
         return context
 

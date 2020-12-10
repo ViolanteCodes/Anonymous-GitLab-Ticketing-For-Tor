@@ -28,10 +28,17 @@
     </div>
   </div>
   <p>
-  <form action="{{user_link}}">
-    <button type="submit" class="btn btn-lg btn-primary mr-2">
-      Login With This Identifier
-    </button>
-  </form>
+  <div class="row">
+    <form action="{% url 'create-identifier' %}" class="col-4">
+      <button type="submit" class="btn btn-lg btn-primary mr-2">
+        Choose a Different Identifier
+      </button>
+    </form>
+    <form action="{{user_link}}" class="col-4">
+      <button type="submit" class="btn btn-lg btn-primary mr-2">
+        Login With This Identifier
+      </button>
+    </form>
+  </div>
   </p>
 {% endblock %}
