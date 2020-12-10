@@ -136,9 +136,35 @@ class Create_Anonymous_Issue_Form(Anonymous_Ticket_Base_Search_Form):
 
 class Save_Anonymous_Ticket(ModelForm):
     """A form to let users request a GitLab issue be added for review."""
-
     class Meta:
         model = Issue
         fields = ['linked_project', 'issue_title', 'issue_description']
+
+class LoginForm(forms.Form):
+    """A form that allows users to enter in their keycodes to login."""
+    word_1 = forms.CharField(max_length=9)
+    word_2 = forms.CharField(max_length=9)
+    word_3 = forms.CharField(max_length=9)
+    word_4 = forms.CharField(max_length=9)
+    word_5 = forms.CharField(max_length=9)
+    word_6 = forms.CharField(max_length=9)
+
+    def join_words(self):
+        """Pull cleaned data from form and join into code_phrase"""
+        word_list = []
+        word_list.append(self.cleaned_data['word_1'])
+        word_list.append(self.cleaned_data['word_2'])
+        word_list.append(self.cleaned_data['word_3'])
+        word_list.append(self.cleaned_data['word_4'])
+        word_list.append(self.cleaned_data['word_5'])
+        word_list.append(self.cleaned_data['word_6'])
+        join_key = '-'
+        code_phrase = join_key.join(word_list)
+        return code_phrase
+
+
+
+
+
 
 

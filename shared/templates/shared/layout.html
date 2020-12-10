@@ -5,6 +5,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="{% static 'shared/css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'shared/css/prettyform.css' %}">
         <!-- <link rel="stylesheet" href="{% static 'shared/css/style.css' %}"> -->
         <title>{% block title %} | Tor Anonymous Ticket Lobby | The Tor Project {% endblock %}</title>
     </head>
@@ -23,6 +24,11 @@
                             <li class="nav-item">
                                 <a href="{% url 'create-identifier' %}">
                                     Generate Identifier
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'login' %}">
+                                    Login With Identifier
                                 </a>
                             </li>
                             <li class="nav-item">

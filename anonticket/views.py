@@ -5,10 +5,22 @@ import random
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     Create_Anonymous_Issue_Form,
-    Save_Anonymous_Ticket)
+    Save_Anonymous_Ticket,
+    LoginForm)
 from anonticket.models import Issue, UserIdentifier
 from django.views.generic.base import TemplateView
 
+def login_with_codename(request):
+    """Generate a form with fields to allow users to enter their codename. If all
+    fields are filled out, redirect to appropriate user-landing."""
+    results = {}
+    form = LoginForm(request.GET)
+    if form.is_valid():
+        results = form.join_words()
+        return redirect('user-landing', user_identifier = results)
+    else: 
+        form = LoginForm
+    return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
 
 def search_by_id(request):
     results = {}
