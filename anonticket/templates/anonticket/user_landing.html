@@ -23,4 +23,7 @@
 {% if user_found %}
   <p>{{user_found}}</p>
 {% endif %}
+{% if create_url %}
+<p><a href="{{create_url}}">Create Issue</a></p>
+{% endif %}
 {% endblock %}
