@@ -8,50 +8,9 @@ from .forms import (
     CreateIssueForm)
 from anonticket.models import Issue, UserIdentifier
 from django.views.generic.base import TemplateView
-from django.forms import modelform_factory
 
-
-def login_with_codename(request):
-    """Generate a form with fields to allow users to enter their codename. If all
-    fields are filled out, redirect to appropriate user-landing."""
-    results = {}
-    form = LoginForm(request.GET)
-    if form.is_valid():
-        results = form.join_words()
-        return redirect('user-landing', user_identifier = results)
-    else: 
-        form = LoginForm
-    return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
-
-def search_by_id(request):
-    results = {}
-    if 'issue_iid' in request.GET:
-        form = Anonymous_Ticket_Project_Search_Form(request.GET)
-        if form.is_valid():
-            results = form.call_project_and_issue()
-    else:
-        form = Anonymous_Ticket_Project_Search_Form
-    return render(request, 'anonticket/search_by_id.html', {'form': form, 'results': results})
-
-def create_issue(request, user_identifier):
-    """doc-string pending"""
-    results = {}
-    user_to_retrieve = user_identifier
-    if request.method == 'POST':
-        form = CreateIssueForm(request.POST)
-        if form.is_valid():
-            issue_without_user = form.save(commit=False)
-            try: 
-                current_user = UserIdentifier.objects.get(user_identifier=user_to_retrieve)
-            except: 
-                current_user = UserIdentifier(user_identifier=user_to_retrieve)
-                current_user.save()
-            issue_without_user.linked_user = current_user 
-            issue_without_user.save()
-            return render(request, 'anonticket/create_issue.html', {'form':form, 'results':results})
-    else:
-        form = CreateIssueForm
-    return render(request, 'anonticket/create_issue.html', {'form':form, 'results':results})
+# These views have been listed below in the order that a user is likely 
+# to encounter them, e.g., create an identifier, login, create an issue. 
 
 class CreateIdentifierView(TemplateView):
     """Class-based view that randomly samples a word_list and passes the
@@ -91,9 +50,23 @@ class CreateIdentifierView(TemplateView):
         chosen_words = self.generate_user_identifier_list(word_list=word_list)
         context = self.context_dict(word_list=chosen_words)
         return context
+
+def login_with_codename(request):
+    """Generate a form with fields to allow users to enter their codename. If all
+    fields are filled out, redirect to appropriate user-landing."""
+    results = {}
+    form = LoginForm(request.GET)
+    if form.is_valid():
+        results = form.join_words()
+        return redirect('user-landing', user_identifier = results)
+    else: 
+        form = LoginForm
+    return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
     
 class UserLandingView(TemplateView):
-    """doc-string pending"""
+    """The user 'landing page' once they have chosen an identifier and
+    decided to use it. Checks if identifier is in database and offers 
+    options to the user, e.g., create ticket, etc. """
 
     template_name = "anonticket/user_landing.html"
 
@@ -121,4 +94,42 @@ class UserLandingView(TemplateView):
         context['create_url'] = f"/user/{user_identifier}/create_issue"
         return context
 
+
+def create_issue(request, user_identifier):
+    """View that allows a user to create an issue. Pulls the user_identifier
+    from the URL(kwargs) and tries to pull that UserIdentifier from database, 
+    creating it if this is the user's first action."""
+    results = {}
+    user_to_retrieve = user_identifier
+    if request.method == 'POST':
+        form = CreateIssueForm(request.POST)
+        if form.is_valid():
+            # Create the issue, but don't save it yet, since we need to get
+            # the user_identifier.
+            issue_without_user = form.save(commit=False)
+            # Try to find the user_identifier in database. 
+            try: 
+                current_user = UserIdentifier.objects.get(user_identifier=user_to_retrieve)
+            # If lookup fails, create the user.
+            except: 
+                current_user = UserIdentifier(user_identifier=user_to_retrieve)
+                current_user.save()
+            # Assign the user_identifer to the issue and then same the issue. 
+            issue_without_user.linked_user = current_user
+            # Save the new issue. 
+            issue_without_user.save()
+            return render(request, 'anonticket/create_issue.html', {'form':form, 'results':results})
+    else:
+        form = CreateIssueForm
+    return render(request, 'anonticket/create_issue.html', {'form':form, 'results':results})
+
+def search_by_id(request):
+    results = {}
+    if 'issue_iid' in request.GET:
+        form = Anonymous_Ticket_Project_Search_Form(request.GET)
+        if form.is_valid():
+            results = form.call_project_and_issue()
+    else:
+        form = Anonymous_Ticket_Project_Search_Form
+    return render(request, 'anonticket/search_by_id.html', {'form': form, 'results': results})
 
