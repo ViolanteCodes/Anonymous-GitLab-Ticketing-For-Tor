@@ -4,11 +4,12 @@ import gitlab
 import random
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
-    Create_Anonymous_Issue_Form,
-    Save_Anonymous_Ticket,
-    LoginForm)
+    LoginForm,
+    CreateIssueForm)
 from anonticket.models import Issue, UserIdentifier
 from django.views.generic.base import TemplateView
+from django.forms import modelform_factory
+
 
 def login_with_codename(request):
     """Generate a form with fields to allow users to enter their codename. If all
@@ -32,28 +33,25 @@ def search_by_id(request):
         form = Anonymous_Ticket_Project_Search_Form
     return render(request, 'anonticket/search_by_id.html', {'form': form, 'results': results})
 
-def create_issue(request):
+def create_issue(request, user_identifier):
+    """doc-string pending"""
     results = {}
-    if 'description_of_issue' in request.GET:
-        form = Create_Anonymous_Issue_Form(request.GET)
-        if form.is_valid():
-            results = form.create_issue()
-    else:
-        form = Create_Anonymous_Issue_Form
-    return render(request, 'anonticket/create_issue.html', {'form': form, 'results': results})
-
-def save_issue(request):
-    form = Save_Anonymous_Ticket
-    # Check if this is a POST request. If so, process the form data.
+    user_to_retrieve = user_identifier
     if request.method == 'POST':
-        form = Save_Anonymous_Ticket(request.POST)
-        #Check if form is valid:
+        form = CreateIssueForm(request.POST)
         if form.is_valid():
-            working_issue = form.save()
-            return redirect('home')
-    else: 
-        form = Save_Anonymous_Ticket
-    return render(request, 'anonticket/save_issue.html', {'form': form})
+            issue_without_user = form.save(commit=False)
+            try: 
+                current_user = UserIdentifier.objects.get(user_identifier=user_to_retrieve)
+            except: 
+                current_user = UserIdentifier(user_identifier=user_to_retrieve)
+                current_user.save()
+            issue_without_user.linked_user = current_user 
+            issue_without_user.save()
+            return render(request, 'anonticket/create_issue.html', {'form':form, 'results':results})
+    else:
+        form = CreateIssueForm
+    return render(request, 'anonticket/create_issue.html', {'form':form, 'results':results})
 
 class CreateIdentifierView(TemplateView):
     """Class-based view that randomly samples a word_list and passes the
@@ -104,10 +102,13 @@ class UserLandingView(TemplateView):
 
         user_not_found_message = """Nothing to see here! You have
         either not taken an action, or this is not a valid code-phrase."""
+        user_found_flag = False
         
         try:
             find_user = UserIdentifier.objects.get(user_identifier=find_user)
             user_found = """Code-phrase Found! You have taken the following actions:"""
+            user_found_flag = True
+
         except:
             user_found = user_not_found_message
         return user_found
@@ -117,6 +118,7 @@ class UserLandingView(TemplateView):
         user_identifier = kwargs['user_identifier']
         user_found = self.user_identifier_in_database(find_user=user_identifier)
         context['user_found'] = user_found
+        context['create_url'] = f"/user/{user_identifier}/create_issue"
         return context
 
 

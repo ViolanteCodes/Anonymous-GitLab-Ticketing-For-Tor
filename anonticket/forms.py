@@ -103,7 +103,7 @@ class Anonymous_Ticket_Project_Search_Form(Anonymous_Ticket_Base_Search_Form):
     choose_project = forms.ModelChoiceField(queryset=Project.objects.all())
     issue_iid = forms.IntegerField(max_value = 9223372036854775807)
 
-class Create_Anonymous_Issue_Form(Anonymous_Ticket_Base_Search_Form):
+class Git_Create_Anonymous_Issue_Form(Anonymous_Ticket_Base_Search_Form):
     """A form to let users add an issue to a given project in gitlab."""
     choose_project = forms.ModelChoiceField(queryset=Project.objects.all())
     issue_title = forms.CharField(max_length=200)
@@ -134,12 +134,6 @@ class Create_Anonymous_Issue_Form(Anonymous_Ticket_Base_Search_Form):
                 result['message'] = 'Your issue has been created.'
         return result
 
-class Save_Anonymous_Ticket(ModelForm):
-    """A form to let users request a GitLab issue be added for review."""
-    class Meta:
-        model = Issue
-        fields = ['linked_project', 'issue_title', 'issue_description']
-
 class LoginForm(forms.Form):
     """A form that allows users to enter in their keycodes to login."""
     word_1 = forms.CharField(max_length=9)
@@ -162,6 +156,10 @@ class LoginForm(forms.Form):
         code_phrase = join_key.join(word_list)
         return code_phrase
 
+class CreateIssueForm(ModelForm):
+    class Meta:
+        model = Issue
+        fields = ('issue_title', 'linked_project', 'issue_description')
 
 
 

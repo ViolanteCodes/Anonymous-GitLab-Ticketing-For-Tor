@@ -4,32 +4,16 @@
   Anon Ticket
 {% endblock %}
 {% block subheader %} 
-  Create an Anonymous Issue Report Directly on GitLab (Does not touch database.)
+  Create an Issue Report and Save it To the Database
 {% endblock %}
 
 {% block content %}
-  <form method="get" class="bg-light p-5">
+  <form class="bg-light p-5" method="POST">
     {{ form.as_p }}
-    <button class="btn btn-lg btn-primary mr-2" type="submit">Create Issue</button>
+    {% csrf_token %}
+    <button type="submit" class="btn btn-lg btn-primary mr-2">Create Issue</button>
   </form>
-
-  {% if results %}
-    <hr>
-    <h2>Result of this attempt was: {{results.status|title}}</h2>
-    <p>Details: {{results.message}}</p>
-    <h3>Project Details</h3>
-    {% if results.project_name %}
-    <ul>
-      <li>Project Name: {{results.project_name}}</li>
-      <li>Project Description: {{results.project_description}}</li>
-    </ul>
-    {% endif %}
-    {% if results.issue_title %}
-    <h3>Issue Details</h3>
-    <ul>
-      <li>Issue Title: {{results.issue_title}}</li>
-      <li>Issue Description: {{results.description}}</li>
-    </ul>
-    {% endif %}
-  {% endif %}
+{% if results %}
+ {{user_identifier}}
+{% endif %}
 {% endblock %}
