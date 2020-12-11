@@ -111,7 +111,6 @@ class UserLandingView(TemplateView):
         context['user_found'] = user_found
         return context
 
-
 def create_issue(request, user_identifier):
     """View that allows a user to create an issue. Pulls the user_identifier
     from the URL(kwargs) and tries to pull that UserIdentifier from database, 
@@ -124,6 +123,9 @@ def create_issue(request, user_identifier):
             # Create the issue, but don't save it yet, since we need to get
             # the user_identifier.
             issue_without_user = form.save(commit=False)
+            # Add the user_identifier to the context dictionary to be passed to
+            # redirect upon success.
+            results['user_identifier'] = user_identifier
             # Try to find the user_identifier in database. 
             try: 
                 current_user = UserIdentifier.objects.get(user_identifier=user_to_retrieve)
@@ -135,10 +137,19 @@ def create_issue(request, user_identifier):
             issue_without_user.linked_user = current_user
             # Save the new issue. 
             issue_without_user.save()
-            return render(request, 'anonticket/create_issue.html', {'form':form, 'results':results})
+            return redirect('issue-created', user_identifier)
     else:
         form = CreateIssueForm
     return render(request, 'anonticket/create_issue.html', {'form':form, 'results':results})
+
+class IssueSuccessView(TemplateView):
+    """View that tells the user their issue was successfully created."""
+
+    template_name = 'anonticket/issue_created_success.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
 
 def search_by_id(request):
     """Currently admin-function to allow someone to lookup an issue and its notes

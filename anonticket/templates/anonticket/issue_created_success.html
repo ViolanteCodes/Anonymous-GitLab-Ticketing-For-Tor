@@ -13,20 +13,12 @@
 {% endblock %}
 <!-- Subheader block sets the subheader -->
 {% block subheader %} 
-  User Landing Page for:
+  Your Issue has been saved.
 {% endblock %}
-<!-- Content block  -->
+<!-- block content block is where page contents go -->
 {% block content %}
-{% if user_identifier %}
-  <p>{{user_identifier}}</p>
-{% endif %}
-{% if user_found %}
-  <p>{{user_found}}</p>
-{% endif %}
-<h3>You can take the following actions:</h3>
-<!-- Generate the create_issue_url on the fly within the template. -->
-  <p>
-    {% url 'create-issue' user_identifier as create_url %}
-    <a href="{{create_url}}">Create</a> an issue.
-  </p>
+{% url 'user-landing' user_identifier as go_back_url %}
+<p>
+  <a href="{{go_back_url}}">Back to my landing page</a>
+</p>
 {% endblock %}
