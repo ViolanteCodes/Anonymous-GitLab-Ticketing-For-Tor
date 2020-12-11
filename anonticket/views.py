@@ -45,10 +45,6 @@ class CreateIdentifierView(TemplateView):
         user_identifer_string = join_character.join(word_list)
         # Pass the string into the context dictionary
         context['user_identifier_string'] = user_identifer_string
-        # Create the user login link for this string and pass to context
-        # dictionary as user_link
-        user_link = f"/user/{user_identifer_string}/"
-        context['user_link'] = user_link
         # return context dictionary to use in template
         return context
 
@@ -113,8 +109,6 @@ class UserLandingView(TemplateView):
         # run the user_identifier_in_database method using the user_identifier variable
         user_found = self.user_identifier_in_database(find_user=user_identifier)
         context['user_found'] = user_found
-        # Create a "create_url" link and pass into context dictionary for template rendering
-        context['create_url'] = f"/user/{user_identifier}/create_issue"
         return context
 
 

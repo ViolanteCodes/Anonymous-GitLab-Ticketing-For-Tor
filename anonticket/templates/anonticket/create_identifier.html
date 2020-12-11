@@ -34,7 +34,9 @@
         Choose a Different Identifier
       </button>
     </form>
-    <form action="{{user_link}}" class="col-4">
+    <!-- Generate the user_login_link on the fly -->
+    {% url 'user-landing' user_identifier_string as login_url %}
+    <form action="{{login_url}}" class="col-4">
       <button type="submit" class="btn btn-lg btn-primary mr-2">
         Login With This Identifier
       </button>

@@ -23,7 +23,9 @@
 {% if user_found %}
   <p>{{user_found}}</p>
 {% endif %}
-{% if create_url %}
-<p><a href="{{create_url}}">Create Issue</a></p>
-{% endif %}
+  <!-- Generate the create_issue from within the template. -->
+  <p>
+    {% url 'create-issue' user_identifier as create_url %}
+    <a href="{{create_url}}">Create</a> an issue.
+  </p>
 {% endblock %}
