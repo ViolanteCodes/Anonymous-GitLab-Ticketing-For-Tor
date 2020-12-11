@@ -1,12 +1,11 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
 import gitlab
-import random
+from anonticket.models import Issue, UserIdentifier
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     LoginForm,
     CreateIssueForm)
-from anonticket.models import Issue, UserIdentifier
 from django.views.generic.base import TemplateView
 
 # These views have been listed below in the order that a user is likely 
@@ -21,33 +20,46 @@ class CreateIdentifierView(TemplateView):
     
     def get_wordlist(self): 
         """Fetches the wordlist."""
+        # Pull the path for the wordlist from django settings
         word_list_path = settings.WORD_LIST_PATH
         with open(word_list_path) as f:
             wordlist_as_list = f.read().splitlines()
             return wordlist_as_list
 
     def generate_user_identifier_list(self, word_list=[]):
-        """Randomly samples X words from word_list where X is equal
-        to settings.DICE_ROLLS and word_list is equal to settings.WORD_LIST_PATH."""
+        """Randomly samples X words from word_list."""
+        # Import the random module
+        import random
+        # Use random.sample to pull x words from word_list, where number of 
+        # dice is = to settings.DICE_ROLLS. 
         user_list = random.sample(word_list, settings.DICE_ROLLS)
         return user_list
 
     def context_dict(self, word_list=[]):
         """Build the context dictionary."""
         context = {}
+        # pass the wordlist into the context dictionary with key 'chosen_words'
         context['chosen_words'] = word_list
         join_character = '-'
+        # Join the list with join_character and save as user_identifier_string
         user_identifer_string = join_character.join(word_list)
+        # Pass the string into the context dictionary
         context['user_identifier_string'] = user_identifer_string
+        # Create the user login link for this string and pass to context
+        # dictionary as user_link
         user_link = f"/user/{user_identifer_string}/"
         context['user_link'] = user_link
+        # return context dictionary to use in template
         return context
 
     def get_context_data(self):
         """Fetch wordlist, pull out words at random, convert to dictionary
         for rendering in django template."""
+        # Call the get_wordlist function and save as word_list
         word_list = self.get_wordlist()
+        # Call the generate_user_identifier_list function and save as chosen_words
         chosen_words = self.generate_user_identifier_list(word_list=word_list)
+        # Call the function that generates the context dictionary to return to template.
         context = self.context_dict(word_list=chosen_words)
         return context
 
@@ -56,9 +68,13 @@ def login_with_codename(request):
     fields are filled out, redirect to appropriate user-landing."""
     results = {}
     form = LoginForm(request.GET)
+    # if the LoginForm is filled out, clean data and join the words together 
+    # using the forms join_words function (defined in the form.)
     if form.is_valid():
         results = form.join_words()
+        # redirect to user-landing view, passing results dictionary as kwarg
         return redirect('user-landing', user_identifier = results)
+    # if no valid post request, display the form
     else: 
         form = LoginForm
     return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
@@ -77,20 +93,27 @@ class UserLandingView(TemplateView):
         either not taken an action, or this is not a valid code-phrase."""
         user_found_flag = False
         
+        # Try to find the user in the database.
         try:
             find_user = UserIdentifier.objects.get(user_identifier=find_user)
+            # if found, update the user_found message
             user_found = """Code-phrase Found! You have taken the following actions:"""
             user_found_flag = True
 
         except:
+            # if user is not found, return user_not_found message
             user_found = user_not_found_message
         return user_found
 
     def get_context_data(self, *args, **kwargs):
+        # defines specific methods in how this TemplateView creates context
         context = super().get_context_data(**kwargs)
+        # pass this user_identifier kwarg into variable user_identifier
         user_identifier = kwargs['user_identifier']
+        # run the user_identifier_in_database method using the user_identifier variable
         user_found = self.user_identifier_in_database(find_user=user_identifier)
         context['user_found'] = user_found
+        # Create a "create_url" link and pass into context dictionary for template rendering
         context['create_url'] = f"/user/{user_identifier}/create_issue"
         return context
 
@@ -124,6 +147,8 @@ def create_issue(request, user_identifier):
     return render(request, 'anonticket/create_issue.html', {'form':form, 'results':results})
 
 def search_by_id(request):
+    """Currently admin-function to allow someone to lookup an issue and its notes
+    given a project and issueiid"""
     results = {}
     if 'issue_iid' in request.GET:
         form = Anonymous_Ticket_Project_Search_Form(request.GET)
