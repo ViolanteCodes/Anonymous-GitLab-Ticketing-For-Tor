@@ -21,7 +21,7 @@
   <h3>You can take the following actions:</h3>
   <!-- Generate the create_issue_url on the fly within the template. -->
     <p>
-      {% url 'create-issue' user_identifier as create_url %}
+      {% url 'create-issue' results.user_identifier as create_url %}
       <a href="{{create_url}}">Create</a> an issue.
     </p>
 {% endblock %}
