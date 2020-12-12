@@ -1,0 +1,22 @@
+<!-- Extend the layout template -->
+<!-- Can leave any of these as default -->
+{% extends 'shared/layout.html' %}
+<!-- Load static method for templates -->
+{% load static %}
+<!-- title block sets the main title on the page (in browser bar)-->
+{% block title %}
+  Anon Ticket
+{% endblock %}
+<!-- h3 block sets the main title -->
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+<!-- Subheader block sets the subheader -->
+{% block subheader %} 
+  Anonymous Ticket Reporting for GitLab
+{% endblock %}
+<!-- block content block is where page contents go -->
+{% block content %}
+Username didn't validate text goes here.
+<a href="{% url 'login' %}">Try to login again?</a>
+{% endblock %}
