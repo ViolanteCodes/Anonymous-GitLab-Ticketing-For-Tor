@@ -17,16 +17,11 @@
 {% endblock %}
 <!-- Content block  -->
 {% block content %}
-{% if user_identifier %}
-  <p>{{user_identifier}}</p>
-{% endif %}
-{% if user_found %}
-  <p>{{user_found}}</p>
-{% endif %}
-<h3>You can take the following actions:</h3>
-<!-- Generate the create_issue_url on the fly within the template. -->
-  <p>
-    {% url 'create-issue' user_identifier as create_url %}
-    <a href="{{create_url}}">Create</a> an issue.
-  </p>
+    <p>{{results.user_identifier}}</p>
+  <h3>You can take the following actions:</h3>
+  <!-- Generate the create_issue_url on the fly within the template. -->
+    <p>
+      {% url 'create-issue' user_identifier as create_url %}
+      <a href="{{create_url}}">Create</a> an issue.
+    </p>
 {% endblock %}

@@ -13,10 +13,19 @@
 {% endblock %}
 <!-- Subheader block sets the subheader -->
 {% block subheader %} 
-  Anonymous Ticket Reporting for GitLab
+  User Identifier Invalid
 {% endblock %}
 <!-- block content block is where page contents go -->
 {% block content %}
-Username didn't validate text goes here.
-<a href="{% url 'login' %}">Try to login again?</a>
+<p>It looks like you tried to login with:</p>
+<p>{{user_identifier}}</p>
+<p>That doesn't appear to be a valid identifier.</p>
+<p>
+  Would you like to try to <a href="{% url 'login' %}">login again?</a>
+</p>
+<p>
+Or do you want to <a href="{% url 'create-identifier' %}">create an identifier code-phrase</a>?.
+
+</p>
+
 {% endblock %}
