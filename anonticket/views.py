@@ -8,6 +8,49 @@ from .forms import (
     CreateIssueForm)
 from django.views.generic.base import TemplateView
 
+
+# Methods that need to be accessed from within multiple functions go here.
+
+def validate_user_identifier(user_string):
+    """Take a string of the format 'word-word-word' and check that
+    it fulfills the User Identifier requirements."""
+    # split the string at '-' and save list as "id_to_test"
+    id_to_test = user_string.split('-')
+    # Check that code-phrase length is equal to settings.DICE_ROLLS
+    if len(id_to_test) != settings.DICE_ROLLS:
+        return False
+    # Grab the word_list from the path specified in settings.py
+    word_list_path = settings.WORD_LIST_PATH
+    with open(word_list_path) as f:
+        wordlist_as_list = f.read().splitlines()
+        # Check that all words are in the dictionary.
+        check_all_words  = all(item in wordlist_as_list for item in id_to_test)
+        if check_all_words == False:
+            return False
+        else:
+            return True
+
+def user_identifier_in_database(find_user):
+    """See if user_identifier is in database."""
+
+    user_not_found_message = """Nothing to see here! You have
+    either not taken an action, or this is not a valid code-phrase."""
+    user_found_flag = False
+    
+    # Try to find the user in the database.
+    try:
+        find_user = UserIdentifier.objects.get(user_identifier=find_user)
+        # if found, update the user_found message
+        user_found = """Code-phrase Found! You have taken the following actions:"""
+        user_found_flag = True
+
+    except:
+        # if user is not found, return user_not_found message
+        user_found = user_not_found_message
+    return user_found
+
+# Specific views:
+
 # These views have been listed below in the order that a user is likely 
 # to encounter them, e.g., create an identifier, login, create an issue. 
 
@@ -42,9 +85,9 @@ class CreateIdentifierView(TemplateView):
         context['chosen_words'] = word_list
         join_character = '-'
         # Join the list with join_character and save as user_identifier_string
-        user_identifer_string = join_character.join(word_list)
+        user_identifier_string = join_character.join(word_list)
         # Pass the string into the context dictionary
-        context['user_identifier_string'] = user_identifer_string
+        context['user_identifier_string'] = user_identifier_string
         # return context dictionary to use in template
         return context
 
@@ -74,42 +117,20 @@ def login_with_codename(request):
     else: 
         form = LoginForm
     return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
-    
-class UserLandingView(TemplateView):
-    """The user 'landing page' once they have chosen an identifier and
-    decided to use it. Checks if identifier is in database and offers 
-    options to the user, e.g., create ticket, etc. """
 
-    template_name = "anonticket/user_landing.html"
+def user_landing_view(request, user_identifier):
+    results = {}
+    validation = validate_user_identifier(user_string=user_identifier)
+    if validation == False:
+        return redirect('user-login-error', user_identifier)
+    else:
+        user_found = user_identifier_in_database(user_identifier)
+        results['user_identifier'] = user_identifier
+    return render(request, 'anonticket/user_landing.html', {'results': results})
 
-    def user_identifier_in_database(self, find_user):
-        """See if user_identifier is in database."""
-
-        user_not_found_message = """Nothing to see here! You have
-        either not taken an action, or this is not a valid code-phrase."""
-        user_found_flag = False
-        
-        # Try to find the user in the database.
-        try:
-            find_user = UserIdentifier.objects.get(user_identifier=find_user)
-            # if found, update the user_found message
-            user_found = """Code-phrase Found! You have taken the following actions:"""
-            user_found_flag = True
-
-        except:
-            # if user is not found, return user_not_found message
-            user_found = user_not_found_message
-        return user_found
-
-    def get_context_data(self, *args, **kwargs):
-        # defines specific methods in how this TemplateView creates context
-        context = super().get_context_data(**kwargs)
-        # pass this user_identifier kwarg into variable user_identifier
-        user_identifier = kwargs['user_identifier']
-        # run the user_identifier_in_database method using the user_identifier variable
-        user_found = self.user_identifier_in_database(find_user=user_identifier)
-        context['user_found'] = user_found
-        return context
+class UserLoginErrorView(TemplateView):
+    """A generic landing page if a username doesn't pass validation tests."""
+    template_name = 'anonticket/user_login_error.html'
 
 def create_issue(request, user_identifier):
     """View that allows a user to create an issue. Pulls the user_identifier
@@ -133,7 +154,7 @@ def create_issue(request, user_identifier):
             except: 
                 current_user = UserIdentifier(user_identifier=user_to_retrieve)
                 current_user.save()
-            # Assign the user_identifer to the issue and then same the issue. 
+            # Assign the user_identifier to the issue and then same the issue. 
             issue_without_user.linked_user = current_user
             # Save the new issue. 
             issue_without_user.save()
