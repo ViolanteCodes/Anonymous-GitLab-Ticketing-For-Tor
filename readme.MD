@@ -37,7 +37,7 @@ to function (see below for installation instructions.)
 
 Environment variables are tracked using the python-decouple package, which
 increases security by moving important keys, tokens, etc. to the .env
-file located in the base installation. If you're unable to perform 
+file located in the base folder. If you're unable to perform 
 manage.py runserver, make sure you have set something in the SECRET_KEY
 field in the .env file, and that DEBUG is set to "True". If DEBUG is 
 set to "False", you will need to make sure something is filled in for
@@ -85,6 +85,24 @@ then you may have accidentally turned your viritual environment off!
 
 If you want to ever exit your virtual environment, just type
     $ deactivate.
+
+### Models
+
+The models for database objects are in anonticket/models.py
+
+### Views
+
+The 'engine' that drives this project is primarily contained in anonticket/views.py. 
+At current, this project uses a mixture of class-based views and function-based views.
+Each view is explained with a doc-string and has comments throughout to explain specific
+functions from within the view.
+
+### URL-Pathing
+
+The main URL structures at this time are located in anonticket/urls.py (and all of 
+these URLs are included in the main URLS.py located at ticketlobby/urls.py) Values that
+contain arguments like <str:identifier> pass that argument as an arg/kwarg to be used by the 
+associated view.
 
 ### Tests
 
