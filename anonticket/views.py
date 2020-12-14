@@ -44,8 +44,11 @@ def user_identifier_in_database(find_user):
 
 # Specific views:
 
-# These views have been listed below in the order that a user is likely 
-# to encounter them, e.g., create an identifier, login, create an issue. 
+# The functions below are listed in the order that a user is likely to 
+# encounter them (e.g., generate a new codename, then login with codename.)
+# Functions with "view" in the name (e.g., 'login_view') are the function-
+# based views that are passed to URLs. Functions without 'view' in the name
+# are component functions used by the function-based views.
 
 class CreateIdentifierView(TemplateView):
     """Class-based view that randomly samples a word_list and passes the
@@ -104,7 +107,7 @@ class CreateIdentifierView(TemplateView):
             else: 
                 continue
 
-def login_with_codename(request):
+def login_view(request):
     """Generate a form with fields to allow users to enter their codename. If all
     fields are filled out, redirect to appropriate user-landing."""
     results = {}
@@ -144,7 +147,7 @@ class UserLoginErrorView(TemplateView):
     """A generic landing page if a username doesn't pass validation tests."""
     template_name = 'anonticket/user_login_error.html'
 
-def create_issue(request, user_identifier):
+def create_issue_view(request, user_identifier):
     """View that allows a user to create an issue. Pulls the user_identifier
     from the URL(kwargs) and tries to pull that UserIdentifier from database, 
     creating it if this is the user's first action."""
@@ -184,7 +187,7 @@ class IssueSuccessView(TemplateView):
         context = super().get_context_data(**kwargs)
         return context
 
-def search_by_id(request):
+def search_by_id_view(request):
     """Currently admin-function to allow someone to lookup an issue and its notes
     given a project and issueiid"""
     results = {}
