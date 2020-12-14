@@ -8,7 +8,7 @@ from .forms import (
     CreateIssueForm)
 from django.views.generic.base import TemplateView
 
-# Methods that need to be accessed from within multiple functions go here.
+# Methods that need to be accessed from within multiple views go here.
 
 def validate_user_identifier(user_string):
     """Take a string of the format 'word-word-word' and check that
