@@ -32,21 +32,15 @@ def validate_user_identifier(user_string):
 
 def user_identifier_in_database(find_user):
     """See if user_identifier is in database."""
-
-    user_not_found_message = """Nothing to see here! You have
-    either not taken an action, or this is not a valid code-phrase."""
-    user_found_flag = False
-    
     # Try to find the user in the database.
     try:
-        find_user = UserIdentifier.objects.get(user_identifier=find_user)
+        user_to_find = UserIdentifier.objects.get(user_identifier=find_user)
         # if found, update the user_found message
-        user_found = """Code-phrase Found! You have taken the following actions:"""
-        user_found_flag = True
+        user_found = True
 
     except:
         # if user is not found, return user_not_found message
-        user_found = user_not_found_message
+        user_found = False
     return user_found
 
 # Specific views:
@@ -96,11 +90,20 @@ class CreateIdentifierView(TemplateView):
         for rendering in django template."""
         # Call the get_wordlist function and save as word_list
         word_list = self.get_wordlist()
+        # Start a while loop
+        while True:
         # Call the generate_user_identifier_list function and save as chosen_words
-        chosen_words = self.generate_user_identifier_list(word_list=word_list)
-        # Call the function that generates the context dictionary to return to template.
-        context = self.context_dict(word_list=chosen_words)
-        return context
+            chosen_words = self.generate_user_identifier_list(word_list=word_list)
+            # Call the function that generates the context dictionary to return to template.
+            context = self.context_dict(word_list=chosen_words)
+            # Check if user already exists in the database
+            user_found = user_identifier_in_database(context['user_identifier_string'])
+            # if user is unique, return the context dictionary to the template and render
+            if user_found == False:
+                return context
+            # if user is not unique, re-enter the loop
+            else: 
+                continue
 
 def login_with_codename(request):
     """Generate a form with fields to allow users to enter their codename. If all
