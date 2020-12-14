@@ -8,7 +8,6 @@ from .forms import (
     CreateIssueForm)
 from django.views.generic.base import TemplateView
 
-
 # Methods that need to be accessed from within multiple functions go here.
 
 def validate_user_identifier(user_string):
@@ -122,12 +121,22 @@ def login_with_codename(request):
     return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
 
 def user_landing_view(request, user_identifier):
+    """The 'landing page' view. Checks that username meets validation standards
+    and redirects if not, then attempts to find username in database and passes
+    user_found = True to context dictionary if found."""
     results = {}
+    # Check that entered User Identifier meets validation
     validation = validate_user_identifier(user_string=user_identifier)
+    # Redirect if it does not
     if validation == False:
         return redirect('user-login-error', user_identifier)
+    # if it does, try to find user in database.
     else:
         user_found = user_identifier_in_database(user_identifier)
+        # if user is found, pass 'user_found' to context dictionary
+        if user_found == True:
+            results['user_found'] = user_found
+        # if found or not found, pass 'user_identifier' to context dictionary
         results['user_identifier'] = user_identifier
     return render(request, 'anonticket/user_landing.html', {'results': results})
 
