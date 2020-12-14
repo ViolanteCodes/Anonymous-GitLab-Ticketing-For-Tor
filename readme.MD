@@ -1,35 +1,52 @@
 # Tor's Ticket Lobby
 
 ## Table of Contents
-- General Information and Project Layout
+1:    General Information and Project Layout
+
+2:    Getting Started: 
 - Notes on Packages
 - Setting Up a Local Instance
+- Notes on Virtual Environment
+
+3:    Django In A Nutshell:
+- Templates
+- Models
+- Views
+- URLs
 - Tests
 
+---
 
-### General Information and Project Layout
+## 1.0: General Information and Project Layout
 
-This Django application contains an anonymous ticket handling system. It
-allows individuals that would like to submit an anonymous ticket to Tor
-to do so by receiving a pass-code of english words based on dictionary
-dice rolls.
+Django applications or projects generally contain a main project folder 
+(in this case 'ticketlobby'), as well as several app folders, which can be
+'turned on' and 'turned off' by their inclusion in the main project folder's
+settings.py file.
 
-It has been structured in such a way to allow later expansion for other,
-related functions and is currently divided into three apps:
+This Django application contains a specific app, 'anonticket', which 
+is an anonymous ticket handling system to allow anonymous submission of an 
+issue to TorProject's GitLab lobby via creation of User Identifier 
+code-phrases based on dice rolls from a dictionary of english words.
 
-1. ***/TicketLobby***: This is main app folder, in which the settings.py file 
+This project has been structured in such a way to allow later expansion for other,
+related functions and is currently divided into three main folders:
+
+1. ***/TicketLobby***: This is main project folder, in which the settings.py file 
 and other base Django files are found.
 
 2. ***/AnonTicket***: This is the folder for the anonymous ticket submission app
 itself.
 
-3. ***/Shared***: This is primarily for static files and templates that are likely
-to be expanded or utilized in other parts of the project. By moving the 
+3. ***/Shared***: This is a pseudo-app, primarily for static files and templates 
+likely to be expanded or utilized in other parts of the project. By moving the 
 base templates and static files into their own app, overall development 
 and deployment are easier. (Note: This is not the recommend approach if 
 you are designing a Django project with a LOT of apps.)
 
+---
 
+## 2.0 Getting Started: 
 ### Notes on Packages:
 
 The packages in the requirements.txt file are necessary for the ticketlobby
@@ -42,7 +59,6 @@ manage.py runserver, make sure you have set something in the SECRET_KEY
 field in the .env file, and that DEBUG is set to "True". If DEBUG is 
 set to "False", you will need to make sure something is filled in for
 the allowed hosts field.
-
 
 ### To run it locally
 
@@ -86,9 +102,37 @@ then you may have accidentally turned your viritual environment off!
 If you want to ever exit your virtual environment, just type
     $ deactivate.
 
+---
+## 3.0 Django (and this project) in A Nutshell:
+
+When a user navigates to an URL associated with this project, Django matches the 
+URL to the appropriate pattern in urls.py. It strips any needed arguments from the URL based on 
+the logic in urls.py, and, based on urls.py, determines which VIEW to use. The 
+view itself may contain logic, including what to do with any arguments from the URL, how 
+to handle forms, GET vs POST requests, when to communicate with the database, etc. 
+
+Once those steps are carried out, the view generally instructs Django to initiate a redirect
+to another view, or to render an html page using one or more html TEMPLATES. Arguments for
+rendering the html template are usually passed to the template as a dictionary (associative array),
+and can be called by the template (e.g., if the dictionary is passed as {results}, {{results.user_identifier}} 
+is equivalent to results['user_identifier'].) Context dictionaries can contain strings, lists, or 
+other dictionaries.
+
+### Templates
+
+Templates specific to the anonticket portion of this project are in anonticket/templates/anonticket.
+The repetition of anonticket above is Django's recommend method for namespacing; as Django will
+search for templates within *any* app folder called 'templates', this name-spacing prevents confusion.
+
+Additionally, there is a folder called 'templates' in 'shared'; here, 'shared' is 
+a pseudo-app that contains files that will be used across various apps in this project. The
+overall layout template, including side-bar menu, is here, as well as the css files, fonts,
+and other static files (like images.) The CSS is based on Tor Project's style-guide 
+(styleguide.torproject.com), which uses bootstrap templates for layout.
+
 ### Models
 
-The models for database objects are in anonticket/models.py
+The models for database objects are in anonticket/models.py.
 
 ### Views
 
@@ -104,7 +148,12 @@ If a view relies heavily on a form, processing for that view may have been moved
 The main URL structures at this time are located in anonticket/urls.py (and all of 
 these URLs are included in the main URLS.py located at ticketlobby/urls.py) Values that
 contain arguments like <str:identifier> pass that argument as an arg/kwarg to be used by the 
-associated view.
+associated view. 
+
+User Identifier code-phrases are not saved to the database until they have been used
+to perform an action, such as create a ticket. As such, there are functions in the views
+themselves to validate that a code-phrase is valid, which take arguments from the URL as
+noted above.
 
 ### Tests
 
@@ -113,6 +162,14 @@ when the apps are created (e.g., the anonticket folder has a tests.py file
 specifically for functions in the anonticket app. In the future, tests
 will likely be moved to a Django testing package, such as django-test-plus.
 
+Testing sets up a test_database and should not interact with the project's
+actual database.
+
 For now, you can run the tests from the command line, with:
 
 $ python manage.py test
+
+If you would like a more verbose output from testing (e.g, with test_names),
+you can add -v# as an argument:
+
+$ python manage.py test -v2
