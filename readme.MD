@@ -97,6 +97,8 @@ At current, this project uses a mixture of class-based views and function-based 
 Each view is explained with a doc-string and has comments throughout to explain specific
 functions from within the view.
 
+If a view relies heavily on a form, processing for that view may have been moved to forms.py.
+
 ### URL-Pathing
 
 The main URL structures at this time are located in anonticket/urls.py (and all of 
