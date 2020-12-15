@@ -28,6 +28,7 @@ def validate_user_identifier(user_string):
             return False
         else:
             return True
+        #### (For Later: reduce this function (check_all_words = boolean))
 
 def user_identifier_in_database(find_user):
     """See if user_identifier is in database."""
@@ -36,7 +37,6 @@ def user_identifier_in_database(find_user):
         user_to_find = UserIdentifier.objects.get(user_identifier=find_user)
         # if found, update the user_found message
         user_found = True
-
     except:
         # if user is not found, return user_not_found message
         user_found = False
