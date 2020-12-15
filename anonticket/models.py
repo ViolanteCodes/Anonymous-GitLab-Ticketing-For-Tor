@@ -1,4 +1,6 @@
 from django.db import models
+from django.conf import settings
+import gitlab
 
 # Create your models here.
 
@@ -31,6 +33,7 @@ class Issue(models.Model):
     linked_project = models.ForeignKey(Project, on_delete=models.CASCADE)
     linked_user = models.ForeignKey(UserIdentifier, on_delete=models.CASCADE, default=1)
     issue_description= models.TextField()
+    issue_iid = models.IntegerField(null=True, blank=True)
     
     # The following fields related to reviewer status:
     # Django recommends defining choice_list outside of CharField.
@@ -48,8 +51,30 @@ class Issue(models.Model):
     # Fields related to GitLab status
     posted_to_GitLab = models.BooleanField(default=False)
 
-    def publish(self):
-        self.save()
+    def approve_issue(self):
+        """Approve an issue and post to GitLab or return error."""
+        # Create the gitlab object
+        gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
+        # Grab the associated project from gitlab.
+        working_project = gl.projects.get(self.linked_project.project_id)
+        # Try to create the issue in the gitlab API, saving the newly
+        # created issue iid to the model's issue.iid field.
+        try:
+            new_issue = working_project.issues.create(
+                {'title': self.issue_title,
+                'description': self.issue_description}
+                )
+            self.posted_to_GitLab = True
+            self.issue_iid = new_issue.iid
+        except:
+            pass
+
+    def save(self, *args, **kwargs):
+        if self.reviewer_status == 'A' and self.issue_iid == None:
+            self.approve_issue() 
+        super(Issue, self).save(*args, **kwargs) 
 
     def __str__(self):
         return self.issue_title
+
+
