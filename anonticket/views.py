@@ -10,6 +10,18 @@ from django.views.generic.base import TemplateView
 
 # Methods that need to be accessed from within multiple views go here.
 
+# Set WORD_LIST_CONTENT as global variable with value of None.
+WORD_LIST_CONTENT = None
+def get_wordlist():
+    """Returns the wordlist. If wordlist_as_list is not already in memory,
+    fetches the wordlist from file and creates it."""
+    global WORD_LIST_CONTENT
+    if WORD_LIST_CONTENT is None:
+        word_list_path = settings.WORD_LIST_PATH
+        with open(word_list_path) as f:
+            wordlist_as_list = f.read().splitlines()
+    return wordlist_as_list  
+
 def validate_user_identifier(user_string):
     """Take a string of the format 'word-word-word' and check that
     it fulfills the User Identifier requirements."""
@@ -19,16 +31,10 @@ def validate_user_identifier(user_string):
     if len(id_to_test) != settings.DICE_ROLLS:
         return False
     # Grab the word_list from the path specified in settings.py
-    word_list_path = settings.WORD_LIST_PATH
-    with open(word_list_path) as f:
-        wordlist_as_list = f.read().splitlines()
-        # Check that all words are in the dictionary.
-        check_all_words  = all(item in wordlist_as_list for item in id_to_test)
-        if check_all_words == False:
-            return False
-        else:
-            return True
-        #### (For Later: reduce this function (check_all_words = boolean))
+    wordlist_as_list = get_wordlist()
+    # Check that all words are in the dictionary.
+    check_all_words  = all(item in wordlist_as_list for item in id_to_test)
+    return check_all_words
 
 def user_identifier_in_database(find_user):
     """See if user_identifier is in database."""
@@ -57,18 +63,11 @@ class CreateIdentifierView(TemplateView):
 
     template_name = "anonticket/create_identifier.html"
     
-    def get_wordlist(self): 
-        """Fetches the wordlist."""
-        # Pull the path for the wordlist from django settings
-        word_list_path = settings.WORD_LIST_PATH
-        with open(word_list_path) as f:
-            wordlist_as_list = f.read().splitlines()
-            return wordlist_as_list
-
-    def generate_user_identifier_list(self, word_list=[]):
+    def generate_user_identifier_list(self):
         """Randomly samples X words from word_list."""
         # Import the random module
         import random
+        word_list = get_wordlist()
         # Use random.sample to pull x words from word_list, where number of 
         # dice is = to settings.DICE_ROLLS. 
         user_list = random.sample(word_list, settings.DICE_ROLLS)
@@ -91,11 +90,11 @@ class CreateIdentifierView(TemplateView):
         """Fetch wordlist, pull out words at random, convert to dictionary
         for rendering in django template."""
         # Call the get_wordlist function and save as word_list
-        word_list = self.get_wordlist()
+        word_list = get_wordlist()
         # Start a while loop
         while True:
         # Call the generate_user_identifier_list function and save as chosen_words
-            chosen_words = self.generate_user_identifier_list(word_list=word_list)
+            chosen_words = self.generate_user_identifier_list()
             # Call the function that generates the context dictionary to return to template.
             context = self.context_dict(word_list=chosen_words)
             # Check if user already exists in the database

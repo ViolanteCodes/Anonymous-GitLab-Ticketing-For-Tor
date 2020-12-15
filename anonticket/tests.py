@@ -28,6 +28,14 @@ class TestViews(TestCase):
             user_identifier = 'antonym-roundup-ravishing-leggings-chooser-oversight'
         )
 
+    def test_get_wordlist(self):
+        """Test get_wordlist function."""
+        word_list_path = settings.WORD_LIST_PATH
+        with open(word_list_path) as f:
+            known_wordlist = f.read().splitlines()
+        test_wordlist = get_wordlist()
+        self.assertEqual(known_wordlist, test_wordlist)
+
     def test_validate_user_identifier(self):
         """Test validate_user_identifier function."""
         seven_words = 'test-test-test-test-test-test-test'
@@ -49,18 +57,10 @@ class TestViews(TestCase):
         test_known_bad_user = user_identifier_in_database(known_bad_user)
         self.assertEqual(test_known_bad_user, False)
 
-    def test_create_identifier_get_wordlist(self):
-        """Test get_wordlist method from CreateIdentifierView."""
-        word_list_path = settings.WORD_LIST_PATH
-        with open(word_list_path) as f:
-            known_wordlist = f.read().splitlines()
-        test_wordlist = CreateIdentifierView.get_wordlist(self)
-        self.assertEqual(known_wordlist, test_wordlist)
-
     def test_generate_user_identifier_list(self):
         """Test the generate_user_identifier_list function from CreateIdentifierView."""
-        word_list = CreateIdentifierView.get_wordlist(self)
-        list_to_test = CreateIdentifierView.generate_user_identifier_list(self, word_list = word_list)
+        word_list = get_wordlist()
+        list_to_test = CreateIdentifierView.generate_user_identifier_list(self)
         for word in list_to_test:
             self.assertIn(word, word_list)
     
