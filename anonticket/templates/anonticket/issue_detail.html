@@ -4,7 +4,7 @@
   Anon Ticket
 {% endblock %}
 {% block subheader %} 
-  Detailed Issue View for Issue: "{{results.issue.title}}""
+  Detailed Issue View for Issue: "{{results.issue.title|capfirst}}"
 {% endblock %}
 
 {% block content %}
@@ -14,8 +14,8 @@
     <div class="col-12 p-2">
         <h4 class="card-title">Issue Summary</h4>
         <ul>
-          <li><span class="text-muted">Title:</span> {{results.issue.title}}</li>
-          <li><span class="text-muted">Description:</span> {{results.issue.description}}</li>
+          <li><span class="text-muted">Title:</span> {{results.issue.title|capfirst}}</li>
+          <li><span class="text-muted">Description:</span> "{{results.issue.description}}"</li>
           <li><span class="text-muted">Created At:</span> {{results.issue.created_at}}</li>
           <li><span class="text-muted">State:</span> {{results.issue.state|title}}</li>
           {% if results.issue.milestone %}
@@ -46,22 +46,25 @@
     </div>
   </div>
 {% endif %}
-        {% if results.title %}
-        <h3>Issue Details</h3>
-        <ul>
-          <li>Issue ID: {{results.id}}</li>
-          <li>Issue Title: {{results.title}}</li>
-          <li>Issue Description: {{results.description}}</li>
-        </ul>
-        <h3>Ticket Notes</h3>
-        <ul>
-          {% if results.note_text %}
-          {% for note_text in results.notes_text %}
-            <li>{{note_text}}</li>
-          {% endfor %}
-          {% endif %}
-        </ul>
-        {% endif %}
-    </div>
+{% if results.notes %}
+<div class="row">
+  <div class="col-12 p-2">
+    <h4 class="card-title">Project Notes</h4>
   </div>
+</div>
+  <div class="p2 bg-light">
+    {% for note in results.notes %}
+    <div class="row">
+      <div class="col-12 p-2">
+        <div class="card mb-2">
+          <div class="card-body">
+            <p class="card-text">{{note.noteable_type|title}} note by @{{note.author.username}}, Created: {{note.created_at}}, Last Updated: {{note.updated_at}}</p>
+            <p class="card-text">{{note.body}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% endif %}
 {% endblock %}
