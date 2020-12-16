@@ -1,0 +1,34 @@
+Notes are fetched with python-gitlab issue.notes, with
+issue.notes.list() returning all notes as list of objects. 
+
+The notes list does not an attributes dictionary, but each individual
+note has an attributes dictionary that can be cycled through with a for
+loop, e.g:
+
+    notes_list = project.issues.get(issue_iid)
+    for note in notes_list:
+        print(note.attributes)
+
+Below is a sample attributes dictionary from an individual note:
+
+{   'attachment': None,
+    'author': {   'avatar_url': None,
+                  'id': 748,
+                  'name': 'MariaV',
+                  'state': 'active',
+                  'username': 'MariaV',
+                  'web_url': 'https://gitlab.torproject.org/MariaV'},
+    'body': 'changed the description',
+    'commands_changes': {},
+    'confidential': False,
+    'created_at': '2020-12-02T20:53:01.267Z',
+    'id': 2717625,
+    'issue_iid': 1,
+    'noteable_id': 310028,
+    'noteable_iid': 1,
+    'noteable_type': 'Issue',
+    'project_id': 740,
+    'resolvable': False,
+    'system': True,
+    'type': None,
+    'updated_at': '2020-12-02T20:53:01.268Z'}
