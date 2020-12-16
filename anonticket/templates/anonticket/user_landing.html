@@ -24,9 +24,15 @@
   </p>
   <p>
     You have created the following issues:
-    {% for issue in results.linked_issues %}
-      {{issue.issue_title}}
-    {% endfor %}
+    {% if results.linked_issues %}
+    <ul>
+      {% for issue in results.linked_issues %}
+      <li>{{issue.issue_title}}</li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>None</p>
+    {% endif %}
   </p>
   {% else %}
   <p>
