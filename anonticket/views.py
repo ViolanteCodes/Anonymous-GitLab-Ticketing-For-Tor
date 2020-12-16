@@ -190,12 +190,11 @@ def create_issue_view(request, user_identifier):
             return redirect('issue-created', user_identifier)
     else:
         form = CreateIssueForm
-    return render(request, 'anonticket/create_issue.html', {'form':form, 'results':results})
+    return render(request, 'anonticket/create_new_issue.html', {'form':form, 'results':results})
 
 class IssueSuccessView(TemplateView):
     """View that tells the user their issue was successfully created."""
-
-    template_name = 'anonticket/issue_created_success.html'
+    template_name = 'anonticket/create_issue_success.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
