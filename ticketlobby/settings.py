@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 from decouple import config
 from django.core.exceptions import ImproperlyConfigured
+import gitlab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -126,11 +127,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # SECURITY WARNING: GitLab credentials.
 GITLAB_URL = config('GITLAB_URL', default='')
 GITLAB_SECRET_TOKEN = config('GITLAB_SECRET_TOKEN', default='')
-gl = gitlab.Gitlab(GITLAB_URL, private_token=GITLAB_SECRET_TOKEN)
 
 # Wordlist Settings for generating wordlist
 
-# Set WORD_LIST_CONTENT as global variable with value of None.
-WORD_LIST_CONTENT = None
 WORD_LIST_PATH = os.path.join(BASE_DIR, 'shared/wordlist.txt')
 DICE_ROLLS = 6

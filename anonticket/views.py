@@ -13,6 +13,9 @@ from django.views.generic.base import TemplateView
 # with the exception of gitlab functions, which are below.
 # ----------------------------------------------------------------------
 
+# Set WORD_LIST_CONTENT as global variable with value of None.
+WORD_LIST_CONTENT = None
+
 def get_wordlist():
     """Returns the wordlist. If wordlist_as_list is not already in memory,
     fetches the wordlist from file and creates it."""
@@ -62,6 +65,7 @@ def get_linked_issues(UserIdentifier):
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
 # ----------------------------------------------------------------------
+gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
 
 def gitlab_get_project(project):
     """Takes an integer, and grabs a gitlab project where project_id
@@ -72,7 +76,7 @@ def gitlab_get_project(project):
 def gitlab_get_issue(project, issue):
     """Takes two integers and grabs corresponding gitlab issue."""
     working_project = gitlab_get_project(project)
-    working_issue = gl.working_project.get(issue)
+    working_issue = working_project.issues.get(issue)
     return working_issue
 
 def gitlab_get_notes_list(project, issue):
@@ -81,9 +85,13 @@ def gitlab_get_notes_list(project, issue):
     notes_list = working_issue.notes.list()
     return notes_list
 
-# -----------------------------SPECIFIC VIEWS---------------------------
+# --------------------------SPECIFIC VIEWS------------------------------
 # The functions below are listed in the order that a user is likely to 
 # encounter them (e.g., generate a codename, then login with codename.)
+# ----------------------------------------------------------------------
+#
+# ------------------------IDENTIFIER AND LOGIN--------------------------
+# Initial views related to landing, user_identifier.
 # ----------------------------------------------------------------------
 
 class CreateIdentifierView(TemplateView):
@@ -181,6 +189,10 @@ class UserLoginErrorView(TemplateView):
     """A generic landing page if a username doesn't pass validation tests."""
     template_name = 'anonticket/user_login_error.html'
 
+# ----------------------------ISSUES------------------------------------
+# Views related to creating/looking up issues.
+# ----------------------------------------------------------------------
+
 def create_issue_view(request, user_identifier):
     """View that allows a user to create an issue. Pulls the user_identifier
     from the URL(kwargs) and tries to pull that UserIdentifier from database, 
@@ -219,6 +231,28 @@ class IssueSuccessView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+def issue_detail_view(request, user_identifier, project_id, issue_iid):
+    """A detailed view of a specific issue."""
+    results = {}
+    # validate_user_identifier, redirect if False:
+    validation = validate_user_identifier(user_string=user_identifier)
+    if validation == False:
+        return redirect('user-login-error', user_identifier)
+    # else, grab project, issue, and notes list and insert attributes
+    # dictionaries into results dictionary
+    else:
+        results['user_identifier']=user_identifier
+        working_project = gitlab_get_project(project=project_id)
+        results['project'] = working_project.attributes
+        working_issue = gitlab_get_issue(project=project_id, issue=issue_iid)
+        results['issue'] = working_issue.attributes
+        results['notes'] = []
+        notes_list = gitlab_get_notes_list(project=project_id, issue=issue_iid)
+        for note in notes_list:
+            note_dict = note.attributes
+            results['notes'].append(note_dict)
+    return render(request, 'anonticket/issue_detail.html', {'results': results})
 
 def search_by_id_view(request):
     """Currently admin-function to allow someone to lookup an issue and its notes

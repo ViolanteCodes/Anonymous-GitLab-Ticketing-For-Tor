@@ -17,5 +17,6 @@ urlpatterns = [
     path('user/<str:user_identifier>/login_error/', views.UserLoginErrorView.as_view(), name='user-login-error'),
     path('user/<str:user_identifier>/create_issue/success', views.IssueSuccessView.as_view(), name='issue-created'),        
     path('user/<str:user_identifier>/create_issue/', views.create_issue_view, name='create-issue'),
+    path('user/<str:user_identifier>/issue/<int:project_id>/<int:issue_iid>/details/', views.issue_detail_view, name='issue-detail-view'),
     path('user/<str:user_identifier>/', views.user_landing_view, name='user-landing'),
 ]
