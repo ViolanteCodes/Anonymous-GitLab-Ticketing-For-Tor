@@ -20,7 +20,13 @@
   <!-- Check if user_found in results dictionary. If so, list actions already taken. -->
   {% if results.user_found %}
   <p>
-    This User Identifier has been found. (Actions already taken here.)
+    This User Identifier has been found.
+  </p>
+  <p>
+    You have created the following issues:
+    {% for issue in results.linked_issues %}
+      {{issue.issue_title}}
+    {% endfor %}
   </p>
   {% else %}
   <p>

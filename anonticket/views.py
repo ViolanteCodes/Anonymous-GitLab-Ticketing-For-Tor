@@ -37,7 +37,7 @@ def validate_user_identifier(user_string):
     return check_all_words
 
 def user_identifier_in_database(find_user):
-    """See if user_identifier is in database."""
+    """See if user_identifier is in database. Returns True/False."""
     # Try to find the user in the database.
     try:
         user_to_find = UserIdentifier.objects.get(user_identifier=find_user)
@@ -47,6 +47,16 @@ def user_identifier_in_database(find_user):
         # if user is not found, return user_not_found message
         user_found = False
     return user_found
+
+def get_user_as_object(find_user):
+    """Gets the User Identifier from the database. Should only be used if User Identifier exists."""
+    user_to_find = UserIdentifier.objects.get(user_identifier=find_user)
+    return user_to_find
+
+def get_linked_issues(UserIdentifier):
+    """Gets a list of the issues assigned to a User Identifier."""
+    linked_issues = Issue.objects.filter(linked_user=UserIdentifier)
+    return linked_issues
 
 # Specific views:
 
@@ -138,6 +148,11 @@ def user_landing_view(request, user_identifier):
         # if user is found, pass 'user_found' to context dictionary
         if user_found == True:
             results['user_found'] = user_found
+            # Get linked issues linked to this user identifier and pass into 
+            # results dictionary.
+            working_user = get_user_as_object(user_identifier)
+            linked_issues = get_linked_issues(working_user)
+            results['linked_issues'] = linked_issues        
         # if found or not found, pass 'user_identifier' to context dictionary
         results['user_identifier'] = user_identifier
     return render(request, 'anonticket/user_landing.html', {'results': results})
