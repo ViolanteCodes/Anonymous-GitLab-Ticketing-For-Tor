@@ -1,20 +1,21 @@
 # Tor's Ticket Lobby
 
 ## Table of Contents
-1:    General Information and Project Layout
+1: General Information and Project Layout
 
-2:    Getting Started: 
+2: Getting Started: 
 - Notes on Packages
 - Setting Up a Local Instance
 - Notes on Virtual Environment
 
-3:    Django In A Nutshell:
+3: Django In A Nutshell:
 - Templates
 - Models
 - Views
 - URLs
 - Tests
 
+4:  GitLab Python
 ---
 
 ## 1.0: General Information and Project Layout
@@ -173,3 +174,12 @@ If you would like a more verbose output from testing (e.g, with test_names),
 you can add -v# as an argument:
 
 $ python manage.py test -v2
+
+## GitLab-Python
+
+The anonticket app uses the GitLab Python package to communicate with 
+the GitLab API.
+
+Some sample reference files to demonstrate dictionaries returned by 
+get queries, including pretty-printed issue and note dictionaries, 
+are available in anonticket/reference_files

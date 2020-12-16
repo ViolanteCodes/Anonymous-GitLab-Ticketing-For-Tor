@@ -1,0 +1,40 @@
+{% extends 'shared/layout.html' %}
+{% load static %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Issue Details for {{results.issue.title}}
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-12">
+        <hr>
+        <h2>Detailed Results for {{results.issue.title}}</h2>
+        <h3>Project Details</h3>
+        {% if results.project_name %}
+        <ul>
+          <li>Project Name: {{results.project_name}}</li>
+          <li>Project Description: {{results.project_description}}</li>
+        </ul>
+        {% endif %}
+        {% if results.title %}
+        <h3>Issue Details</h3>
+        <ul>
+          <li>Issue ID: {{results.id}}</li>
+          <li>Issue Title: {{results.title}}</li>
+          <li>Issue Description: {{results.description}}</li>
+        </ul>
+        <h3>Ticket Notes</h3>
+        <ul>
+          {% if results.note_text %}
+          {% for note_text in results.notes_text %}
+            <li>{{note_text}}</li>
+          {% endfor %}
+          {% endif %}
+        </ul>
+        {% endif %}
+    </div>
+  </div>
+{% endblock %}

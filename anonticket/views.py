@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from django.conf import settings
 import gitlab
+from django.conf import settings
 from anonticket.models import Issue, UserIdentifier
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
@@ -8,10 +8,14 @@ from .forms import (
     CreateIssueForm)
 from django.views.generic.base import TemplateView
 
-# Methods that need to be accessed from within multiple views go here.
+# ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
+# Functions that need to be accessed from within multiple views go here,
+# with the exception of gitlab functions, which are below.
+# ----------------------------------------------------------------------
 
 # Set WORD_LIST_CONTENT as global variable with value of None.
 WORD_LIST_CONTENT = None
+
 def get_wordlist():
     """Returns the wordlist. If wordlist_as_list is not already in memory,
     fetches the wordlist from file and creates it."""
@@ -37,7 +41,7 @@ def validate_user_identifier(user_string):
     return check_all_words
 
 def user_identifier_in_database(find_user):
-    """See if user_identifier is in database."""
+    """See if user_identifier is in database. Returns True/False."""
     # Try to find the user in the database.
     try:
         user_to_find = UserIdentifier.objects.get(user_identifier=find_user)
@@ -48,13 +52,47 @@ def user_identifier_in_database(find_user):
         user_found = False
     return user_found
 
-# Specific views:
+def get_user_as_object(find_user):
+    """Gets the User Identifier from the database. Should only be used if User Identifier exists."""
+    user_to_find = UserIdentifier.objects.get(user_identifier=find_user)
+    return user_to_find
 
+def get_linked_issues(UserIdentifier):
+    """Gets a list of the issues assigned to a User Identifier."""
+    linked_issues = Issue.objects.filter(linked_user=UserIdentifier)
+    return linked_issues
+
+# ------------------SHARED FUNCTIONS, GITLAB---------------------------
+# Easy to parse version of GitLab-Python functions.
+# ----------------------------------------------------------------------
+gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
+
+def gitlab_get_project(project):
+    """Takes an integer, and grabs a gitlab project where project_id
+    matches the integer."""
+    working_project = gl.projects.get(project)
+    return working_project
+
+def gitlab_get_issue(project, issue):
+    """Takes two integers and grabs corresponding gitlab issue."""
+    working_project = gitlab_get_project(project)
+    working_issue = working_project.issues.get(issue)
+    return working_issue
+
+def gitlab_get_notes_list(project, issue):
+    """Grabs the notes list for a specific issue."""
+    working_issue = gitlab_get_issue(project, issue)
+    notes_list = working_issue.notes.list()
+    return notes_list
+
+# --------------------------SPECIFIC VIEWS------------------------------
 # The functions below are listed in the order that a user is likely to 
-# encounter them (e.g., generate a new codename, then login with codename.)
-# Functions with "view" in the name (e.g., 'login_view') are the function-
-# based views that are passed to URLs. Functions without 'view' in the name
-# are component functions used by the function-based views.
+# encounter them (e.g., generate a codename, then login with codename.)
+# ----------------------------------------------------------------------
+#
+# ------------------------IDENTIFIER AND LOGIN--------------------------
+# Initial views related to landing, user_identifier.
+# ----------------------------------------------------------------------
 
 class CreateIdentifierView(TemplateView):
     """Class-based view that randomly samples a word_list and passes the
@@ -138,6 +176,11 @@ def user_landing_view(request, user_identifier):
         # if user is found, pass 'user_found' to context dictionary
         if user_found == True:
             results['user_found'] = user_found
+            # Get linked issues linked to this user identifier and pass into 
+            # results dictionary.
+            working_user = get_user_as_object(user_identifier)
+            linked_issues = get_linked_issues(working_user)
+            results['linked_issues'] = linked_issues        
         # if found or not found, pass 'user_identifier' to context dictionary
         results['user_identifier'] = user_identifier
     return render(request, 'anonticket/user_landing.html', {'results': results})
@@ -145,6 +188,10 @@ def user_landing_view(request, user_identifier):
 class UserLoginErrorView(TemplateView):
     """A generic landing page if a username doesn't pass validation tests."""
     template_name = 'anonticket/user_login_error.html'
+
+# ----------------------------ISSUES------------------------------------
+# Views related to creating/looking up issues.
+# ----------------------------------------------------------------------
 
 def create_issue_view(request, user_identifier):
     """View that allows a user to create an issue. Pulls the user_identifier
@@ -175,16 +222,37 @@ def create_issue_view(request, user_identifier):
             return redirect('issue-created', user_identifier)
     else:
         form = CreateIssueForm
-    return render(request, 'anonticket/create_issue.html', {'form':form, 'results':results})
+    return render(request, 'anonticket/create_new_issue.html', {'form':form, 'results':results})
 
 class IssueSuccessView(TemplateView):
     """View that tells the user their issue was successfully created."""
-
-    template_name = 'anonticket/issue_created_success.html'
+    template_name = 'anonticket/create_issue_success.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+def issue_detail_view(request, user_identifier, project_id, issue_iid):
+    """A detailed view of a specific issue."""
+    results = {}
+    # validate_user_identifier, redirect if False:
+    validation = validate_user_identifier(user_string=user_identifier)
+    if validation == False:
+        return redirect('user-login-error', user_identifier)
+    # else, grab project, issue, and notes list and insert attributes
+    # dictionaries into results dictionary
+    else:
+        results['user_identifier']=user_identifier
+        working_project = gitlab_get_project(project=project_id)
+        results['project'] = working_project.attributes
+        working_issue = gitlab_get_issue(project=project_id, issue=issue_iid)
+        results['issue'] = working_issue.attributes
+        results['notes'] = []
+        notes_list = gitlab_get_notes_list(project=project_id, issue=issue_iid)
+        for note in notes_list:
+            note_dict = note.attributes
+            results['notes'].append(note_dict)
+    return render(request, 'anonticket/issue_detail.html', {'results': results})
 
 def search_by_id_view(request):
     """Currently admin-function to allow someone to lookup an issue and its notes

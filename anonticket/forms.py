@@ -21,6 +21,28 @@ found and fetched from gitlab. Project and issue details, including
 associated notes, are listed below."""
 issue_not_created_message = """Unable to create this issue."""
 
+class LoginForm(forms.Form):
+    """A form that allows users to enter in their keycodes to login."""
+    word_1 = forms.CharField(max_length=9)
+    word_2 = forms.CharField(max_length=9)
+    word_3 = forms.CharField(max_length=9)
+    word_4 = forms.CharField(max_length=9)
+    word_5 = forms.CharField(max_length=9)
+    word_6 = forms.CharField(max_length=9)
+
+    def join_words(self):
+        """Pull cleaned data from form and join into code_phrase"""
+        word_list = []
+        word_list.append(self.cleaned_data['word_1'])
+        word_list.append(self.cleaned_data['word_2'])
+        word_list.append(self.cleaned_data['word_3'])
+        word_list.append(self.cleaned_data['word_4'])
+        word_list.append(self.cleaned_data['word_5'])
+        word_list.append(self.cleaned_data['word_6'])
+        join_key = '-'
+        code_phrase = join_key.join(word_list)
+        return code_phrase
+
 class Anonymous_Ticket_Base_Search_Form(forms.Form):
     """Contains the methods common to all forms when searching for tickets 
     by project, id, etc."""
@@ -133,28 +155,6 @@ class Git_Create_Anonymous_Issue_Form(Anonymous_Ticket_Base_Search_Form):
                 result['status'] = 'Success'
                 result['message'] = 'Your issue has been created.'
         return result
-
-class LoginForm(forms.Form):
-    """A form that allows users to enter in their keycodes to login."""
-    word_1 = forms.CharField(max_length=9)
-    word_2 = forms.CharField(max_length=9)
-    word_3 = forms.CharField(max_length=9)
-    word_4 = forms.CharField(max_length=9)
-    word_5 = forms.CharField(max_length=9)
-    word_6 = forms.CharField(max_length=9)
-
-    def join_words(self):
-        """Pull cleaned data from form and join into code_phrase"""
-        word_list = []
-        word_list.append(self.cleaned_data['word_1'])
-        word_list.append(self.cleaned_data['word_2'])
-        word_list.append(self.cleaned_data['word_3'])
-        word_list.append(self.cleaned_data['word_4'])
-        word_list.append(self.cleaned_data['word_5'])
-        word_list.append(self.cleaned_data['word_6'])
-        join_key = '-'
-        code_phrase = join_key.join(word_list)
-        return code_phrase
 
 class CreateIssueForm(ModelForm):
     class Meta:
