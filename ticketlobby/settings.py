@@ -123,9 +123,10 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Gitlab Settings for python-gitlab/gitlab API
-# SECURITY WARNING: Gitlab credentials.
+# SECURITY WARNING: GitLab credentials.
 GITLAB_URL = config('GITLAB_URL', default='')
 GITLAB_SECRET_TOKEN = config('GITLAB_SECRET_TOKEN', default='')
+gl = gitlab.Gitlab(GITLAB_URL, private_token=GITLAB_SECRET_TOKEN)
 
 # Wordlist Settings for generating wordlist
 
