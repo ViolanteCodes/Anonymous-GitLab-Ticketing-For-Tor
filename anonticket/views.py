@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from django.conf import settings
 import gitlab
+from django.conf import settings
 from anonticket.models import Issue, UserIdentifier
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
@@ -8,10 +8,11 @@ from .forms import (
     CreateIssueForm)
 from django.views.generic.base import TemplateView
 
-# Methods that need to be accessed from within multiple views go here.
+# ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
+# Functions that need to be accessed from within multiple views go here,
+# with the exception of gitlab functions, which are below.
+# ----------------------------------------------------------------------
 
-# Set WORD_LIST_CONTENT as global variable with value of None.
-WORD_LIST_CONTENT = None
 def get_wordlist():
     """Returns the wordlist. If wordlist_as_list is not already in memory,
     fetches the wordlist from file and creates it."""
@@ -58,13 +59,32 @@ def get_linked_issues(UserIdentifier):
     linked_issues = Issue.objects.filter(linked_user=UserIdentifier)
     return linked_issues
 
-# Specific views:
+# ------------------SHARED FUNCTIONS, GITLAB---------------------------
+# Easy to parse version of GitLab-Python functions.
+# ----------------------------------------------------------------------
 
+def gitlab_get_project(project):
+    """Takes an integer, and grabs a gitlab project where project_id
+    matches the integer."""
+    working_project = gl.projects.get(project)
+    return working_project
+
+def gitlab_get_issue(project, issue):
+    """Takes two integers and grabs corresponding gitlab issue."""
+    working_project = gitlab_get_project(project)
+    working_issue = gl.working_project.get(issue)
+    return working_issue
+
+def gitlab_get_notes_list(project, issue):
+    """Grabs the notes list for a specific issue."""
+    working_issue = gitlab_get_issue(project, issue)
+    notes_list = working_issue.notes.list()
+    return notes_list
+
+# -----------------------------SPECIFIC VIEWS---------------------------
 # The functions below are listed in the order that a user is likely to 
-# encounter them (e.g., generate a new codename, then login with codename.)
-# Functions with "view" in the name (e.g., 'login_view') are the function-
-# based views that are passed to URLs. Functions without 'view' in the name
-# are component functions used by the function-based views.
+# encounter them (e.g., generate a codename, then login with codename.)
+# ----------------------------------------------------------------------
 
 class CreateIdentifierView(TemplateView):
     """Class-based view that randomly samples a word_list and passes the

@@ -130,5 +130,7 @@ gl = gitlab.Gitlab(GITLAB_URL, private_token=GITLAB_SECRET_TOKEN)
 
 # Wordlist Settings for generating wordlist
 
+# Set WORD_LIST_CONTENT as global variable with value of None.
+WORD_LIST_CONTENT = None
 WORD_LIST_PATH = os.path.join(BASE_DIR, 'shared/wordlist.txt')
 DICE_ROLLS = 6
