@@ -98,6 +98,16 @@ class TestViews(TestCase):
             self.assertIn(word, test_get_context['user_identifier_string'])
         self.assertNotIn('user_found', test_get_context.keys())
 
+class TestFilters(TestCase):
+    """Test custom filters."""
+    
+    def test_pretty_datetime(self):
+        """Test the pretty_datetime filter."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-10-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '10/19/2020 - 14:09 UTC')
+        print(pretty_iso_string)
 
 
     # def test_project_attributes(self):
