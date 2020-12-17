@@ -17,7 +17,10 @@ def pretty_date(iso_string):
     try:
         pretty_date = ''
         year = f"{iso_string[0]}{iso_string[1]}{iso_string[2]}{iso_string[3]}"
-        pretty_date = year
+        month = f"{iso_string[5]}{iso_string[6]}"
+        day = f"{iso_string[8]}{iso_string[9]}"
+        time = f"{iso_string[11]}{iso_string[12]}{iso_string[13]}{iso_string[14]}{iso_string[15]}"
+        pretty_date = f"{month}/{day}/{year} - {time} UTC"
         return pretty_date
     except:
         pass

@@ -18,7 +18,7 @@
         <ul>
           <li><span class="text-muted">Title:</span> {{results.issue.title|capfirst}}</li>
           <li><span class="text-muted">Description:</span> "{{results.issue.description}}"</li>
-          <li><span class="text-muted">Created At:</span> {{results.issue.created_at|pretty_date}}</li>
+          <li><span class="text-muted">Created:</span> {{results.issue.created_at|pretty_date}}</li>
           <li><span class="text-muted">State:</span> {{results.issue.state|title}}</li>
           {% if results.issue.milestone %}
           <li><span class="text-muted">Milestone:</span> {{results.issue.milestone.title}}</li>
