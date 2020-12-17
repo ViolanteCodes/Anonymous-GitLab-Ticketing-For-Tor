@@ -17,10 +17,36 @@ def pretty_datetime(iso_string):
     try:
         pretty_datetime = ''
         year = f"{iso_string[0]}{iso_string[1]}{iso_string[2]}{iso_string[3]}"
-        month = f"{iso_string[5]}{iso_string[6]}"
+        month_digits = f"{iso_string[5]}{iso_string[6]}"
+        if month_digits == '01':
+            month = 'January'
+        elif month_digits =='02':
+            month = 'February'
+        elif month_digits =='03':
+            month = 'February'
+        elif month_digits =='04':
+            month = 'February'
+        elif month_digits =='05':
+            month = 'February'
+        elif month_digits =='06':
+            month = 'February'
+        elif month_digits =='07':
+            month = 'February'
+        elif month_digits =='08':
+            month = 'February'
+        elif month_digits =='09':
+            month = 'February'
+        elif month_digits =='10':
+            month = 'February'
+        elif month_digits =='11':
+            month = 'February'
+        elif month_digits =='12':
+            month = 'February'
+        else:
+            month = 'undefined'
         day = f"{iso_string[8]}{iso_string[9]}"
         time = f"{iso_string[11]}{iso_string[12]}{iso_string[13]}{iso_string[14]}{iso_string[15]}"
-        pretty_datetime = f"{month}/{day}/{year} - {time} UTC"
+        pretty_datetime = f"{day} {month}, {year} - {time} UTC"
         return pretty_datetime
     except:
         pass
