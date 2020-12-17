@@ -182,4 +182,4 @@ the GitLab API.
 
 Some sample reference files to demonstrate dictionaries returned by 
 get queries, including pretty-printed issue and note dictionaries, 
-are available in anonticket/reference_files
+are available in shared/reference_files.
