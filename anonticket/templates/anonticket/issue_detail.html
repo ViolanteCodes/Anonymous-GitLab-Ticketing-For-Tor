@@ -3,21 +3,31 @@
 <!-- Load custom filters from shared app, including ISO 8901 Date-Time Converter -->
 {% load custom_filters %}
 {% block h3 %}
-  Anon Ticket
+  {% if results.issue %}
+  </h3>
+  <p class="text-muted">{{results.project.name_with_namespace}} ({{results.project.id}}) > issues > #{{results.issue.iid}}</p>
+  <div class="card mb-3">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><span class="badge badge-primary">{{results.issue.state|capfirst}}</span></li>
+    </ul>
+  </div>
+  <div>
+    <h4>Issue: "{{results.issue.title|capfirst}}"</h4>
+  </div>
+  {% else %}
+    Issue Not Found
+  {% endif %}
 {% endblock %}
 {% block subheader %} 
-  Detailed Issue View for Issue: "{{results.issue.title|capfirst}}"
+  <h5 class="text-muted">"{{results.issue.description|capfirst}}"</h5>
 {% endblock %}
 
 {% block content %}
 <!-- Issue Summary Block -->
 {% if results.issue %}
-  <div class="row">
-    <div class="col-12 p-2">
+<!-- div-row and div-col-12 carried over from base_template.html -->
         <h4 class="card-title">Issue Summary</h4>
         <ul>
-          <li><span class="text-muted">Title:</span> {{results.issue.title|capfirst}}</li>
-          <li><span class="text-muted">Description:</span><br>"{{results.issue.description}}"</li>
           <li><span class="text-muted">Created:</span> {{results.issue.created_at|pretty_datetime}}</li>
           <li><span class="text-muted">State:</span> {{results.issue.state|title}}</li>
           {% if results.issue.milestone %}
