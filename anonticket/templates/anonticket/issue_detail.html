@@ -4,37 +4,67 @@
   Anon Ticket
 {% endblock %}
 {% block subheader %} 
-  Issue Details for {{results.issue.title}}
+  Detailed Issue View for Issue: "{{results.issue.title|capfirst}}"
 {% endblock %}
 
 {% block content %}
+<!-- Issue Summary Block -->
+{% if results.issue %}
   <div class="row">
-    <div class="col-12">
-        <hr>
-        <h2>Detailed Results for {{results.issue.title}}</h2>
-        <h3>Project Details</h3>
-        {% if results.project_name %}
+    <div class="col-12 p-2">
+        <h4 class="card-title">Issue Summary</h4>
         <ul>
-          <li>Project Name: {{results.project_name}}</li>
-          <li>Project Description: {{results.project_description}}</li>
-        </ul>
-        {% endif %}
-        {% if results.title %}
-        <h3>Issue Details</h3>
-        <ul>
-          <li>Issue ID: {{results.id}}</li>
-          <li>Issue Title: {{results.title}}</li>
-          <li>Issue Description: {{results.description}}</li>
-        </ul>
-        <h3>Ticket Notes</h3>
-        <ul>
-          {% if results.note_text %}
-          {% for note_text in results.notes_text %}
-            <li>{{note_text}}</li>
-          {% endfor %}
+          <li><span class="text-muted">Title:</span> {{results.issue.title|capfirst}}</li>
+          <li><span class="text-muted">Description:</span> "{{results.issue.description}}"</li>
+          <li><span class="text-muted">Created At:</span> {{results.issue.created_at}}</li>
+          <li><span class="text-muted">State:</span> {{results.issue.state|title}}</li>
+          {% if results.issue.milestone %}
+          <li><span class="text-muted">Milestone:</span> {{results.issue.milestone.title}}</li>
           {% endif %}
+          {% if results.issue.assignee %}
+          <li><span class="text-muted">Assignee:</span> {{results.issue.assignee.username}}</li>
+          {% endif %}
+          <li><span class="text-muted">Due Date:</span> {{results.issue.due_date}}</li>
+          <li><span class="text-muted">Labels:</span>
+            {% for label in results.issue.labels %}
+              {{label}}.
+            {% endfor %}</li>
+          <li><span class="text-muted">Last Updated:</span> {{results.issue.updated_at}}</li>
         </ul>
-        {% endif %}
     </div>
   </div>
+{% endif %}
+<!-- Issue Project Summary Block -->
+{% if results.project %}
+  <div class="row">
+    <div class="col-12 p-2">
+      <h4 class="card-title">Associated Project</h4>
+      <ul>
+        <li><span class="text-muted">Project Name:</span> {{results.project.name_with_namespace}}</li>
+        <li><span class="text-muted">Project Description:</span> {{results.project.description}}</li>
+      </ul>
+    </div>
+  </div>
+{% endif %}
+{% if results.notes %}
+<div class="row">
+  <div class="col-12 p-2">
+    <h4 class="card-title">Project Notes</h4>
+  </div>
+</div>
+  <div class="p2 bg-light">
+    {% for note in results.notes %}
+    <div class="row">
+      <div class="col-12 p-2">
+        <div class="card mb-2">
+          <div class="card-body">
+            <p class="card-text">{{note.noteable_type|title}} note by @{{note.author.username}}, Created: {{note.created_at}}, Last Updated: {{note.updated_at}}</p>
+            <p class="card-text">{{note.body}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% endif %}
 {% endblock %}
