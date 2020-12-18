@@ -152,9 +152,8 @@ contain arguments like <str:identifier> pass that argument as an arg/kwarg to be
 associated view. 
 
 User Identifier code-phrases are not saved to the database until they have been used
-to perform an action, such as create a ticket. As such, there are functions in the views
-themselves to validate that a code-phrase is valid, which take arguments from the URL as
-noted above.
+to perform an action, such as create a ticket. As such, there are validation functions
+in the views which take arguments from the URL as noted above.
 
 ### Tests
 
@@ -175,9 +174,11 @@ you can add -v# as an argument:
 
 $ python manage.py test -v2
 
-## GitLab-Python
+## Packages
 
-The anonticket app uses the GitLab Python package to communicate with 
+### Python-Gitlab
+
+The anonticket app uses the Python-Gitlab package to communicate with 
 the GitLab API.
 
 Some sample reference files to demonstrate dictionaries returned by 
