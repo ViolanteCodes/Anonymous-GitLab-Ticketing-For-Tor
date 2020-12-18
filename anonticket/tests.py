@@ -13,8 +13,6 @@ from test_plus.test import TestCase, CBVTestCase
 # URL Tests using Django SimpleTestCase (no need for database.)
 # ----------------------------------------------------------------------
 
-# Note to self - 7 more to go!!!
-
 class TestUrls(SimpleTestCase):
     """Test that the URLS in the anonticket resolve."""
 
@@ -27,6 +25,43 @@ class TestUrls(SimpleTestCase):
         """Test the 'search-by-id' URL."""
         url = reverse('search-by-id')
         self.assertEqual(resolve(url).func, search_by_id_view)
+    
+    def test_create_identifier_url_is_resolved(self):
+        """Test the 'create-identifier' URL."""
+        url = reverse('create-identifier')
+        self.assertEqual(resolve(url).func.view_class, CreateIdentifierView)
+
+    def test_login_url_is_resolved(self):
+        """Test the 'login' URL."""
+        url = reverse('login')
+        self.assertEqual(resolve(url).func, login_view)
+
+    def test_user_login_error_url_is_resolved(self):
+        """Test the 'user-login-error URL."""
+        url = reverse('user-login-error', args=["bad-identifier"])
+        self.assertEqual(resolve(url).func.view_class, UserLoginErrorView)
+
+    def test_issue_created_url_is_resolved(self):
+        """Test the 'issue-created' URL."""
+        url = reverse('issue-created', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.assertEqual(resolve(url).func.view_class, IssueSuccessView)
+
+    def test_create_issue_url_is_resolved(self):
+        """Test the 'create-issue' URL."""
+        url = reverse('create-issue', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.assertEqual(resolve(url).func, create_issue_view)
+
+    def test_issue_detail_view_is_resolved(self):
+        """Test the 'issue-detail-view' URL."""
+        url = reverse('issue-detail-view', args=[
+            'duo-atlas-hypnotism-curry-creatable-rubble',
+            740, 1])
+        self.assertEqual(resolve(url).func, issue_detail_view)
+
+    def test_user_landing_url_is_resolved(self):
+        """Test the 'user-landing' URL."""
+        url = reverse('user-landing', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.assertEqual(resolve(url).func, user_landing_view)
 
 class TestViews(TestCase):
     """Test the functions in views.py"""
