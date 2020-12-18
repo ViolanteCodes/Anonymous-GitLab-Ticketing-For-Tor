@@ -3,7 +3,7 @@ from anonticket.models import UserIdentifier, Project, Issue
 from django.views.generic import TemplateView, DetailView
 from anonticket.views import *
 from django.urls import reverse, resolve
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, Client
 from test_plus.test import TestCase, CBVTestCase
 
 
@@ -76,6 +76,10 @@ class TestViews(TestCase):
 
     def setUp(self):
         """Set up a project, user identifier, and issue in the test database."""
+
+        self.client = Client()
+        self.create_identifier_url = reverse('create-identifier')
+
         Project.objects.create(
             project_name="anon-ticket", 
             project_description="Anonymous ticket handling front-end for Gitlab.",
@@ -93,6 +97,12 @@ class TestViews(TestCase):
         UserIdentifier.objects.create(
             user_identifier = 'antonym-roundup-ravishing-leggings-chooser-oversight'
         )
+
+    def test_create_identifier_view_GET(self):
+        """Test the response for create_identifier_view"""
+        response = self.client.get(self.create_identifier_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/create_identifier.html')
 
     def test_get_wordlist(self):
         """Test get_wordlist function."""
