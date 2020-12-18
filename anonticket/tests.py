@@ -1,7 +1,7 @@
 from django.conf import settings
 from anonticket.models import UserIdentifier, Project, Issue
+from django.views.generic import TemplateView, DetailView
 from anonticket.views import *
-from django.views.generic.base import TemplateView
 from django.urls import reverse, resolve
 from django.test import SimpleTestCase
 from test_plus.test import TestCase, CBVTestCase
@@ -58,6 +58,14 @@ class TestUrls(SimpleTestCase):
             740, 1])
         self.assertEqual(resolve(url).func, issue_detail_view)
 
+    def test_pending_issue_detail_view_is_resolved(self):
+        """Test the 'pending-issue-detail-view' URL."""
+        url = reverse('pending-issue-detail-view', args = [
+            'duo-atlas-hypnotism-curry-creatable-rubble',
+            747, 
+            13])
+        self.assertEqual(resolve(url).func.view_class, PendingIssueDetailView)
+        
     def test_user_landing_url_is_resolved(self):
         """Test the 'user-landing' URL."""
         url = reverse('user-landing', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
