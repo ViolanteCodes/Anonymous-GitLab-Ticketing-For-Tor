@@ -252,6 +252,7 @@ def issue_detail_view(request, user_identifier, project_id, issue_iid):
         for note in notes_list:
             note_dict = note.attributes
             results['notes'].append(note_dict)
+        results['notes'].reverse()
     return render(request, 'anonticket/issue_detail.html', {'results': results})
 
 def search_by_id_view(request):

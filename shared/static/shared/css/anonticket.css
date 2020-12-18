@@ -35,3 +35,7 @@ ul.flex-form {
 button.new-line{
     flex-basis: 1;
 }
+
+p.short-height {
+    line-height: 1.3rem;
+}

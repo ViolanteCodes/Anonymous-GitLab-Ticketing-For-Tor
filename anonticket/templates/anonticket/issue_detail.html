@@ -3,51 +3,52 @@
 <!-- Load custom filters from shared app, including ISO 8901 Date-Time Converter -->
 {% load custom_filters %}
 {% block h3 %}
-  Anon Ticket
+  {% if results.issue %}
+  </h3>
+  <div class="row justify-content-between">
+      <p class="col-auto mb-0 small pb-0 pt-0">{{results.project.name_with_namespace}} ({{results.project.id}}) > issues > #{{results.issue.iid}}</p>
+      <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right">Created {{results.issue.created_at|pretty_datetime}} by @{{results.issue.author.username}}</p>
+  </div>
+  <hr class="mb-0 mt-0">
+  <div class="row justify-content-between">
+    <div class="col-auto"><p class="mb-0 small pb-0 pt-0">Milestone: {{results.issue.milestone.title}}.</p></div>
+    <div class="col-auto">
+      <p class="text-muted small mb-0 pb-0 pt-0 text-right">    
+        {% for label in results.issue.labels %}
+        <span class="badge-pill badge-primary ml-1">{{label}}</mark></span>
+        {% endfor %}</p>
+    </div>
+  </div>
+  <div class="row  mt-5">
+    <div class="col-12">
+      <h4><span class="badge badge-primary mr-2">{{results.issue.state|capfirst|slice:"-2"}}</span>Issue: "{{results.issue.title|capfirst}}"</h4>
+    </div>
+  <div class="col-12 small mt-0 mb-3 text-right">
+
+  </div>
+</div>
+  {% else %}
+    Issue Not Found
+  {% endif %}
 {% endblock %}
 {% block subheader %} 
-  Detailed Issue View for Issue: "{{results.issue.title|capfirst}}"
+  <p class="small short-height">{{results.issue.description|capfirst}}</p>
 {% endblock %}
 
 {% block content %}
 <!-- Issue Summary Block -->
 {% if results.issue %}
-  <div class="row">
-    <div class="col-12 p-2">
+<!-- div-row and div-col-12 carried over from base_template.html -->
         <h4 class="card-title">Issue Summary</h4>
         <ul>
-          <li><span class="text-muted">Title:</span> {{results.issue.title|capfirst}}</li>
-          <li><span class="text-muted">Description:</span><br>"{{results.issue.description}}"</li>
-          <li><span class="text-muted">Created:</span> {{results.issue.created_at|pretty_datetime}}</li>
-          <li><span class="text-muted">State:</span> {{results.issue.state|title}}</li>
-          {% if results.issue.milestone %}
-          <li><span class="text-muted">Milestone:</span> {{results.issue.milestone.title}}</li>
-          {% endif %}
-          {% if results.issue.assignee %}
-          <li><span class="text-muted">Assignee:</span> {{results.issue.assignee.username}}</li>
-          {% endif %}
-          <li><span class="text-muted">Due Date:</span> {{results.issue.due_date|pretty_datetime}}</li>
-          <li><span class="text-muted">Labels:</span>
-            {% for label in results.issue.labels %}
-            <span class="badge-pill badge-primary mr-2">{{label}}</mark></span>
-            {% endfor %}</li>
-          <li><span class="text-muted">Last Updated:</span> {{results.issue.updated_at|pretty_datetime}}</li>
+          <li><span class="text-muted">Currently Assigned To:</span> @{{results.issue.assignee.username}}.
+          <span class="text-muted ml-1">Due Date:</span> {{results.issue.due_date|pretty_datetime}}.
+          <span class="text-muted ml-1">Last Updated:</span> {{results.issue.updated_at|pretty_datetime}}</li>
         </ul>
     </div>
   </div>
 {% endif %}
-<!-- Issue Project Summary Block -->
-{% if results.project %}
-  <div class="row">
-    <div class="col-12 p-2">
-      <h4 class="card-title">Associated Project</h4>
-      <ul>
-        <li><span class="text-muted">Project Name:</span> {{results.project.name_with_namespace}}</li>
-        <li><span class="text-muted">Project Description:</span> {{results.project.description}}</li>
-      </ul>
-    </div>
-  </div>
-{% endif %}
+<!-- Notes Block -->
 {% if results.notes %}
 <div class="row">
   <div class="col-12 p-2">
