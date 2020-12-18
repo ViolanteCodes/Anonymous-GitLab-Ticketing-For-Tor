@@ -51,7 +51,8 @@ you are designing a Django project with a LOT of apps.)
 ### Notes on Packages:
 
 The packages in the requirements.txt file are necessary for the ticketlobby
-to function (see below for installation instructions.)
+to function (see below for installation instructions, or 'packages' below
+for more information on specific packages.)
 
 Environment variables are tracked using the python-decouple package, which
 increases security by moving important keys, tokens, etc. to the .env
