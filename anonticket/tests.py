@@ -1,9 +1,30 @@
-from test_plus.test import TestCase
-from anonticket.models import UserIdentifier, Project, Issue
-from anonticket.views import *   
 from django.conf import settings
+from anonticket.models import UserIdentifier, Project, Issue
+from anonticket.views import *
+from django.views.generic.base import TemplateView
+from django.urls import reverse, resolve
+from django.test import SimpleTestCase
+from test_plus.test import TestCase, CBVTestCase
+
 
 # Create your tests here.
+
+# ---------------------------URL TESTS----------------------------------
+# URL Tests using Django SimpleTestCase (no need for database.)
+# ----------------------------------------------------------------------
+
+class TestUrls(SimpleTestCase):
+    """Test that the URLS in the anonticket resolve."""
+
+    def test_home_url_is_resolved(self):
+        """Test the 'home' URL."""
+        url = reverse('home')
+        self.assertEqual(resolve(url).func.view_class, TemplateView)
+
+    def search_by_id_url_is_resolved(self):
+        """Test the 'search-by-id' URL."""
+        url = reverse('search-by-id')
+        self.assertEqual(resolve(url).func, search_by_id_view)
 
 class TestViews(TestCase):
     """Test the functions in views.py"""
