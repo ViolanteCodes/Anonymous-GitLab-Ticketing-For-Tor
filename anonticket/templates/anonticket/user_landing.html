@@ -23,7 +23,8 @@
     This User Identifier has been found.
   </p>
   <p>
-    You have created the following issues:
+    You have created the following issues:</p>
+  <p class="small">(Issues marked with *** have not been approved by moderators and therefore have not been posted to GitLab.)</p>
     {% if results.linked_issues %}
     <!-- if there are issues the user has created -->
     <ul>
@@ -34,7 +35,8 @@
           <li><a href="{{issue_url}}">{{issue.issue_title}}</a></li>
         <!-- else (e.g., if issue is not approved), list the issue -->
         {% else %}
-          <li>{{issue.issue_title}}: This issue is still pending approval.</li>
+          {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.project_id issue.pk as issue_url %}
+          <li><a href="{{issue_url}}" class="mr-1">{{issue.issue_title|capfirst}}</a> *** </li>
         {% endif %}
       {% endfor %}
     </ul>

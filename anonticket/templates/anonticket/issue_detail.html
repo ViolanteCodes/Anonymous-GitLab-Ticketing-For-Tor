@@ -51,6 +51,13 @@
     </div>
   </div>
 {% endif %}
+<!-- Generate a Back to Landing URL Link -->
+{% url 'user-landing' results.user_identifier as go_back_url %}
+<div>
+  <p>
+    <a href="{{go_back_url}}">Go Back to User Landing Page</a>
+  </p>
+</div>
 <!-- Notes Block -->
 {% if results.notes %}
 <div class="row">

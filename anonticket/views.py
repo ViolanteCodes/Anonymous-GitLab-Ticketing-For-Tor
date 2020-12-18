@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect
 import gitlab
 from django.conf import settings
-from anonticket.models import Issue, UserIdentifier
+from anonticket.models import Issue, Project, UserIdentifier
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     LoginForm,
     CreateIssueForm)
-from django.views.generic.base import TemplateView
+from django.views.generic import TemplateView, DetailView
 
 # ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
 # Functions that need to be accessed from within multiple views go here,
@@ -231,6 +231,10 @@ class IssueSuccessView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+class PendingIssueDetailView(DetailView):
+    model = Issue
+    template_name = 'anonticket/issue_pending.html'
 
 def issue_detail_view(request, user_identifier, project_id, issue_iid):
     """A detailed view of a specific issue."""
