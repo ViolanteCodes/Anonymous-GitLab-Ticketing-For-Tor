@@ -184,3 +184,12 @@ the GitLab API.
 Some sample reference files to demonstrate dictionaries returned by 
 get queries, including pretty-printed issue and note dictionaries, 
 are available in shared/reference_files.
+
+### Django-Markdownify
+
+Python-Django package that allows you to use a 'markdownify' filter 
+to render markdown as html, including safe functions. Automatically
+installs Markdown and Bleach dependencies. Added as an app in 
+settings.py.
+
+Documentation here: https://django-markdownify.readthedocs.io/en/latest/index.html
