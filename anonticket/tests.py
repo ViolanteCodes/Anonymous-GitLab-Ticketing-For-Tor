@@ -106,9 +106,7 @@ class TestFilters(TestCase):
         from shared.templatetags.custom_filters import pretty_datetime
         iso_test_string = "2020-10-19T14:09:46.500Z"
         pretty_iso_string = pretty_datetime(iso_test_string)
-        self.assertEqual(pretty_iso_string, '10/19/2020 - 14:09 UTC')
-        print(pretty_iso_string)
-
+        self.assertEqual(pretty_iso_string, '19 February, 2020 - 14:09 UTC')
 
     # def test_project_attributes(self):
     #     """Test that the attributes in test_project validate correctly."""
