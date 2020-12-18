@@ -51,7 +51,8 @@ you are designing a Django project with a LOT of apps.)
 ### Notes on Packages:
 
 The packages in the requirements.txt file are necessary for the ticketlobby
-to function (see below for installation instructions.)
+to function (see below for installation instructions, or 'packages' below
+for more information on specific packages.)
 
 Environment variables are tracked using the python-decouple package, which
 increases security by moving important keys, tokens, etc. to the .env
@@ -184,3 +185,18 @@ the GitLab API.
 Some sample reference files to demonstrate dictionaries returned by 
 get queries, including pretty-printed issue and note dictionaries, 
 are available in shared/reference_files.
+
+### Django-Markdownify
+
+Python-Django package that allows you to use a 'markdownify' filter 
+to render markdown as html, including safe functions. Automatically
+installs Markdown and Bleach dependencies. 
+
+To run, markdownify is added as an app in ticketlobby/settings.py 
+(and can be disabled by removing that line.)
+
+To load into a template, use the {% loadmarkdownify %} template tag.
+Add '|markdownify|' as a filter where you want markdown rendered as 
+html.
+
+Documentation here: https://django-markdownify.readthedocs.io/en/latest/index.html
