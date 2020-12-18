@@ -2,6 +2,9 @@
 {% load static %}
 <!-- Load custom filters from shared app, including ISO 8901 Date-Time Converter -->
 {% load custom_filters %}
+<!-- Load markdownify -->
+{% load markdownify %}
+<!-- Start Page Render -->
 {% block h3 %}
   {% if results.issue %}
   </h3>
@@ -32,7 +35,7 @@
   {% endif %}
 {% endblock %}
 {% block subheader %} 
-  <p class="small short-height">{{results.issue.description|capfirst}}</p>
+  <p class="small short-height">{{results.issue.description|capfirst|markdownify}}</p>
 {% endblock %}
 
 {% block content %}
@@ -65,7 +68,7 @@
               note by @{{note.author.username}}, 
               Created: {{note.created_at|pretty_datetime}}, 
               Last Updated: {{note.updated_at|pretty_datetime}}</p>
-            <p class="card-text">{{note.body}}</p>
+            <p class="card-text">{{note.body|markdownify}}</p>
           </div>
         </div>
       </div>
