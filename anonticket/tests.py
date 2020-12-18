@@ -1,9 +1,67 @@
-from test_plus.test import TestCase
-from anonticket.models import UserIdentifier, Project, Issue
-from anonticket.views import *   
 from django.conf import settings
+from anonticket.models import UserIdentifier, Project, Issue
+from anonticket.views import *
+from django.views.generic.base import TemplateView
+from django.urls import reverse, resolve
+from django.test import SimpleTestCase
+from test_plus.test import TestCase, CBVTestCase
+
 
 # Create your tests here.
+
+# ---------------------------URL TESTS----------------------------------
+# URL Tests using Django SimpleTestCase (no need for database.)
+# ----------------------------------------------------------------------
+
+class TestUrls(SimpleTestCase):
+    """Test that the URLS in the anonticket resolve."""
+
+    def test_home_url_is_resolved(self):
+        """Test the 'home' URL."""
+        url = reverse('home')
+        self.assertEqual(resolve(url).func.view_class, TemplateView)
+
+    def test_search_by_id_url_is_resolved(self):
+        """Test the 'search-by-id' URL."""
+        url = reverse('search-by-id')
+        self.assertEqual(resolve(url).func, search_by_id_view)
+    
+    def test_create_identifier_url_is_resolved(self):
+        """Test the 'create-identifier' URL."""
+        url = reverse('create-identifier')
+        self.assertEqual(resolve(url).func.view_class, CreateIdentifierView)
+
+    def test_login_url_is_resolved(self):
+        """Test the 'login' URL."""
+        url = reverse('login')
+        self.assertEqual(resolve(url).func, login_view)
+
+    def test_user_login_error_url_is_resolved(self):
+        """Test the 'user-login-error URL."""
+        url = reverse('user-login-error', args=["bad-identifier"])
+        self.assertEqual(resolve(url).func.view_class, UserLoginErrorView)
+
+    def test_issue_created_url_is_resolved(self):
+        """Test the 'issue-created' URL."""
+        url = reverse('issue-created', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.assertEqual(resolve(url).func.view_class, IssueSuccessView)
+
+    def test_create_issue_url_is_resolved(self):
+        """Test the 'create-issue' URL."""
+        url = reverse('create-issue', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.assertEqual(resolve(url).func, create_issue_view)
+
+    def test_issue_detail_view_is_resolved(self):
+        """Test the 'issue-detail-view' URL."""
+        url = reverse('issue-detail-view', args=[
+            'duo-atlas-hypnotism-curry-creatable-rubble',
+            740, 1])
+        self.assertEqual(resolve(url).func, issue_detail_view)
+
+    def test_user_landing_url_is_resolved(self):
+        """Test the 'user-landing' URL."""
+        url = reverse('user-landing', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.assertEqual(resolve(url).func, user_landing_view)
 
 class TestViews(TestCase):
     """Test the functions in views.py"""
@@ -106,9 +164,7 @@ class TestFilters(TestCase):
         from shared.templatetags.custom_filters import pretty_datetime
         iso_test_string = "2020-10-19T14:09:46.500Z"
         pretty_iso_string = pretty_datetime(iso_test_string)
-        self.assertEqual(pretty_iso_string, '10/19/2020 - 14:09 UTC')
-        print(pretty_iso_string)
-
+        self.assertEqual(pretty_iso_string, '19 February, 2020 - 14:09 UTC')
 
     # def test_project_attributes(self):
     #     """Test that the attributes in test_project validate correctly."""
