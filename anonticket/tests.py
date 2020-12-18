@@ -13,6 +13,8 @@ from test_plus.test import TestCase, CBVTestCase
 # URL Tests using Django SimpleTestCase (no need for database.)
 # ----------------------------------------------------------------------
 
+# Note to self - 7 more to go!!!
+
 class TestUrls(SimpleTestCase):
     """Test that the URLS in the anonticket resolve."""
 
@@ -21,7 +23,7 @@ class TestUrls(SimpleTestCase):
         url = reverse('home')
         self.assertEqual(resolve(url).func.view_class, TemplateView)
 
-    def search_by_id_url_is_resolved(self):
+    def test_search_by_id_url_is_resolved(self):
         """Test the 'search-by-id' URL."""
         url = reverse('search-by-id')
         self.assertEqual(resolve(url).func, search_by_id_view)
