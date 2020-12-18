@@ -190,7 +190,13 @@ are available in shared/reference_files.
 
 Python-Django package that allows you to use a 'markdownify' filter 
 to render markdown as html, including safe functions. Automatically
-installs Markdown and Bleach dependencies. Added as an app in 
-settings.py.
+installs Markdown and Bleach dependencies. 
+
+To run, markdownify is added as an app in ticketlobby/settings.py 
+(and can be disabled by removing that line.)
+
+To load into a template, use the {% loadmarkdownify %} template tag.
+Add '|markdownify|' as a filter where you want markdown rendered as 
+html.
 
 Documentation here: https://django-markdownify.readthedocs.io/en/latest/index.html
