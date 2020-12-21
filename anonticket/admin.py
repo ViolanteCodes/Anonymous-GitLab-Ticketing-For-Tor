@@ -9,3 +9,4 @@ admin.site.register(UserIdentifier)
 @admin.register(Issue)
 class IssueModelAdmin(admin.ModelAdmin):
     list_display = ('issue_title', 'linked_project','reviewer_status')
+    list_filter = ('reviewer_status', )
