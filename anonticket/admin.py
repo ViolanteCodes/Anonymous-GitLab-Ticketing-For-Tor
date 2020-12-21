@@ -4,5 +4,18 @@ from django.contrib import admin
 
 from .models import Project, Issue, UserIdentifier
 admin.site.register(Project)
-admin.site.register(Issue)
 admin.site.register(UserIdentifier)
+
+def bulk_approve_issues(modeladmin, request, queryset):
+    """Add a bulk approval method for issues to admin panel."""
+    for issue in queryset:
+        issue.reviewer_status = 'A'
+        issue.save()
+
+bulk_approve_issues.short_description = "Approve selected issues and post to GitLab."
+
+@admin.register(Issue)
+class IssueModelAdmin(admin.ModelAdmin):
+    list_display = ('issue_title', 'linked_project','reviewer_status')
+    list_filter = ('reviewer_status', )
+    actions = [bulk_approve_issues]
