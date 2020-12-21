@@ -160,8 +160,7 @@ in the views which take arguments from the URL as noted above.
 
 Tests currently live in the tests.py files that are automatically set up
 when the apps are created (e.g., the anonticket folder has a tests.py file
-specifically for functions in the anonticket app. In the future, tests
-will likely be moved to a Django testing package, such as django-test-plus.
+specifically for functions in the anonticket app.) In addition, 
 
 Testing sets up a test_database and should not interact with the project's
 actual database.
