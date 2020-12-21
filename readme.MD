@@ -160,19 +160,44 @@ in the views which take arguments from the URL as noted above.
 
 Tests currently live in the tests.py files that are automatically set up
 when the apps are created (e.g., the anonticket folder has a tests.py file
-specifically for functions in the anonticket app.) In addition, 
+specifically for functions in the anonticket app.)
+
+Coverage is verified through a variety of tools, including coverage.py
+[https://coverage.readthedocs.io/en/latest/]. Coverage includes a C 
+extension for speed (that is also required to execute some functions.) 
+Once requirements have all installed from requirements.txt, you can 
+verify the C extension is installed correctly with 
+
+$ coverage --version
+
+which should return "with C extension" or "without C extension".
+[https://coverage.readthedocs.io/en/latest/install.html]
 
 Testing sets up a test_database and should not interact with the project's
 actual database.
 
-For now, you can run the tests from the command line, with:
+1. To run tests from the command line without coverage:
 
 $ python manage.py test
 
-If you would like a more verbose output from testing (e.g, with test_names),
-you can add -v# as an argument:
+2. If you would like a more verbose output from testing (e.g, with test_names),
+you can add -v1, -v2, or -v3 as an argument:
 
 $ python manage.py test -v2
+
+3. To run tests with coverage (using Python-Coverage package):
+
+$ coverage erase
+$ coverage run manage.py test
+$ coverage report
+
+4. After running coverage run, the coverage data is stored in the .coverage file. 
+Run this command to generate an HTML report from this file:
+
+$ coverage html
+This creates a folder called htmlcov. Open up htmlcov/index.html and you'll
+see an easier to parse version of the report.
+---
 
 ## Packages
 

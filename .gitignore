@@ -27,6 +27,13 @@ $RECYCLE.BIN/
 .history/
 *.code-workspace
 
+# Python-Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
 # Personal Ignore
 
 
