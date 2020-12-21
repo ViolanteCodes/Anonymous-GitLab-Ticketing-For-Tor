@@ -17,6 +17,6 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('super_admin/', admin.site.urls),
+    path('tor_admin/', admin.site.urls),
     path('', include('anonticket.urls'))
 ]
