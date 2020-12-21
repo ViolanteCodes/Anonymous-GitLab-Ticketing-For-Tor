@@ -20,12 +20,7 @@ class TestUrls(SimpleTestCase):
         """Test the 'home' URL."""
         url = reverse('home')
         self.assertEqual(resolve(url).func.view_class, TemplateView)
-
-    def test_search_by_id_url_is_resolved(self):
-        """Test the 'search-by-id' URL."""
-        url = reverse('search-by-id')
-        self.assertEqual(resolve(url).func, search_by_id_view)
-    
+  
     def test_create_identifier_url_is_resolved(self):
         """Test the 'create-identifier' URL."""
         url = reverse('create-identifier')
@@ -71,6 +66,10 @@ class TestUrls(SimpleTestCase):
         url = reverse('user-landing', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
         self.assertEqual(resolve(url).func, user_landing_view)
 
+# --------------------------VIEW TESTS----------------------------------
+# Tests for views: status = 200, template correct.
+# ----------------------------------------------------------------------
+
 class TestViews(TestCase):
     """Test the functions in views.py"""
 
@@ -78,7 +77,15 @@ class TestViews(TestCase):
         """Set up a project, user identifier, and issue in the test database."""
 
         self.client = Client()
+        self.home_url = reverse('home')
         self.create_identifier_url = reverse('create-identifier')
+        self.login_url = reverse('login')
+        self.user_landing_url = reverse('user-landing', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.user_login_error_url = reverse('user-login-error', args=["bad-identifier"])
+        self.create_issue_url = reverse('create-issue', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.issue_success_url =  reverse('issue-created', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.pending_issue_url =  reverse('pending-issue-detail-view', args = ['duo-atlas-hypnotism-curry-creatable-rubble', 740, 1])
+        self.issue_detail_url = reverse('issue-detail-view', args=[ 'duo-atlas-hypnotism-curry-creatable-rubble', 740, 2])
 
         Project.objects.create(
             project_name="anon-ticket", 
@@ -98,11 +105,81 @@ class TestViews(TestCase):
             user_identifier = 'antonym-roundup-ravishing-leggings-chooser-oversight'
         )
 
+        UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+
+        Issue.objects.create (
+            issue_title = 'A pending issue',
+            issue_description = 'A pending issue description',
+            linked_project = Project.objects.get(project_name='anon-ticket'),
+            linked_user = UserIdentifier.objects.get(user_identifier='duo-atlas-hypnotism-curry-creatable-rubble'),
+            id = 1
+        )
+
+        Issue.objects.create (
+            issue_title = 'A posted issue',
+            issue_description = 'A posted issue description',
+            linked_project = Project.objects.get(project_name='anon-ticket'),
+            linked_user = UserIdentifier.objects.get(user_identifier='duo-atlas-hypnotism-curry-creatable-rubble'),
+            issue_iid = 1,
+            reviewer_status = 'A',
+            posted_to_GitLab = True
+        )
+    
+    def test_home_view_GET(self):
+        """Test the response for home_view"""
+        response = self.client.get(self.home_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/index.html')
+
     def test_create_identifier_view_GET(self):
         """Test the response for create_identifier_view"""
         response = self.client.get(self.create_identifier_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/create_identifier.html')
+    
+    def test_login_view_GET(self):
+        """Test the response for login_view"""
+        response = self.client.get(self.login_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/user_login.html')
+
+    def test_user_landing_view_GET(self):
+        """Test the response for user_landing_view"""
+        response = self.client.get(self.user_landing_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/user_landing.html')
+
+    def test_user_login_error_view_GET(self):
+        """Test the response for user_login_error view"""
+        response = self.client.get(self.user_login_error_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/user_login_error.html')
+
+    def test_create_issue_GET(self):
+        """Test the response for create_issue view"""
+        response = self.client.get(self.create_issue_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/create_new_issue.html')
+
+    def test_issue_success_view_GET(self):
+        """Test the response for IssueSuccessView"""
+        response = self.client.get(self.issue_success_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/create_issue_success.html')
+    
+    def test_pending_issue_detail_view_GET(self):
+        """Test the response for PendingIssueDetailView"""
+        response = self.client.get(self.pending_issue_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/issue_pending.html')
+
+    def test_issue_detail_view_GET(self):
+        """Test the response for issue_detail_view"""
+        response = self.client.get(self.issue_detail_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/issue_detail.html')
 
     def test_get_wordlist(self):
         """Test get_wordlist function."""
@@ -183,55 +260,3 @@ class TestFilters(TestCase):
         iso_test_string = "2020-10-19T14:09:46.500Z"
         pretty_iso_string = pretty_datetime(iso_test_string)
         self.assertEqual(pretty_iso_string, '19 February, 2020 - 14:09 UTC')
-
-    # def test_project_attributes(self):
-    #     """Test that the attributes in test_project validate correctly."""
-    #     test_project = Project.objects.get(pk=1)
-    #     self.assertEqual(test_project.project_name, "anon-ticket")
-    #     self.assertEqual(test_project.project_description, "Anonymous ticket handling front-end for Gitlab.")
-    #     self.assertEqual(test_project.project_slug, "anon-ticket")
-    #     self.assertEqual(test_project.project_id, 740)
-
-    # def test_project_search_known_bad(self):
-    #     """Test project_search method with known bad choose_project (GitLab 
-    #     integration error test.)"""
-    #     TestFormProjectBad = Anonymous_Ticket_Project_Search_Form
-    #     self.cleaned_data = {}
-    #     self.cleaned_data['choose_project'] = "a-bad-project"
-    #     test_result = TestFormProjectBad.project_search(self)
-    #     self.assertEqual(test_result, {
-    #         'project_status': 'failed', 
-    #         'project_message': 'This project could not be fetched from gitlab.\n'
-    #          "It likely does not exist, or you don't have access to it."
-    #         })
-    
-    # def test_project_search_known_good(self):
-    #     """Test project_search method with known good choose_project (GitLab 
-    #     integration test.)"""
-    #     TestFormProjectGood = Anonymous_Ticket_Project_Search_Form
-    #     self.cleaned_data = {}
-    #     self.cleaned_data['choose_project'] = "anon-ticket"
-    #     test_result = TestFormProjectGood.project_search(self)
-    #     self.assertEqual(test_result, {
-    #         'project_status': 'Project found, pending issue.', 
-    #         'project_name': 'anon-ticket', 
-    #         'project_description': 'Anonymous ticket handling front-end for Gitlab.'
-    #         })
-    
-    # def test_issue_search_known_good(self):
-    #     """Test issue_search with known good choose_project and issue_iid (GitLab 
-    #     integration test.)"""
-    #     TestFormIssueGood = Anonymous_Ticket_Project_Search_Form
-    #     self.cleaned_data = {}
-    #     self.cleaned_data['choose_project'] = "anon-ticket"
-    #     self.cleaned_data['issue_iid'] = "1"
-    #     project_id = 740
-    #     issue_iid = 1
-    #     project_result = {
-    #         'project_status':'Project found, pending issue.', 
-    #         'project_name': 'anon-ticket', 
-    #         'project_description': 'Anonymous ticket handling front-end for Gitlab.',
-    #         }
-    #     self.linked_project = gl.projects.get(project_id)
-    #     issue_test = TestFormIssueGood.issue_search(self, project_result=project_result)
-
