@@ -19,11 +19,11 @@
   </div>
   <!-- Check if user_found in results dictionary. If so, list actions already taken. -->
   {% if results.user_found %}
-  <p>
-    This User Identifier has been found.
+  <p class="small ml-5 mb-5">
+    (This User Identifier has been found. Feel free to bookmark this page to return to it at a later date.)
   </p>
-  <p>
-    You have created the following issues:</p>
+  <h4>
+    You have created the following issues:</h4>
   <p class="small">(Issues marked with *** have not been approved by moderators and therefore have not been posted to GitLab.)</p>
     {% if results.linked_issues %}
     <!-- if there are issues the user has created -->
@@ -45,8 +45,9 @@
     {% endif %}
   </p>
   {% else %}
-  <p>
-    No actions taken yet with this user identifier.
+  <p class="small ml-5">
+    (No actions taken yet with this user identifier. Feel free to bookmark this
+    page to return to it at a later date.)
   </p>
   {% endif %}
 
@@ -54,7 +55,7 @@
 <!-- Content block  -->
 {% block content %}
 <!-- List actions that can be taken. -->
-  <h4>You can take the following actions:</h4>
+  <h4 class="mt-4">You can take the following actions:</h4>
   <!-- Generate the create_issue_url on the fly within the template. -->
     <p>
       {% url 'create-issue' results.user_identifier as create_url %}
