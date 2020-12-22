@@ -146,10 +146,37 @@ class TestViews(TestCase):
         self.assertTemplateUsed(response, 'anonticket/user_login.html')
 
     def test_user_landing_view_GET(self):
-        """Test the response for user_landing_view"""
+        """Test the response for user_landing_view with known good user_identifier."""
         response = self.client.get(self.user_landing_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/user_landing.html')
+
+    def test_user_landing_view_GET_seven_words(self):
+        """Test the user_landing_view with a known bad identifier 
+        (seven words) and verify decorator redirect"""
+        too_many_words_url = reverse(
+            'user-landing', args=[
+                'duo-atlas-hypnotism-curry-creatable-rubble-brunch'])
+        response = self. client.get(too_many_words_url)
+        self.assertEqual(response.status_code, 302)
+    
+    def test_user_landing_view_GET_bad_word(self):
+        """Test the user_landing_view with a known bad identifier 
+        (wrong word) and verify decorator redirect"""
+        too_many_words_url = reverse(
+            'user-landing', args=[
+                'duo-atlas-hypnotism-curry-creatable-moxie'])
+        response = self. client.get(too_many_words_url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_user_landing_view_GET_repeated_word(self):
+        """Test the user_landing_view with a known bad identifier 
+        (repeated word) and verify decorator redirect"""
+        too_many_words_url = reverse(
+            'user-landing', args=[
+                'duo-atlas-hypnotism-curry-creatable-creatable'])
+        response = self. client.get(too_many_words_url)
+        self.assertEqual(response.status_code, 302)
 
     def test_user_login_error_view_GET(self):
         """Test the response for user_login_error view"""
@@ -188,18 +215,6 @@ class TestViews(TestCase):
             known_wordlist = f.read().splitlines()
         test_wordlist = get_wordlist()
         self.assertEqual(known_wordlist, test_wordlist)
-
-    # def test_validate_user_identifier(self):
-    #     """Test validate_user_identifier function."""
-    #     seven_words = 'test-test-test-test-test-test-test'
-    #     test_seven_words = validate_user_identifier(seven_words)
-    #     self.assertEqual(test_seven_words, False)
-    #     word_not_in_dict = 'antonym-roundup-ravishing-leggings-chooser-asdfasdf'
-    #     test_word_not_in_dict = validate_user_identifier(word_not_in_dict)
-    #     self.assertEqual(test_word_not_in_dict, False)
-    #     known_good_identifier = 'antonym-roundup-ravishing-leggings-chooser-oversight'
-    #     test_known_good_identifier = validate_user_identifier(known_good_identifier)
-    #     self.assertEqual(test_known_good_identifier, True)
 
     def test_user_identifier_in_database(self):
         """Test user_identifier_in_database function"""
