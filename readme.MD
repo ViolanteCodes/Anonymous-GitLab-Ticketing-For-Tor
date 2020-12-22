@@ -145,6 +145,11 @@ functions from within the view.
 
 If a view relies heavily on a form, processing for that view may have been moved to forms.py.
 
+Additionally, views can leverage decorators like @validate_user, which
+wraps the view in a function that determines if the user_identifier codephrase in the 
+URL path meets validation requirements; if not, it redirects the user to an invalid
+user_identifier view.
+
 ### URL-Pathing
 
 The main URL structures at this time are located in anonticket/urls.py (and all of 
