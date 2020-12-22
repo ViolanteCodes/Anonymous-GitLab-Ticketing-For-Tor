@@ -263,15 +263,16 @@ def issue_detail_view(request, user_identifier, project_id, issue_iid):
     results['notes'].reverse()
     return render(request, 'anonticket/issue_detail.html', {'results': results})
 
-def search_by_id_view(request):
-    """Currently admin-function to allow someone to lookup an issue and its notes
-    given a project and issueiid"""
+@validate_user
+def issue_search_view(request, user_identifier):
+    """Allows a user to select a project and search Gitlab for issues matching
+    a search string."""
     results = {}
-    if 'issue_iid' in request.GET:
+    if 'search_terms' in request.GET:
         form = Anonymous_Ticket_Project_Search_Form(request.GET)
         if form.is_valid():
             results = form.call_project_and_issue()
     else:
         form = Anonymous_Ticket_Project_Search_Form
-    return render(request, 'anonticket/search_by_id.html', {'form': form, 'results': results})
+    return render(request, 'anonticket/issue_search.html', {'form': form, 'results': results})
 

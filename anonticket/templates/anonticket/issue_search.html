@@ -26,8 +26,8 @@
           <li>Project Description: {{results.project_description}}</li>
         </ul>
         {% endif %}
-        {% if results.title %}
-        <h3>Issue Details</h3>
+        {% if results.matching_issues %}
+        <h3>Issues Matching Your Search String</h3>
         <ul>
           <li>Issue ID: {{results.id}}</li>
           <li>Issue Title: {{results.title}}</li>

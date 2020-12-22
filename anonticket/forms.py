@@ -56,8 +56,6 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
             choose_project = self.cleaned_data['choose_project']
             working_project = Project.objects.get(project_name=choose_project)
             project_id = working_project.project_id
-        elif self.cleaned_data['project_id']:
-            project_id = self.cleaned_data['choose_project']
         result = {}
         # Set result['passed'] with a pending flag to capture events.
         result['project_status'] = 'pending'
@@ -83,30 +81,21 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
         return result
 
     def issue_search(self, project_result={}):
-        """Pass the data from the issue_iid CharField to github and 
+        """Pass the data from the search_term CharField to github and 
         look up the project details."""
         result = project_result
         result['issue_status'] = 'pending'
         if result['project_status'] != 'failed':
-            issue_iid = self.cleaned_data['issue_iid']
+            search_string = self.cleaned_data['search_terms']
             try:
-                issue = self.linked_project.issues.get(issue_iid)
+                search_issues = self.linked_project.search('issues', search_string)
             except gitlab.exceptions.GitlabGetError:
                 result['status'] = 'failed'
                 result['message'] = issue_not_found_message
             # If issue lookup was successful, add issue details and notes to
             # results dictionary.
             if result['status'] != 'failed':
-                result['id']=issue.id 
-                result['title']=issue.title
-                result['description']=issue.description
-                notes_text = []
-                notes_list = issue.notes.list()
-                for note in notes_list:
-                    working_text = note.body
-                    formatted_note_text = working_text.split("\n")
-                    notes_text.extend(formatted_note_text)
-                result['notes_text']=notes_text
+                result['matching_issues'] = search_issues
                 result['status'] = 'Success'
                 result['message'] = 'Your ticket has been found.'
         return result
@@ -119,11 +108,10 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
         return result
 
 class Anonymous_Ticket_Project_Search_Form(Anonymous_Ticket_Base_Search_Form):
-    """A form to let users search for an issue with a given project 
-    and issue_id."""
+    """A form to let users search for an issue or notes matching a project string."""
     
     choose_project = forms.ModelChoiceField(queryset=Project.objects.all())
-    issue_iid = forms.IntegerField(max_value = 9223372036854775807)
+    search_terms = forms.CharField(max_length=200)
 
 class Git_Create_Anonymous_Issue_Form(Anonymous_Ticket_Base_Search_Form):
     """A form to let users add an issue to a given project in gitlab."""
