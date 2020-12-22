@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 import gitlab
+import functools
 from django.conf import settings
 from anonticket.models import Issue, Project, UserIdentifier
 from .forms import (
@@ -26,20 +27,6 @@ def get_wordlist():
             wordlist_as_list = f.read().splitlines()
     return wordlist_as_list  
 
-def validate_user_identifier(user_string):
-    """Take a string of the format 'word-word-word' and check that
-    it fulfills the User Identifier requirements."""
-    # split the string at '-' and save list as "id_to_test"
-    id_to_test = user_string.split('-')
-    # Check that code-phrase length is equal to settings.DICE_ROLLS
-    if len(id_to_test) != settings.DICE_ROLLS:
-        return False
-    # Grab the word_list from the path specified in settings.py
-    wordlist_as_list = get_wordlist()
-    # Check that all words are in the dictionary.
-    check_all_words  = all(item in wordlist_as_list for item in id_to_test)
-    return check_all_words
-
 def user_identifier_in_database(find_user):
     """See if user_identifier is in database. Returns True/False."""
     # Try to find the user in the database.
@@ -61,6 +48,34 @@ def get_linked_issues(UserIdentifier):
     """Gets a list of the issues assigned to a User Identifier."""
     linked_issues = Issue.objects.filter(linked_user=UserIdentifier)
     return linked_issues
+
+# --------------------------DECORATORS----------------------------------
+# Django decorators wrap functions (such as views) in other functions
+# ----------------------------------------------------------------------
+
+def validate_user(view_func):
+    """A decorator that checks if a user_identifier matches validation requirements."""
+    @functools.wraps(view_func)
+    def validate_user_identifier(request, user_identifier, *args, **kwargs):
+        user_string = user_identifier
+        id_to_test = user_string.split('-')
+    # Check that code-phrase length is equal to settings.DICE_ROLLS
+        if len(id_to_test) != settings.DICE_ROLLS:
+            return redirect('user-login-error', user_identifier=user_string)
+    # Check that all words in code-phrase are unique
+        set_id_to_test = set(id_to_test)
+        if len(set_id_to_test) != len(id_to_test):
+            return redirect('user-login-error', user_identifier=user_string)
+    # Grab the word_list from the path specified in settings.py
+        wordlist_as_list = get_wordlist()
+    # Check that all words are in the dictionary.
+        check_all_words  = all(item in wordlist_as_list for item in id_to_test)
+        if check_all_words == False:
+            return redirect('user-login-error', user_identifier=user_string)
+        else:
+            response = view_func(request, user_identifier, *args, **kwargs)
+        return response
+    return validate_user_identifier
 
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
@@ -160,29 +175,24 @@ def login_view(request):
         form = LoginForm
     return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
 
+@validate_user
 def user_landing_view(request, user_identifier):
     """The 'landing page' view. Checks that username meets validation standards
     and redirects if not, then attempts to find username in database and passes
     user_found = True to context dictionary if found."""
     results = {}
     # Check that entered User Identifier meets validation
-    validation = validate_user_identifier(user_string=user_identifier)
-    # Redirect if it does not
-    if validation == False:
-        return redirect('user-login-error', user_identifier)
-    # if it does, try to find user in database.
-    else:
-        user_found = user_identifier_in_database(user_identifier)
-        # if user is found, pass 'user_found' to context dictionary
-        if user_found == True:
-            results['user_found'] = user_found
-            # Get linked issues linked to this user identifier and pass into 
-            # results dictionary.
-            working_user = get_user_as_object(user_identifier)
-            linked_issues = get_linked_issues(working_user)
-            results['linked_issues'] = linked_issues        
-        # if found or not found, pass 'user_identifier' to context dictionary
-        results['user_identifier'] = user_identifier
+    user_found = user_identifier_in_database(user_identifier)
+    # if user is found, pass 'user_found' to context dictionary
+    if user_found == True:
+        results['user_found'] = user_found
+        # Get linked issues linked to this user identifier and pass into 
+        # results dictionary.
+        working_user = get_user_as_object(user_identifier)
+        linked_issues = get_linked_issues(working_user)
+        results['linked_issues'] = linked_issues        
+    # if found or not found, pass 'user_identifier' to context dictionary
+    results['user_identifier'] = user_identifier
     return render(request, 'anonticket/user_landing.html', {'results': results})
 
 class UserLoginErrorView(TemplateView):
@@ -236,27 +246,21 @@ class PendingIssueDetailView(DetailView):
     model = Issue
     template_name = 'anonticket/issue_pending.html'
 
+@validate_user
 def issue_detail_view(request, user_identifier, project_id, issue_iid):
     """A detailed view of a specific issue."""
     results = {}
-    # validate_user_identifier, redirect if False:
-    validation = validate_user_identifier(user_string=user_identifier)
-    if validation == False:
-        return redirect('user-login-error', user_identifier)
-    # else, grab project, issue, and notes list and insert attributes
-    # dictionaries into results dictionary
-    else:
-        results['user_identifier']=user_identifier
-        working_project = gitlab_get_project(project=project_id)
-        results['project'] = working_project.attributes
-        working_issue = gitlab_get_issue(project=project_id, issue=issue_iid)
-        results['issue'] = working_issue.attributes
-        results['notes'] = []
-        notes_list = gitlab_get_notes_list(project=project_id, issue=issue_iid)
-        for note in notes_list:
-            note_dict = note.attributes
-            results['notes'].append(note_dict)
-        results['notes'].reverse()
+    results['user_identifier']=user_identifier
+    working_project = gitlab_get_project(project=project_id)
+    results['project'] = working_project.attributes
+    working_issue = gitlab_get_issue(project=project_id, issue=issue_iid)
+    results['issue'] = working_issue.attributes
+    results['notes'] = []
+    notes_list = gitlab_get_notes_list(project=project_id, issue=issue_iid)
+    for note in notes_list:
+        note_dict = note.attributes
+        results['notes'].append(note_dict)
+    results['notes'].reverse()
     return render(request, 'anonticket/issue_detail.html', {'results': results})
 
 def search_by_id_view(request):
