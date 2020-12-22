@@ -6,6 +6,10 @@
 {% block subheader %} 
   Search for an issue on GitLab with a given issue_iid
 {% endblock %}
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
 
 {% block content %}
   <div class="row">
@@ -14,12 +18,11 @@
         {{ form.as_p }}
         <button type="submit" class="btn btn-lg btn-primary mr-2">search</button>
       </form>
-    
-      {% if results %}
+      {% if results.status %}
         <hr>
-        <h2>Result of this lookup was: {{results.status|title}}</h2>
-        <p>Details: {{results.message}}</p>
-        <h3>Project Details</h3>
+        <h3>Result of this lookup was: {{results.status|title}}</h3>
+        <p>{{results.message}}</p>
+        <h4>Project Details</h4>
         {% if results.project_name %}
         <ul>
           <li>Project Name: {{results.project_name}}</li>
@@ -27,16 +30,11 @@
         </ul>
         {% endif %}
         {% if results.matching_issues %}
-        <h3>Issues Matching Your Search String</h3>
+        <h4>Issues Matching Your Search String</h4>
         <ul>
-          <li>Issue ID: {{results.id}}</li>
-          <li>Issue Title: {{results.title}}</li>
-          <li>Issue Description: {{results.description}}</li>
-        </ul>
-        <h3>Ticket Notes</h3>
-        <ul>
-          {% for note_text in results.notes_text %}
-            <li>{{note_text}}</li>
+          {% for issue in results.matching_issues %}
+            {% url 'issue-detail-view' results.user_identifier issue.project_id issue.iid as issue_url %}
+          <li><a href="{{issue_url}}">{{issue.title}}</a></li>
           {% endfor %}
         </ul>
         {% endif %}

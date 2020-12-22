@@ -5,6 +5,11 @@
 <!-- Load markdownify -->
 {% load markdownify %}
 <!-- Start Page Render -->
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
+
 {% block h3 %}
   {% if results.issue %}
   </h3>

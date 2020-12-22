@@ -203,11 +203,13 @@ class UserLoginErrorView(TemplateView):
 # Views related to creating/looking up issues.
 # ----------------------------------------------------------------------
 
+@validate_user
 def create_issue_view(request, user_identifier):
     """View that allows a user to create an issue. Pulls the user_identifier
     from the URL(kwargs) and tries to pull that UserIdentifier from database, 
     creating it if this is the user's first action."""
     results = {}
+    results['user_identifier'] = user_identifier
     user_to_retrieve = user_identifier
     if request.method == 'POST':
         form = CreateIssueForm(request.POST)
@@ -272,7 +274,9 @@ def issue_search_view(request, user_identifier):
         form = Anonymous_Ticket_Project_Search_Form(request.GET)
         if form.is_valid():
             results = form.call_project_and_issue()
+            results['user_identifier'] = user_identifier
     else:
         form = Anonymous_Ticket_Project_Search_Form
+        results['user_identifier'] = user_identifier
     return render(request, 'anonticket/issue_search.html', {'form': form, 'results': results})
 
