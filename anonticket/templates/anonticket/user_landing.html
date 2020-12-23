@@ -7,6 +7,10 @@
 {% block title %}
   Anon Ticket
 {% endblock %}
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
 <!-- h3 block sets the main title -->
 {% block h3 %}
   Anon Ticket
@@ -57,8 +61,12 @@
 <!-- List actions that can be taken. -->
   <h4 class="mt-4">You can take the following actions:</h4>
   <!-- Generate the create_issue_url on the fly within the template. -->
-    <p>
+    <p class='mt-4 mb-0'>
+      {% url 'issue-search' results.user_identifier as search_url %}
+      <a href="{{search_url}}">Search</a> for an issue inside of a given project.
+    </p>
+    <p class='mb-0'>
       {% url 'create-issue' results.user_identifier as create_url %}
-      <a href="{{create_url}}">Create</a> an issue.
+      <a href="{{create_url}}">Create</a> an issue inside of a given project.
     </p>
 {% endblock %}

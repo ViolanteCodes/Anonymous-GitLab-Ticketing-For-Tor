@@ -1,0 +1,23 @@
+<li class="nav-item mt-4">
+    User Links:
+</li>
+<li class="nav-item">
+    {% url 'user-landing' results.user_identifier as menu_landing_url %}
+    <a href="{{menu_landing_url}}">
+        See My Landing Page
+    </a>
+</li>
+<li class="nav-item">
+    {% url 'issue-search' results.user_identifier as menu_search_url %}
+    <a href="{{menu_search_url}}">
+        Search For An Issue
+    </a>
+</li>
+<li class="nav-item">
+    {% url 'create-issue' results.user_identifier as menu_create_url %}
+    <a href="{{menu_create_url}}">
+        Create An Issue
+    </a>
+</li>
+
+
