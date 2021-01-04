@@ -79,6 +79,18 @@ def validate_user(view_func):
         return response
     return validate_user_identifier
 
+# class PassUserIdentifierMixin:
+#     """Mixin for class based views to add username from URL path/
+#     init_kwargs to extra_context data."""
+
+class PassUserIdentifierMixin:
+    """Mixin that allows user_identifier from views kwargs to be easily
+    called by templates using view.passed_user_identifier."""
+    def passed_user_identifier(self):
+        return self.kwargs['user_identifier']
+        
+
+
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
 # ----------------------------------------------------------------------
@@ -241,10 +253,11 @@ def create_issue_view(request, user_identifier):
 @method_decorator(validate_user, name='dispatch')
 class IssueSuccessView(TemplateView):
     """View that tells the user their issue was successfully created."""
+
     template_name = 'anonticket/create_issue_success.html'
 
 @method_decorator(validate_user, name='dispatch')
-class PendingIssueDetailView(DetailView):
+class PendingIssueDetailView(PassUserIdentifierMixin, DetailView):
     model = Issue
     template_name = 'anonticket/issue_pending.html'
 
