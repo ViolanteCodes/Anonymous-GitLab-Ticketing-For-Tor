@@ -240,10 +240,6 @@ class IssueSuccessView(TemplateView):
     """View that tells the user their issue was successfully created."""
     template_name = 'anonticket/create_issue_success.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
-
 class PendingIssueDetailView(DetailView):
     model = Issue
     template_name = 'anonticket/issue_pending.html'
