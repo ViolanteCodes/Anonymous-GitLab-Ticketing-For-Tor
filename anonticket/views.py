@@ -50,8 +50,9 @@ def get_linked_issues(UserIdentifier):
     linked_issues = Issue.objects.filter(linked_user=UserIdentifier)
     return linked_issues
 
-# --------------------------DECORATORS----------------------------------
-# Django decorators wrap functions (such as views) in other functions
+# --------------------DECORATORS AND MIXINS-----------------------------
+# Django decorators wrap functions (such as views) in other functions. 
+# Mixins perform a similar function for class based views.
 # ----------------------------------------------------------------------
 
 def validate_user(view_func):
@@ -77,6 +78,16 @@ def validate_user(view_func):
             response = view_func(request, user_identifier, *args, **kwargs)
         return response
     return validate_user_identifier
+
+class PassUserIdentifierMixin:
+    """Mixin that passes user_identifier from CBV kwargs to view
+    context in a 'results' dictionary, which allows it to be called in template
+    with results.user_identifier (same as FBV)."""
+
+    def get_context_data(self, **kwargs):          
+        context = super().get_context_data(**kwargs)
+        context['results'] = {'user_identifier':self.kwargs['user_identifier']}                     
+        return context
 
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
@@ -240,10 +251,11 @@ def create_issue_view(request, user_identifier):
 @method_decorator(validate_user, name='dispatch')
 class IssueSuccessView(TemplateView):
     """View that tells the user their issue was successfully created."""
+
     template_name = 'anonticket/create_issue_success.html'
 
 @method_decorator(validate_user, name='dispatch')
-class PendingIssueDetailView(DetailView):
+class PendingIssueDetailView(PassUserIdentifierMixin, DetailView):
     model = Issue
     template_name = 'anonticket/issue_pending.html'
 

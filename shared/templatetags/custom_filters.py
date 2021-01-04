@@ -50,4 +50,3 @@ def pretty_datetime(iso_string):
         return pretty_datetime
     except:
         pass
-

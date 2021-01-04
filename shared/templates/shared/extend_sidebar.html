@@ -1,6 +1,13 @@
+<!-- Template extender that displays a list of links for those "logged in"
+with a valid user_identifier. For class-based views, user_identifier
+from URL/kwargs has to be passed to final context dictionary via the
+PassUserIdentifierMixin, which will pass the user_identifier into a 
+dictionary called 'results.'-->
+
 <li class="nav-item mt-4">
     User Links:
 </li>
+{% if results %}
 <li class="nav-item">
     {% url 'user-landing' results.user_identifier as menu_landing_url %}
     <a href="{{menu_landing_url}}">
@@ -19,5 +26,4 @@
         Create An Issue
     </a>
 </li>
-
-
+{% endif %}
