@@ -50,8 +50,9 @@ def get_linked_issues(UserIdentifier):
     linked_issues = Issue.objects.filter(linked_user=UserIdentifier)
     return linked_issues
 
-# --------------------------DECORATORS----------------------------------
-# Django decorators wrap functions (such as views) in other functions
+# --------------------DECORATORS AND MIXINS-----------------------------
+# Django decorators wrap functions (such as views) in other functions. 
+# Mixins perform a similar function for class based views.
 # ----------------------------------------------------------------------
 
 def validate_user(view_func):
