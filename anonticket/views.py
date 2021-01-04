@@ -79,17 +79,15 @@ def validate_user(view_func):
         return response
     return validate_user_identifier
 
-# class PassUserIdentifierMixin:
-#     """Mixin for class based views to add username from URL path/
-#     init_kwargs to extra_context data."""
-
 class PassUserIdentifierMixin:
-    """Mixin that allows user_identifier from views kwargs to be easily
-    called by templates using view.passed_user_identifier."""
-    def passed_user_identifier(self):
-        return self.kwargs['user_identifier']
-        
+    """Mixin that passes user_identifier from CBV kwargs to view
+    context in a 'results' dictionary, which allows it to be called in template
+    with results.user_identifier (same as FBV)."""
 
+    def get_context_data(self, **kwargs):          
+        context = super().get_context_data(**kwargs)
+        context['results'] = {'user_identifier':self.kwargs['user_identifier']}                     
+        return context
 
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
