@@ -1,4 +1,3 @@
-from django.shortcuts import render, redirect
 import gitlab
 import functools
 from django.conf import settings
@@ -7,6 +6,8 @@ from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     LoginForm,
     CreateIssueForm)
+from django.shortcuts import render, redirect
+from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, DetailView
 
 # ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
@@ -236,14 +237,12 @@ def create_issue_view(request, user_identifier):
         form = CreateIssueForm
     return render(request, 'anonticket/create_new_issue.html', {'form':form, 'results':results})
 
+@method_decorator(validate_user, name='dispatch')
 class IssueSuccessView(TemplateView):
     """View that tells the user their issue was successfully created."""
     template_name = 'anonticket/create_issue_success.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
-
+@method_decorator(validate_user, name='dispatch')
 class PendingIssueDetailView(DetailView):
     model = Issue
     template_name = 'anonticket/issue_pending.html'
