@@ -121,37 +121,6 @@ class Anonymous_Ticket_Project_Search_Form(Anonymous_Ticket_Base_Search_Form):
     choose_project = forms.ModelChoiceField(queryset=Project.objects.all())
     search_terms = forms.CharField(max_length=200)
 
-class Git_Create_Anonymous_Issue_Form(Anonymous_Ticket_Base_Search_Form):
-    """A form to let users add an issue to a given project in gitlab."""
-    choose_project = forms.ModelChoiceField(queryset=Project.objects.all())
-    issue_title = forms.CharField(max_length=200)
-    description_of_issue = forms.CharField(widget=forms.Textarea)
-
-    def create_issue(self):
-        """Create an issue for a project in GitLab."""
-        # Search for the project using the project_search method from base class.
-        result=self.project_search()
-        # if project was found, assign issue text and title and try to post
-        if result['status'] != 'failed':
-            cleaned_issue_title = self.cleaned_data['issue_title']
-            cleaned_description_of_issue = self.cleaned_data['description_of_issue']
-            try:
-                issue = self.linked_project.issues.create({
-                    'title':cleaned_issue_title,
-                    'description': cleaned_description_of_issue,
-                })
-            except gitlab.exceptions.GitlabCreateError:
-                result['status'] = 'failed'
-                result['message'] = issue_not_created_message
-            # If issue lookup was successful, add issue details and notes to
-            # results dictionary.
-            if result['status'] != 'failed':
-                result['issue_title']=issue.title 
-                result['description']=issue.description
-                result['status'] = 'Success'
-                result['message'] = 'Your issue has been created.'
-        return result
-
 class CreateIssueForm(ModelForm):
     class Meta:
         model = Issue
