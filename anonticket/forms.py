@@ -20,6 +20,7 @@ successful_issue_lookup_message = """Your project and issue were both
 found and fetched from gitlab. Project and issue details, including
 associated notes, are listed below."""
 issue_not_created_message = """Unable to create this issue."""
+issue_search_success = """Issues were found matching this search string."""
 
 class LoginForm(forms.Form):
     """A form that allows users to enter in their keycodes to login."""
@@ -79,6 +80,7 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
             result['project_name'] = self.linked_project.name
             result['project_description'] = self.linked_project.description
             result['project_id'] = linked_project.id
+            result['matching_project'] = linked_project
         return result
 
     def issue_search(self, project_result={}):
@@ -87,6 +89,7 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
         result = project_result
         if result['project_status'] != 'failed':
             search_string = self.cleaned_data['search_terms']
+            result['search_string'] = search_string
             try:
                 search_issues = self.linked_project.search('issues', search_string)
             except gitlab.exceptions.GitlabGetError:
@@ -101,7 +104,7 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
                 result['matching_issues'] = search_issues
                 if result['matching_issues']:
                     result['status'] = 'success'
-                    result['message'] = 'Here are issues matching your search string:'
+                    result['message'] = issue_search_success
                 else:
                     result['status'] = 'no matches'
                     result['message'] = """Your search executed successfully,
@@ -118,8 +121,17 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
 class Anonymous_Ticket_Project_Search_Form(Anonymous_Ticket_Base_Search_Form):
     """A form to let users search for an issue or notes matching a project string."""
     
-    choose_project = forms.ModelChoiceField(queryset=Project.objects.all())
-    search_terms = forms.CharField(max_length=200)
+    choose_project = forms.ModelChoiceField(
+        queryset=Project.objects.all(), 
+        label="Choose a project.",
+        help_text="Not all Tor projects can be searched via this portal."
+        )
+    search_terms = forms.CharField(
+        max_length=200,
+        label="Enter a short search string.",
+        help_text="""Shorter strings are better, as this search will find
+        exact matches only."""
+        )
 
 class CreateIssueForm(ModelForm):
     class Meta:
