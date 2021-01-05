@@ -80,6 +80,7 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
             result['project_name'] = self.linked_project.name
             result['project_description'] = self.linked_project.description
             result['project_id'] = linked_project.id
+            result['matching_project'] = linked_project
         return result
 
     def issue_search(self, project_result={}):
