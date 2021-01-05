@@ -266,6 +266,19 @@ class TestViews(TestCase):
             self.assertIn(word, test_get_context['user_identifier_string'])
         self.assertNotIn('user_found', test_get_context.keys())
 
+# --------------------------FORM TESTS----------------------------------
+# Tests for forms.py
+# ----------------------------------------------------------------------
+
+class TestForms(SimpleTestCase):
+    """Test forms.py."""
+
+    def setUp(self, parameter_list):
+        """
+        docstring
+        """
+        pass
+    
 class TestFilters(TestCase):
     """Test custom filters."""
     

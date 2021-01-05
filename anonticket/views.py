@@ -117,14 +117,13 @@ def gitlab_get_notes_list(project, issue):
 # encounter them (e.g., generate a codename, then login with codename.)
 # ----------------------------------------------------------------------
 #
-# ------------------------IDENTIFIER AND LOGIN--------------------------
+# --------------------IDENTIFIER AND LOGIN VIEWS------------------------
 # Initial views related to landing, user_identifier.
 # ----------------------------------------------------------------------
 
 class CreateIdentifierView(TemplateView):
-    """Class-based view that randomly samples a word_list and passes the
-    new user_identifier into a context dictionary for the template, 
-    including a string version and a link."""
+    """View that randomly samples a word_list and passes the
+    new user_identifier as string into a context dictionary."""
 
     template_name = "anonticket/create_identifier.html"
     
@@ -189,9 +188,9 @@ def login_view(request):
 
 @validate_user
 def user_landing_view(request, user_identifier):
-    """The 'landing page' view. Checks that username meets validation standards
-    and redirects if not, then attempts to find username in database and passes
-    user_found = True to context dictionary if found."""
+    """The 'landing page'. Checks if user_identifier is in database and 
+    passes user_found = True to context dictionary if found, along
+    with any issues or comments created by user."""
     results = {}
     # Check that entered User Identifier meets validation
     user_found = user_identifier_in_database(user_identifier)
@@ -211,14 +210,14 @@ class UserLoginErrorView(TemplateView):
     """A generic landing page if a username doesn't pass validation tests."""
     template_name = 'anonticket/user_login_error.html'
 
-# ----------------------------ISSUES------------------------------------
+# -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.
 # ----------------------------------------------------------------------
 
 @validate_user
 def create_issue_view(request, user_identifier):
     """View that allows a user to create an issue. Pulls the user_identifier
-    from the URL(kwargs) and tries to pull that UserIdentifier from database, 
+    from the URL path and tries to pull that UserIdentifier from database, 
     creating it if this is the user's first action."""
     results = {}
     results['user_identifier'] = user_identifier
@@ -249,19 +248,19 @@ def create_issue_view(request, user_identifier):
     return render(request, 'anonticket/create_new_issue.html', {'form':form, 'results':results})
 
 @method_decorator(validate_user, name='dispatch')
-class IssueSuccessView(TemplateView):
+class IssueSuccessView(PassUserIdentifierMixin, TemplateView):
     """View that tells the user their issue was successfully created."""
-
     template_name = 'anonticket/create_issue_success.html'
 
 @method_decorator(validate_user, name='dispatch')
 class PendingIssueDetailView(PassUserIdentifierMixin, DetailView):
+    """View for pending issues that have not been mod approved."""
     model = Issue
     template_name = 'anonticket/issue_pending.html'
 
 @validate_user
 def issue_detail_view(request, user_identifier, project_id, issue_iid):
-    """A detailed view of a specific issue."""
+    """Detailed view of an issue that has been approved and posted to GL."""
     results = {}
     results['user_identifier']=user_identifier
     working_project = gitlab_get_project(project=project_id)

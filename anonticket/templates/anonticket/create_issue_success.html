@@ -13,11 +13,11 @@
 {% endblock %}
 <!-- Subheader block sets the subheader -->
 {% block subheader %} 
-  Your Issue has been saved.
+  Your issue has been saved and is pending moderator approval.
 {% endblock %}
 <!-- block content block is where page contents go -->
 {% block content %}
-{% url 'user-landing' user_identifier as go_back_url %}
+{% url 'user-landing' results.user_identifier as go_back_url %}
 <p>
   <a href="{{go_back_url}}">Back to my landing page</a>
 </p>

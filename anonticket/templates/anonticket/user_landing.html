@@ -1,5 +1,5 @@
 <!-- Extend the layout template -->
-<!-- Can leave any of these as default -->
+<!-- Can leave any block as default if preferred -->
 {% extends 'shared/layout.html' %}
 <!-- Load static method for templates -->
 {% load static %}
@@ -15,58 +15,70 @@
 {% block h3 %}
   Anon Ticket
 {% endblock %}
+
 <!-- Subheader block sets the subheader -->
 {% block subheader %} 
   User Landing Page for:
-  <div class="p-2">
+  <div class="p-2 pb-0">
     <p class="p-3 row bg-light">{{results.user_identifier}}</p>
-  </div>
   <!-- Check if user_found in results dictionary. If so, list actions already taken. -->
-  {% if results.user_found %}
-  <p class="small ml-5 mb-5">
-    (This User Identifier has been found. Feel free to bookmark this page to return to it at a later date.)
-  </p>
-  <h4>
-    You have created the following issues:</h4>
-  <p class="small">(Issues marked with *** have not been approved by moderators and therefore have not been posted to GitLab.)</p>
-    {% if results.linked_issues %}
-    <!-- if there are issues the user has created -->
-    <ul>
-      {% for issue in results.linked_issues %}
-        <!-- if issue has an issue_iid, generate a link to the issue-detail view and pass project id and issue iid -->
-        {% if issue.issue_iid %}
-          {% url 'issue-detail-view' results.user_identifier issue.linked_project.project_id issue.issue_iid as issue_url %}
-          <li><a href="{{issue_url}}">{{issue.issue_title}}</a></li>
-        <!-- else (e.g., if issue is not approved), list the issue -->
-        {% else %}
-          {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.project_id issue.pk as issue_url %}
-          <li><a href="{{issue_url}}" class="mr-1">{{issue.issue_title|capfirst}}</a> *** </li>
-        {% endif %}
-      {% endfor %}
-    </ul>
+    {% if results.user_found %}
+      <p class="small ml-5 mb-0">
+        (This User Identifier has been found. Feel free to bookmark this page to return to it at a later date.)
+      </p>
     {% else %}
-    <p>None</p>
+      <p class="small ml-0">
+        (No actions taken yet with this user identifier. Feel free to bookmark this
+        page to return to it at a later date.)
+      </p>
     {% endif %}
-  </p>
-  {% else %}
-  <p class="small ml-5">
-    (No actions taken yet with this user identifier. Feel free to bookmark this
-    page to return to it at a later date.)
-  </p>
-  {% endif %}
-
+  </div>
 {% endblock %}
-<!-- Content block  -->
+<!-- End of subheader block -->
+
+<!-- Main content block  -->
 {% block content %}
-<!-- List actions that can be taken. -->
-  <h4 class="mt-4">You can take the following actions:</h4>
-  <!-- Generate the create_issue_url on the fly within the template. -->
-    <p class='mt-4 mb-0'>
-      {% url 'issue-search' results.user_identifier as search_url %}
-      <a href="{{search_url}}">Search</a> for an issue inside of a given project.
-    </p>
-    <p class='mb-0'>
-      {% url 'create-issue' results.user_identifier as create_url %}
-      <a href="{{create_url}}">Create</a> an issue inside of a given project.
-    </p>
+<div class="row">
+  <div class="col-12">
+    <!-- List actions that can be taken. -->
+    <h4 class="mt-1">You can take the following actions:</h4>
+    <!-- Generate the action URLS on the fly within the template. -->
+      <p class='mt-4 mb-0'>
+        <ul>
+          <li>{% url 'issue-search' results.user_identifier as search_url %}
+          <a href="{{search_url}}">Search</a> for an issue inside of a given project.</li>
+          <li>{% url 'create-issue' results.user_identifier as create_url %}
+          <a href="{{create_url}}">Create</a> an issue inside of a given project.</li>
+        </ul>
+      </p>
+    </div>
+  </div>
+
+  <!-- List the issues the user has created. -->
+<div class="row">
+  <div class="col-12">
+    <h4 class="mt-4">You have created the following issues:</h4>
+      <!-- If there are issues, list them -->
+        {% if results.linked_issues %}
+        <p class="small">(Issues marked with *** have not been approved by moderators and therefore have not been posted to GitLab.)</p>
+          <ul>
+            {% for issue in results.linked_issues %}
+              <!-- if issue has an issue_iid, generate a link to the issue-detail view and pass project id and issue iid -->
+                {% if issue.issue_iid %}
+                  {% url 'issue-detail-view' results.user_identifier issue.linked_project.project_id issue.issue_iid as issue_url %}
+                  <li><a href="{{issue_url}}">{{issue.issue_title}}</a></li>
+                <!-- else (e.g., if issue is not approved), list the issue and generate a link to the pending-issue-detail-view -->
+                {% else %}
+                  {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.project_id issue.pk as issue_url %}
+                  <li><a href="{{issue_url}}" class="mr-1">{{issue.issue_title|capfirst}}</a> *** </li>
+                {% endif %}
+            {% endfor %}
+            </ul>
+      </p>
+        {% else %}
+        <!-- Or tell the user are there are no issues -->
+          <p class="small">You have not created any issues.</p>
+        {% endif %}
+  </div>
+</div>
 {% endblock %}
