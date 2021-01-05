@@ -46,13 +46,14 @@
 {% block content %}
 <!-- Issue Summary Block -->
 {% if results.issue %}
-<!-- div-row and div-col-12 carried over from base_template.html -->
-        <h4 class="card-title">Issue Summary</h4>
-        <ul>
-          <li><span class="text-muted">Currently Assigned To:</span> @{{results.issue.assignee.username}}.
-          <span class="text-muted ml-1">Due Date:</span> {{results.issue.due_date|pretty_datetime}}.
-          <span class="text-muted ml-1">Last Updated:</span> {{results.issue.updated_at|pretty_datetime}}</li>
-        </ul>
+  <div class="row">
+    <div class="col-12">
+      <h4 class="card-title">Issue Summary</h4>
+      <ul>
+        <li><span class="text-muted">Currently Assigned To:</span> @{{results.issue.assignee.username}}.
+        <span class="text-muted ml-1">Due Date:</span> {{results.issue.due_date|pretty_datetime}}.
+        <span class="text-muted ml-1">Last Updated:</span> {{results.issue.updated_at|pretty_datetime}}</li>
+      </ul>
     </div>
   </div>
 {% endif %}

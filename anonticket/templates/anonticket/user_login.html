@@ -17,16 +17,20 @@
 {% endblock %}
 <!-- block content block is where page contents go -->
 {% block content %}
-<p>
-  If you've already created a user-identifier code-phrase, you can
-  enter it here to login.
-</p>
-  <div class="row">
-    <div class="col-12">
-      <form method="get" class="p-5">
-        <ul class="bg-light p-5 flex-form">{{ form.as_ul }}</ul>
-        <button type="submit" class="btn btn-lg btn-primary mr-2 new-line">Login With This Identifier</button>
-      </form>
-    </div>
+<div class="row">
+  <div class="col-12">
+    <p>
+      If you've already created a user-identifier code-phrase, you can
+      enter it here to login.
+    </p>
   </div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <form method="get" class="p-5">
+      <ul class="bg-light p-5 flex-form">{{ form.as_ul }}</ul>
+      <button type="submit" class="btn btn-lg btn-primary mr-2 new-line">Login With This Identifier</button>
+    </form>
+  </div>
+</div>
 {% endblock %}

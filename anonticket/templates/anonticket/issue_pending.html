@@ -36,9 +36,13 @@
 {% endblock %}
 
 {% block content %}
+<div class="row">
+  <div class="col-12">
 <!-- Generate a link to go back to the user's landing page -->
-{% url 'user-landing' issue.linked_user.user_identifier as go_back_url %}
-<p>
-  <a href="{{go_back_url}}">Go Back To Landing Page</a>
-</p>
+    {% url 'user-landing' issue.linked_user.user_identifier as go_back_url %}
+    <p>
+      <a href="{{go_back_url}}">Go Back To Landing Page</a>
+    </p>
+  </div>
+</div>
 {% endblock %}

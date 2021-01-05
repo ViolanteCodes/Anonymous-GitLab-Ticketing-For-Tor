@@ -17,8 +17,12 @@
 {% endblock %}
 <!-- block content block is where page contents go -->
 {% block content %}
-{% url 'user-landing' results.user_identifier as go_back_url %}
-<p>
-  <a href="{{go_back_url}}">Back to my landing page</a>
-</p>
+<div class="row">
+  <div class="col-12">
+  {% url 'user-landing' results.user_identifier as go_back_url %}
+  <p>
+    <a href="{{go_back_url}}">Back to my landing page</a>
+  </p>
+  </div>
+</div>
 {% endblock %}
