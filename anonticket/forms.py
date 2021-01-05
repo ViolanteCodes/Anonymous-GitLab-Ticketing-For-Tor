@@ -131,9 +131,7 @@ class CreateIssueForm(ModelForm):
             'issue_description': ('Describe Your Issue'),
         }
         help_texts = {
-            'linked_project': ("""Choose the project associated with this issue.
-            If you do not see your project in the drop-down, it isn't using
-            this anonymous issue handling system."""),
+            'linked_project': ("""Choose the project associated with this issue."""),
             'issue_title': ("""Give your issue a descriptive title."""),
             'issue_description': ("""Describe the issue you are reporting. 
             Please be as specific as possible about the circumstances that
