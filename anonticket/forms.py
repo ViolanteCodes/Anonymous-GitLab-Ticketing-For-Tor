@@ -124,7 +124,21 @@ class Anonymous_Ticket_Project_Search_Form(Anonymous_Ticket_Base_Search_Form):
 class CreateIssueForm(ModelForm):
     class Meta:
         model = Issue
-        fields = ('issue_title', 'linked_project', 'issue_description')
+        fields = ('linked_project', 'issue_title', 'issue_description')
+        labels = {
+            'linked_project': ('Linked Project'),
+            'issue_title': ('Title of Your Issue'),
+            'issue_description': ('Describe Your Issue'),
+        }
+        help_texts = {
+            'linked_project': ("""Choose the project associated with this issue.
+            If you do not see your project in the drop-down, it isn't using
+            this anonymous issue handling system."""),
+            'issue_title': ("""Give your issue a descriptive title."""),
+            'issue_description': ("""Describe the issue you are reporting. 
+            Please be as specific as possible about the circumstances that
+            provoked the issue and the behavior that was noticed."""),
+        }
 
 
 
