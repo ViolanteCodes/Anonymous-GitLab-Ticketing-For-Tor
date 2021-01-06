@@ -51,13 +51,12 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
     def project_search(self):
         """Pass the data from the project_id to github and look up the 
         project details."""
-        # Check if you are receiving data from a form field for
-        # project_id.
-        if self.cleaned_data['choose_project']:
-            choose_project = self.cleaned_data['choose_project']
-            working_project = get_object_or_404(Project, name=choose_project)
-            project_id = working_project.project_id
+        # Setup a results dictionary
         result = {}
+        # Try to grab project matching form selection out of database.
+        choose_project = self.cleaned_data['choose_project']
+        working_project = get_object_or_404(Project, name=choose_project)
+        project_id = working_project.project_id
         # Set result['passed'] with a pending flag to capture events.
         result['project_status'] = 'pending'
         # try to fetch project from gitlab
