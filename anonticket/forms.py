@@ -55,7 +55,7 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
         # project_id.
         if self.cleaned_data['choose_project']:
             choose_project = self.cleaned_data['choose_project']
-            working_project = Project.objects.get(project_name=choose_project)
+            working_project = get_object_or_404(Project, name=choose_project)
             project_id = working_project.project_id
         result = {}
         # Set result['passed'] with a pending flag to capture events.
