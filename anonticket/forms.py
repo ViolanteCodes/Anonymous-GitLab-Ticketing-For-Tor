@@ -32,8 +32,8 @@ class LoginForm(forms.Form):
         return code_phrase
 
 class Anonymous_Ticket_Base_Search_Form(forms.Form):
-    """Contains the methods common to all forms when searching for tickets 
-    by project, id, etc."""
+    """A base search form with all the methods necessary to search for
+    projects, issues, and tickets."""
 
     def project_search(self):
         """Pass the data from the project_id to github and look up the 
