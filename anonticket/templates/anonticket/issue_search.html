@@ -15,24 +15,19 @@
 <!-- Introductory Information -->
 <div class="row">
   <div class="col-12">
-    <p class="p-3">
-      This form uses the GitLab API to search for issues for those
-      projects in the dropdown below (which currently accept issues
-      and comments via this anonymous portal.) To see all of Tor's 
-      public projects and issues, you can visit the 
+    <p class="p-3 mb-0">
+      This form uses the GitLab API to search the projects in the dropdown 
+      below for issues matching a search string. You can see all of Tor's 
+      public projects and issues, on the 
       <a href="https://gitlab.torproject.org/tpo">
         TorProject GitLab site</a>.
     </p>
     <p class="p-3">
-      Once you find an issue, you can create a comment on that issue's
-      detail page. All comments are held in a 
-      pending status until they're approved by
-      a moderator. You can check the status of your issue at any time
-      on 
+      You can create new comments on an issue's detail page. If your comment
+      is still pending mod approval, it will be marked with asterisks (***)
+      on
       {% url 'user-landing' results.user_identifier as landing_url %}
-      <a href="{{landing_url}}">your landing page,</a>
-      where it will be marked with asterisks
-      (***) if it is still pending.
+      <a href="{{landing_url}}">your landing page</a>.
     </p>
   </div>
 </div>
@@ -53,8 +48,9 @@
               <h6 class="d-inline">Project Description:</h6> {{project.description}}
             </li>
             <li class="ml-2">
-              <h6 class="d-inline">Note</h6>: (If you didn't find what you were looking for, you can see this project's page on TorProject's
-              GitLab account for advanced search functions, or you can enter a new search string below and try again.)
+              <h6 class="d-inline">Note</h6>: (If you didn't find what you were looking for, you can see 
+              <a href="{{project.}}">this project's page on TorProject's
+              GitLab account</a> to take advantage of GitLab's search functions.)
             </li>
           </ul>
       {% endwith %}
