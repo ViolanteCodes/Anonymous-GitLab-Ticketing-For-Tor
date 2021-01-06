@@ -77,9 +77,9 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
         if result['project_status'] != 'failed':    
             self.linked_project = linked_project
             result['status'] = """Project found, pending issue."""
-            result['project_name'] = self.linked_project.name
-            result['project_description'] = self.linked_project.description
-            result['project_id'] = linked_project.id
+            # result['project_name'] = self.linked_project.name
+            # result['project_description'] = self.linked_project.description
+            # result['project_id'] = linked_project.id
             result['matching_project'] = linked_project
         return result
 
