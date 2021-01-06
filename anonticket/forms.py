@@ -1,26 +1,13 @@
 from django import forms
 from django.forms import ModelForm
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 import gitlab
 import random
 from .models import Project, Issue, UserIdentifier
 
+# Initialize GitLab Object
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
-
-# Messages to be shared across forms go here.
-
-project_not_found_message = """This project could not be fetched from gitlab.
-It likely does not exist, or you don't have access to it."""
-issue_not_found_message = """Your project was found, but this issue 
-could not be fetched from gitlab. It likely does not exist, or you
-don't have access to it."""
-unknown_error_message = """This lookup failed for a reason not currently
-accounted for by our current error handling."""
-successful_issue_lookup_message = """Your project and issue were both 
-found and fetched from gitlab. Project and issue details, including
-associated notes, are listed below."""
-issue_not_created_message = """Unable to create this issue."""
-issue_search_success = """Issues were found matching this search string."""
 
 class LoginForm(forms.Form):
     """A form that allows users to enter in their keycodes to login."""
@@ -53,32 +40,36 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
         project details."""
         # Setup a results dictionary
         result = {}
+        # Setup messages dictionary for project.
+        messages = {
+            'project_not_found_message': """This project could not be 
+            fetched from gitlab. It likely does not exist, or you don't 
+            have access to it.""",
+            'unknown_project_error_message': """This lookup failed for 
+            a reason not currently accounted for by our current error 
+            handling.""",
+        }
         # Try to grab project matching form selection out of database.
-        choose_project = self.cleaned_data['choose_project']
-        working_project = get_object_or_404(Project, name=choose_project)
-        project_id = working_project.project_id
-        # Set result['passed'] with a pending flag to capture events.
+        working_project = get_object_or_404(
+            Project, project_name=self.cleaned_data['choose_project'])
+        # update result status for template
         result['project_status'] = 'pending'
         # try to fetch project from gitlab
-        # Call project_search method for form.
         try: 
-            linked_project = gl.projects.get(project_id)
+            linked_project = gl.projects.get(working_project.project_id)
         # if project does not exist (python-gitlab raises GitlabGetError)
         # pass failed status and failure message into result dictionary.
         except gitlab.exceptions.GitlabGetError:
             result['project_status'] = 'failed'
-            result['project_message'] = project_not_found_message
+            result['project_message'] = messages['project_not_found_message']
         except:
-            result['project_message'] = unknown_error_message
+            result['project_message'] = messages['unknown_project_error_message']
             result['project_status'] = 'failed'
-        # If successful on project lookup, pass project information into
-        # dictionary and try to fetch issue from gitlab.
+        # If successful on project lookup, add project as attribute to
+        # form Object and save project in dictionary as 'matching_project'.
         if result['project_status'] != 'failed':    
             self.linked_project = linked_project
-            result['status'] = """Project found, pending issue."""
-            # result['project_name'] = self.linked_project.name
-            # result['project_description'] = self.linked_project.description
-            # result['project_id'] = linked_project.id
+            result['status'] = 'pending'
             result['matching_project'] = linked_project
         return result
 
@@ -86,28 +77,34 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
         """Pass the data from the search_term CharField to github and 
         look up the project details."""
         result = project_result
-        if result['project_status'] != 'failed':
+        messages = {
+            'could_not_fetch_issue_message': """Your project was found, but 
+            this issue could not be fetched from gitlab. It likely does 
+            not exist, or you don't have access to it.""",
+            'successful_issue_lookup_message': """Issues were found matching this search string.""",
+            'no_matching_issues_message': """Your search executed successfully,
+            but no issues matching this search string were found.""",
+            'unknown_issue_error_message': """This lookup failed for
+            unknown reasons."""
+        }
+        if result['project_status'] == 'pending':
             search_string = self.cleaned_data['search_terms']
             result['search_string'] = search_string
             try:
                 search_issues = self.linked_project.search('issues', search_string)
-            except gitlab.exceptions.GitlabGetError:
-                result['status'] = 'failed'
-                result['message'] = issue_not_found_message
-            except:
-                result['status'] = 'failed'
-                results['message'] = unknown_error_message
-            # If issue lookup was successful, add issue details and notes to
-            # results dictionary.
-            if result['status'] != 'failed':
                 result['matching_issues'] = search_issues
                 if result['matching_issues']:
                     result['status'] = 'success'
-                    result['message'] = issue_search_success
+                    result['message'] = messages['successful_issue_lookup_message']
                 else:
                     result['status'] = 'no matches'
-                    result['message'] = """Your search executed successfully,
-                    but no issues matching this search string were found."""
+                    result['message'] = messages['no_matching_issues_messages']
+            except gitlab.exceptions.GitlabGetError:
+                result['status'] = 'failed'
+                result['message'] = messages['could_not_fetch_issue_message']
+            except:
+                result['status'] = 'failed'
+                results['message'] = messages['unknown_issue_error_message']                
         return result
 
     def call_project_and_issue(self):
