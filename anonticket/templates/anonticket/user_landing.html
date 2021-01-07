@@ -45,6 +45,8 @@
     <!-- Generate the action URLS on the fly within the template. -->
       <p class='mt-4 mb-0'>
         <ul>
+          <li>{% url 'project-list' results.user_identifier as project_list_url %}
+            See a list of <a href="{{project_list_url}}">all projects</a> using this portal.</li>
           <li>{% url 'issue-search' results.user_identifier as search_url %}
           <a href="{{search_url}}">Search</a> for an issue inside of a given project.</li>
           <li>{% url 'create-issue' results.user_identifier as create_url %}
