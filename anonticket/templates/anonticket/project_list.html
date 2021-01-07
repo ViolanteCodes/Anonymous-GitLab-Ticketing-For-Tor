@@ -38,7 +38,9 @@
             {% for project in project_list %}
             <tr>
                 <td>
-                    {{project.project_gl_group.name}} / {{project.project_name}}
+                    {% url 'project-detail' results.user_identifier project.slug as project_detail_url %}
+                    <a href="{{project_detail_url}}">
+                    {{project.project_gl_group.name}} / {{project.project_name}}</a>
                 </td>
                 <td>
                     {{project.project_description|truncatewords:15}}
