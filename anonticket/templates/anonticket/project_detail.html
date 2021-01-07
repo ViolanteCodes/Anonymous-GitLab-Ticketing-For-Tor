@@ -1,1 +1,30 @@
-Project Detail View
+{% extends 'shared/layout.html' %}
+{% load static %}
+<!-- Load custom filters from shared app, including ISO 8901 Date-Time Converter -->
+{% load custom_filters %}
+<!-- Load markdownify -->
+{% load markdownify %}
+<!-- Start Page Render -->
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
+
+{% block h3 %}
+{{object.project_name_with_namespace}} ({{object.project.id}})
+{% endblock %}
+
+{% block subheader %} 
+  Project Detail for {{object.project_name}}</p>
+{% endblock %}
+
+{% block content %}
+
+<!-- Generate a Back to Landing URL Link -->
+{% url 'user-landing' results.user_identifier as go_back_url %}
+<div>
+  <p>
+    <a href="{{go_back_url}}">Go Back to User Landing Page</a>
+  </p>
+</div>
+{% endblock %}

@@ -112,6 +112,12 @@ def gitlab_get_notes_list(project, issue):
     notes_list = working_issue.notes.list()
     return notes_list
 
+def gitlab_get_issues_list(project):
+    """Grabs the issues list for a specific project."""
+    working_project = gitlab_get_project(project)
+    issues_list = working_project.issues.list()
+    return issues_list
+
 # --------------------------SPECIFIC VIEWS------------------------------
 # The functions below are listed in the order that a user is likely to 
 # encounter them (e.g., generate a codename, then login with codename.)
@@ -224,6 +230,18 @@ class ProjectDetailView(PassUserIdentifierMixin, DetailView):
     """A detail view of a single project."""
     model = Project
 
+    def get_context_data(self, **kwargs):
+        """Update the context data to include the project issues list."""
+        context = super().get_context_data(**kwargs)
+        project_slug = self.kwargs['slug']
+        working_project = Project.objects.get(
+            slug=project_slug
+        )
+        working_id = working_project.project_id
+        issues_list = gitlab_get_issues_list(working_id)
+        context['issues_list'] = issues_list                   
+        return context
+    
 # -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.
 # ----------------------------------------------------------------------
