@@ -1,1 +1,40 @@
-Test
+{% extends 'shared/layout.html' %}
+{% load static %}
+<!-- Load custom filters from shared app, including ISO 8901 Date-Time Converter -->
+{% load custom_filters %}
+<!-- Load markdownify -->
+{% load markdownify %}
+<!-- Start Page Render -->
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
+
+{% block h3 %}
+    <h3> Project List </h3>
+
+{% endblock %}
+{% block subheader %} 
+  <p class="small short-height">List of all projects</p>
+{% endblock %}
+
+{% block content %}
+<!-- Issue Summary Block -->
+{% for project in project_list %}
+  <div class="row">
+    <div class="col-12">
+      <h4 class="card-title">{{project.project_name}}</h4>
+      <ul>
+        <li><span class="text-muted">Currently Assigned To:</span> Text</li>
+      </ul>
+    </div>
+  </div>
+{% endfor %}
+<!-- Generate a Back to Landing URL Link -->
+{% url 'user-landing' results.user_identifier as go_back_url %}
+<div>
+  <p>
+    <a href="{{go_back_url}}">Go Back to User Landing Page</a>
+  </p>
+</div>
+{% endblock %}
