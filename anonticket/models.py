@@ -12,8 +12,10 @@ class UserIdentifier(models.Model):
     def __str__(self):
         return self.user_identifier
 
-class Gl_Group(models.Model):
-    """Representation of a Gitlab Group in the database."""
+class GLGroup(models.Model):
+    """Representation of a Gitlab Group in the database. This does not
+    need to be supplied by the admin; it will automatically be created if
+    a project is put into the database."""
     name = models.CharField(max_length=200, null=True, blank=True)
     gl_id = models.IntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -23,14 +25,17 @@ class Gl_Group(models.Model):
         return self.name
 
 class Project(models.Model):
-    """Representation of a project in the database."""
+    """Representation of a project in the database. To add a GL project 
+    to the database, only the gitlab id number needs to be supplied in the
+    project_id field. Upon saving, the project details and any necessary
+    group details will be fetched from gitlab."""
     project_id = models.IntegerField()
     project_name = models.CharField(max_length=200, null=True, blank=True)
     project_name_with_namespace = models.CharField(max_length=200, null=True, blank=True)
     project_description = models.TextField(null=True, blank=True)
     project_slug = models.SlugField(max_length=50, null=True, blank=True)
     project_url = models.URLField(null=True, blank=True)
-    project_gl_group = models.ForeignKey(Gl_Group, on_delete=models.CASCADE, null=True, blank=True)
+    project_gl_group = models.ForeignKey(GLGroup, on_delete=models.CASCADE, null=True, blank=True)
 
     def fetch_from_gitlab(self):
         """Given the project_id, fetch the relevant information from Gitlab."""
@@ -44,7 +49,24 @@ class Project(models.Model):
             self.project_description = working_project.description 
             self.project_slug = slugify(working_project.name)
             self.project_url = working_project.web_url
-
+        # if the project does not have a project_gl_group foreignkey, first
+        # check to see if a GLGroup object with the gitlab id exists.
+            if not self.project_gl_group:
+                gl_group_id = working_project.namespace['id']
+                try:
+                    fetch_group = GLGroup.objects.get(gl_id=gl_group_id)
+                    self.project_gl_group = fetch_group
+        # if a matching GlGroup cannot be fetched, pull the group info from
+        # gitlab and create one.
+                except:
+                    from_gitlab = gl.groups.get(gl_group_id)
+                    new_group = GLGroup.objects.create(
+                        name=from_gitlab.name,
+                        gl_id=gl_group_id,
+                        description=from_gitlab.description,
+                        url=from_gitlab.web_url
+                    )
+                    self.project_gl_group = new_group
         except:
             pass
 

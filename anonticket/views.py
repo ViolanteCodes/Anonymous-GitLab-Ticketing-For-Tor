@@ -1,7 +1,7 @@
 import gitlab
 import functools
 from django.conf import settings
-from anonticket.models import Issue, Project, UserIdentifier
+from anonticket.models import UserIdentifier, GLGroup, Project, Issue
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     LoginForm,
