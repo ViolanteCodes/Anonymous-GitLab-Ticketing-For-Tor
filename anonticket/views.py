@@ -226,19 +226,20 @@ class ProjectListView(PassUserIdentifierMixin, ListView):
     queryset = Project.objects.order_by('project_name_with_namespace')
 
 @method_decorator(validate_user, name='dispatch')
-class ProjectDetailView(PassUserIdentifierMixin, DetailView):
+class ProjectDetailView(DetailView):
     """A detail view of a single project."""
     model = Project
 
-    def get_context_data(self, **kwargs):
-        """Update the context data to include the project issues list."""
+    def get_context_data(self, **kwargs):          
         context = super().get_context_data(**kwargs)
+        context['results'] = {'user_identifier':self.kwargs['user_identifier']}                     
         project_slug = self.kwargs['slug']
         working_project = Project.objects.get(
             slug=project_slug
         )
         working_id = working_project.project_id
-        issues_list = gitlab_get_issues_list(working_id)
+        gitlab_project = gl.projects.get(working_id)
+        issues_list = gitlab_project.issues.list()
         context['issues_list'] = issues_list                   
         return context
     

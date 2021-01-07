@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block h3 %}
-{{object.project_name_with_namespace}} ({{object.project.id}})
+{{object.project_name_with_namespace}} ({{object.project.project_id}})
 {% endblock %}
 
 {% block subheader %} 
@@ -19,6 +19,10 @@
 {% endblock %}
 
 {% block content %}
+<!-- Create the Issues List Block -->
+{% if issues_list %}
+<p>HA</p>
+{% endif %}
 
 <!-- Generate a Back to Landing URL Link -->
 {% url 'user-landing' results.user_identifier as go_back_url %}
