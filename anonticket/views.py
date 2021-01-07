@@ -219,6 +219,11 @@ class ProjectListView(PassUserIdentifierMixin, ListView):
     """Simple List View of all projects."""
     queryset = Project.objects.order_by('project_name_with_namespace')
 
+@method_decorator(validate_user, name='dispatch')
+class ProjectDetailView(PassUserIdentifierMixin, DetailView):
+    """A detail view of a single project."""
+    model = Project
+
 # -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.
 # ----------------------------------------------------------------------

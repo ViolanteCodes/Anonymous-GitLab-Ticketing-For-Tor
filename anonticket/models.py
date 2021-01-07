@@ -33,7 +33,7 @@ class Project(models.Model):
     project_name = models.CharField(max_length=200, null=True, blank=True)
     project_name_with_namespace = models.CharField(max_length=200, null=True, blank=True)
     project_description = models.TextField(null=True, blank=True)
-    project_slug = models.SlugField(max_length=50, null=True, blank=True)
+    slug = models.SlugField(max_length=50, null=True, blank=True)
     project_url = models.URLField(null=True, blank=True)
     project_gl_group = models.ForeignKey(GLGroup, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -47,7 +47,7 @@ class Project(models.Model):
             self.project_name = working_project.name
             self.project_name_with_namespace = working_project.name_with_namespace
             self.project_description = working_project.description 
-            self.project_slug = slugify(working_project.name)
+            self.slug = slugify(working_project.name)
             self.project_url = working_project.web_url
         # if the project does not have a project_gl_group foreignkey, first
         # check to see if a GLGroup object with the gitlab id exists.
