@@ -8,7 +8,7 @@ from .forms import (
     CreateIssueForm)
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView, DetailView
+from django.views.generic import TemplateView, DetailView, ListView
 
 # ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
 # Functions that need to be accessed from within multiple views go here,
@@ -218,7 +218,7 @@ class UserLoginErrorView(TemplateView):
 class ProjectListView(PassUserIdentifierMixin, ListView):
     """Simple List View of all projects."""
     model = Project
-    
+
 # -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.
 # ----------------------------------------------------------------------
