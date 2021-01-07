@@ -8,21 +8,26 @@ class UserIdentifier(models.Model):
     """Representation of a user identifier."""
     user_identifier = models.CharField(max_length=200)
 
-    def publish(self):
-        self.save()
-
     def __str__(self):
         return self.user_identifier
 
+class Gl_Group(models.Model):
+    """Representation of a Gitlab Group in the database."""
+    name = models.CharField(max_length=200, null=True, blank=True)
+    gl_id = models.IntegerField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    url = models.URLField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
 class Project(models.Model):
     """Representation of a project in the database."""
-    project_name = models.CharField(max_length=200)
-    project_description = models.TextField()
-    project_slug = models.SlugField(max_length=50)
     project_id = models.IntegerField()
-
-    def publish(self):
-        self.save()
+    project_name = models.CharField(max_length=200, null=True, blank=True)
+    project_description = models.TextField(null=True, blank=True)
+    project_slug = models.SlugField(max_length=50, null=True, blank=True)
+    gl_group = models.ForeignKey(Gl_Group, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.project_name
