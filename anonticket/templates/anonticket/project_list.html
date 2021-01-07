@@ -21,14 +21,11 @@
 {% block content %}
 <!-- Issue Summary Block -->
 {% for project in project_list %}
-  <div class="row">
-    <div class="col-12 bg-light form-control">
-      <h4 class="card-title">{{project.project_name}}</h4>
-      <ul>
-        <li><span class="text-muted">Currently Assigned To:</span> Text</li>
-      </ul>
+<div class="row">
+    <div class="col-12">
+        {{project.project_gl_group.name}} > {{project.project_name}}
     </div>
-  </div>
+</div>
 {% endfor %}
 <!-- Generate a Back to Landing URL Link -->
 {% url 'user-landing' results.user_identifier as go_back_url %}
