@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils.text import slugify
 import gitlab
 
 # Create your models here.
@@ -25,9 +26,32 @@ class Project(models.Model):
     """Representation of a project in the database."""
     project_id = models.IntegerField()
     project_name = models.CharField(max_length=200, null=True, blank=True)
+    project_name_with_namespace = models.CharField(max_length=200, null=True, blank=True)
     project_description = models.TextField(null=True, blank=True)
     project_slug = models.SlugField(max_length=50, null=True, blank=True)
-    gl_group = models.ForeignKey(Gl_Group, on_delete=models.CASCADE, null=True, blank=True)
+    project_url = models.URLField(null=True, blank=True)
+    project_gl_group = models.ForeignKey(Gl_Group, on_delete=models.CASCADE, null=True, blank=True)
+
+    def fetch_from_gitlab(self):
+        """Given the project_id, fetch the relevant information from Gitlab."""
+        # Create the gitlab object
+        gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
+        # Grab the associated project from gitlab.
+        try: 
+            working_project = gl.projects.get(self.project_id)
+            self.project_name = working_project.name
+            self.project_name_with_namespace = working_project.name_with_namespace
+            self.project_description = working_project.description 
+            self.project_slug = slugify(working_project.name)
+            self.project_url = working_project.web_url
+
+        except:
+            pass
+
+    def save(self, *args, **kwargs):
+        """Update the save method to fetch fresh info from gitlab when projects are saved."""
+        self.fetch_from_gitlab()
+        super(Project, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.project_name
