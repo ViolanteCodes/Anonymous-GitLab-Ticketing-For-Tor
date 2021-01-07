@@ -217,7 +217,7 @@ class UserLoginErrorView(TemplateView):
 @method_decorator(validate_user, name='dispatch')
 class ProjectListView(PassUserIdentifierMixin, ListView):
     """Simple List View of all projects."""
-    model = Project
+    queryset = Project.objects.order_by('project_name_with_namespace')
 
 # -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.

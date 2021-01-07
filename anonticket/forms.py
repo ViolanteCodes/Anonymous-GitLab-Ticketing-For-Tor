@@ -42,29 +42,36 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
         result = {}
         # Setup messages dictionary for project.
         messages = {
-            'project_not_found_message': """This project could not be 
+            'gitlab_project_not_found_message': """This project could not be 
             fetched from gitlab. It likely does not exist, or you don't 
             have access to it.""",
             'unknown_project_error_message': """This lookup failed for 
             a reason not currently accounted for by our current error 
             handling.""",
         }
-        # Try to grab project matching form selection out of database.
-        working_project = get_object_or_404(
-            Project, project_name=self.cleaned_data['choose_project'])
-        # update result status for template
         result['project_status'] = 'pending'
-        # try to fetch project from gitlab
+        if self.cleaned_data['choose_project']:
+            working_project_name = self.cleaned_data['choose_project']
+        # Try to grab project matching form selection out of database.
         try: 
-            linked_project = gl.projects.get(working_project.project_id)
-        # if project does not exist (python-gitlab raises GitlabGetError)
-        # pass failed status and failure message into result dictionary.
-        except gitlab.exceptions.GitlabGetError:
-            result['project_status'] = 'failed'
-            result['project_message'] = messages['project_not_found_message']
+            working_project = get_object_or_404(
+                Project, project_name=working_project_name)
+        # Once Project is found, grab project info from gitlab.
+            try:
+                id_to_grab = working_project.project_id 
+                linked_project = gl.projects.get(id_to_grab)
+            # if project does not exist (python-gitlab raises GitlabGetError)
+            # pass failed status and failure message into result dictionary.
+            except gitlab.exceptions.GitlabGetError:
+                result['project_status'] = 'failed'
+                result['project_message'] = messages['gitlab_project_not_found_message']
+            except:
+                result['project_message'] = messages['unknown_project_error_message']
+                result['project_status'] = 'failed'
+        except Project.DoesNotExist:
+            raise Http404("No Project matches the given query.")
         except:
-            result['project_message'] = messages['unknown_project_error_message']
-            result['project_status'] = 'failed'
+            pass
         # If successful on project lookup, add project as attribute to
         # form Object and save project in dictionary as 'matching_project'.
         if result['project_status'] != 'failed':    
@@ -87,7 +94,7 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
             'unknown_issue_error_message': """This lookup failed for
             unknown reasons."""
         }
-        if result['project_status'] == 'pending':
+        if result['status'] == 'pending':
             search_string = self.cleaned_data['search_terms']
             result['search_string'] = search_string
             try:
@@ -98,13 +105,13 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
                     result['message'] = messages['successful_issue_lookup_message']
                 else:
                     result['status'] = 'no matches'
-                    result['message'] = messages['no_matching_issues_messages']
+                    result['message'] = messages['no_matching_issues_message']
             except gitlab.exceptions.GitlabGetError:
                 result['status'] = 'failed'
                 result['message'] = messages['could_not_fetch_issue_message']
             except:
                 result['status'] = 'failed'
-                results['message'] = messages['unknown_issue_error_message']                
+                result['message'] = messages['unknown_issue_error_message']                
         return result
 
     def call_project_and_issue(self):

@@ -3,11 +3,19 @@ with a valid user_identifier. For class-based views, user_identifier
 from URL/kwargs has to be passed to final context dictionary via the
 PassUserIdentifierMixin, which will pass the user_identifier into a 
 dictionary called 'results.'-->
-
+{% if results %}
+<li class="nav-item mt-4">
+    Main Links:
+</li>
+<li class="nav-item">
+    {% url 'project-list' results.user_identifier as project_list_url %}
+    <a href="{{project_list_url}}">
+        See List of All Projects
+    </a>
+</li>
 <li class="nav-item mt-4">
     User Links:
 </li>
-{% if results %}
 <li class="nav-item">
     {% url 'user-landing' results.user_identifier as menu_landing_url %}
     <a href="{{menu_landing_url}}">
