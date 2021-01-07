@@ -210,6 +210,15 @@ class UserLoginErrorView(TemplateView):
     """A generic landing page if a username doesn't pass validation tests."""
     template_name = 'anonticket/user_login_error.html'
 
+# -------------------------PROJECT VIEWS----------------------------------
+# Views related to creating/looking up issues.
+# ----------------------------------------------------------------------
+
+@method_decorator(validate_user, name='dispatch')
+class ProjectListView(PassUserIdentifierMixin, ListView):
+    """Simple List View of all projects."""
+    model = Project
+    
 # -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.
 # ----------------------------------------------------------------------
