@@ -2,9 +2,10 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Project, Issue, UserIdentifier
-admin.site.register(Project)
+from .models import UserIdentifier, GLGroup, Project, Issue
 admin.site.register(UserIdentifier)
+admin.site.register(GLGroup)
+admin.site.register(Project)
 
 def bulk_approve_issues(modeladmin, request, queryset):
     """Add a bulk approval method for issues to admin panel."""
