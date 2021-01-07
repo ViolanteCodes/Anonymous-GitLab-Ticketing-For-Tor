@@ -16,9 +16,8 @@
 - Tests
 
 4:  GitLab Python
----
 
-## 1.0: General Information and Project Layout
+## 1.0: General Information and Project Layout, Including Quickstart Notes For Admins:
 
 Django applications or projects generally contain a main project folder 
 (in this case 'ticketlobby'), as well as several app folders, which can be
@@ -45,7 +44,19 @@ base templates and static files into their own app, overall development
 and deployment are easier. (Note: This is not the recommend approach if 
 you are designing a Django project with a LOT of apps.)
 
----
+### Adding Projects
+
+Once an admin has created a superuser, adding a project to the database
+is extremely simple, in that it requires only one piece of information--
+the gitlab id number of the project (available on the project's gitlab
+page. (From the admin panel, click "projects" - > "create" - > and type in the
+gitlab id number. Hit save.)
+
+Django will then create a gitlab object instance and fetch all the project's 
+details for the database entry and save them. It will also check the GLGroup's to
+see if a matching gitlab group already exists in the database; if it does 
+not, it will fetch the group's information from gitlab, create the group, and 
+assign the project to the relevant gitlab group.
 
 ## 2.0 Getting Started: 
 ### Notes on Packages:
@@ -118,7 +129,11 @@ to another view, or to render an html page using one or more html TEMPLATES. Arg
 rendering the html template are usually passed to the template as a dictionary (associative array),
 and can be called by the template (e.g., if the dictionary is passed as {results}, {{results.user_identifier}} 
 is equivalent to results['user_identifier'].) Context dictionaries can contain strings, lists, or 
-other dictionaries.
+other dictionaries, but a Mixin has been created (PassUserIdentifierMixin) that has been
+used to create all of the class based views. This Mixin will automatically pass
+the user_identifier from the url argument to a context dictionary called "results"
+to minimize code duplication when repurposing templates across function and class
+based views.
 
 ### Templates
 
@@ -200,9 +215,9 @@ $ coverage report
 Run this command to generate an HTML report from this file:
 
 $ coverage html
+
 This creates a folder called htmlcov. Open up htmlcov/index.html and you'll
 see an easier to parse version of the report.
----
 
 ## Packages
 
