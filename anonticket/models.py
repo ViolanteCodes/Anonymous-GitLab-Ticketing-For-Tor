@@ -76,7 +76,7 @@ class Project(models.Model):
         super(Project, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.project_name
+        return self.project_name_with_namespace
 
 class Issue(models.Model):
     """A representation of a user reported issue."""
