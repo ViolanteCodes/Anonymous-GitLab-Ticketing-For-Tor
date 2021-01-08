@@ -171,6 +171,7 @@ class Note(models.Model):
         try:
             new_note = working_issue.notes.create(
                 {'body': self.body,
+                }
                 )
             self.posted_to_GitLab = True
             self.gitlab_id = new_note.id
