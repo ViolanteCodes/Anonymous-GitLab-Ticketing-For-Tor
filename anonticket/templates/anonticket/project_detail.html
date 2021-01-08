@@ -11,11 +11,11 @@
 {% endblock %}
 
 {% block h3 %}
-{{object.project_name_with_namespace}} ({{object.project.project_id}})
+{{object.name_with_namespace}} ({{object.project.gitlab_id}})
 {% endblock %}
 
 {% block subheader %} 
-  Project Detail for {{object.project_name}}</p>
+  Project Detail for {{object.name}}</p>
 {% endblock %}
 
 {% block content %}

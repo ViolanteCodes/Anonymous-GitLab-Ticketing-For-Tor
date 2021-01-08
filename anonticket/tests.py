@@ -88,17 +88,17 @@ class TestViews(TestCase):
         self.issue_detail_url = reverse('issue-detail-view', args=[ 'duo-atlas-hypnotism-curry-creatable-rubble', 740, 2])
 
         Project.objects.create(
-            project_name="anon-ticket", 
-            project_description="Anonymous ticket handling front-end for Gitlab.",
-            project_slug="anon-ticket",
-            project_id= 740,
+            name="anon-ticket", 
+            description="Anonymous ticket handling front-end for Gitlab.",
+            slug="anon-ticket",
+            gitlab_id= 740,
         )
 
         Project.objects.create(
-            project_name="a-bad-project", 
-            project_description="A known bad test project.",
-            project_slug="known-bad",
-            project_id= 1,
+            name="a-bad-project", 
+            description="A known bad test project.",
+            slug="known-bad",
+            gitlab_id= 1,
         )
 
         UserIdentifier.objects.create(
@@ -110,19 +110,19 @@ class TestViews(TestCase):
         )
 
         Issue.objects.create (
-            issue_title = 'A pending issue',
-            issue_description = 'A pending issue description',
-            linked_project = Project.objects.get(project_name='anon-ticket'),
+            title = 'A pending issue',
+            description = 'A pending issue description',
+            linked_project = Project.objects.get(name='anon-ticket'),
             linked_user = UserIdentifier.objects.get(user_identifier='duo-atlas-hypnotism-curry-creatable-rubble'),
             id = 1
         )
 
-        Issue.objects.create (
-            issue_title = 'A posted issue',
-            issue_description = 'A posted issue description',
-            linked_project = Project.objects.get(project_name='anon-ticket'),
+        Issue.objects.create (  
+            title = 'A posted issue',
+            description = 'A posted issue description',
+            linked_project = Project.objects.get(name='anon-ticket'),
             linked_user = UserIdentifier.objects.get(user_identifier='duo-atlas-hypnotism-curry-creatable-rubble'),
-            issue_iid = 1,
+            gitlab_iid = 1,
             reviewer_status = 'A',
             posted_to_GitLab = True
         )

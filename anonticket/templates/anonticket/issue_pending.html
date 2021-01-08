@@ -25,14 +25,14 @@
   </div>
   <div class="row  mt-5">
     <div class="col-12">
-      <h4><span class="badge badge-primary mr-2">Pending</span>{{issue.issue_title|capfirst}}</h4>
+      <h4><span class="badge badge-primary mr-2">Pending</span>{{issue.title|capfirst}}</h4>
     </div>
   <div class="col-12 small mt-0 mb-3 text-right">
   </div>
 </div>
 {% endblock %}
 {% block subheader %} 
-  <p class="small short-height">{{issue.issue_description|capfirst|markdownify}}</p>
+  <p class="small short-height">{{issue.description|capfirst|markdownify}}</p>
 {% endblock %}
 
 {% block content %}

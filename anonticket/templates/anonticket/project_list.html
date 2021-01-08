@@ -40,13 +40,13 @@
                 <td>
                     {% url 'project-detail' results.user_identifier project.slug as project_detail_url %}
                     <a href="{{project_detail_url}}">
-                    {{project.project_gl_group.name}} / {{project.project_name}}</a>
+                    {{project.gitlab_group.name}} / {{project.name}}</a>
                 </td>
                 <td>
-                    {{project.project_description|truncatewords:15}}
+                    {{project.description|truncatewords:15}}
                 </td>
                 <td>
-                    <a href="{{project.project_url}}">Link on Gitlab</a>
+                    <a href="{{project.url}}">Link on Gitlab</a>
                 </td>
             </tr>
             {% endfor %}

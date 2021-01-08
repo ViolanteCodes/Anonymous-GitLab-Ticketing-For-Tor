@@ -4,7 +4,7 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404
 import gitlab
 import random
-from .models import Project, Issue, UserIdentifier
+from .models import UserIdentifier, GitLabGroup, Project, Issue
 
 # Initialize GitLab Object
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
@@ -36,7 +36,7 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
     projects, issues, and tickets."""
 
     def project_search(self):
-        """Pass the data from the project_id to github and look up the 
+        """Pass the data from the gitlab_id to github and look up the 
         project details."""
         # Setup a results dictionary
         result = {}
@@ -55,10 +55,10 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
         # Try to grab project matching form selection out of database.
         try: 
             working_project = get_object_or_404(
-                Project, project_name=working_project_name)
+                Project, name=working_project_name)
         # Once Project is found, grab project info from gitlab.
             try:
-                id_to_grab = working_project.project_id 
+                id_to_grab = working_project.gitlab_id 
                 linked_project = gl.projects.get(id_to_grab)
             # if project does not exist (python-gitlab raises GitlabGetError)
             # pass failed status and failure message into result dictionary.
@@ -139,16 +139,16 @@ class Anonymous_Ticket_Project_Search_Form(Anonymous_Ticket_Base_Search_Form):
 class CreateIssueForm(ModelForm):
     class Meta:
         model = Issue
-        fields = ('linked_project', 'issue_title', 'issue_description')
+        fields = ('linked_project', 'title', 'description')
         labels = {
             'linked_project': ('Linked Project'),
-            'issue_title': ('Title of Your Issue'),
-            'issue_description': ('Describe Your Issue'),
+            'title': ('Title of Your Issue'),
+            'description': ('Describe Your Issue'),
         }
         help_texts = {
             'linked_project': ("""Choose the project associated with this issue."""),
-            'issue_title': ("""Give your issue a descriptive title."""),
-            'issue_description': ("""Describe the issue you are reporting. 
+            'title': ("""Give your issue a descriptive title."""),
+            'description': ("""Describe the issue you are reporting. 
             Please be as specific as possible about the circumstances that
             provoked the issue and the behavior that was noticed."""),
         }
