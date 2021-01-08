@@ -2,9 +2,9 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import UserIdentifier, GLGroup, Project, Issue
+from .models import UserIdentifier, GitLabGroup, Project, Issue
 admin.site.register(UserIdentifier)
-admin.site.register(GLGroup)
+admin.site.register(GitLabGroup)
 admin.site.register(Project)
 
 def bulk_approve_issues(modeladmin, request, queryset):
@@ -17,6 +17,6 @@ bulk_approve_issues.short_description = "Approve selected issues and post to Git
 
 @admin.register(Issue)
 class IssueModelAdmin(admin.ModelAdmin):
-    list_display = ('issue_title', 'linked_project','reviewer_status')
+    list_display = ('title', 'linked_project','reviewer_status')
     list_filter = ('reviewer_status', )
     actions = [bulk_approve_issues]

@@ -65,14 +65,14 @@
         <p class="small">(Issues marked with *** have not been approved by moderators and therefore have not been posted to GitLab.)</p>
           <ul>
             {% for issue in results.linked_issues %}
-              <!-- if issue has an issue_iid, generate a link to the issue-detail view and pass project id and issue iid -->
-                {% if issue.issue_iid %}
-                  {% url 'issue-detail-view' results.user_identifier issue.linked_project.project_id issue.issue_iid as issue_url %}
-                  <li><a href="{{issue_url}}">{{issue.issue_title}}</a></li>
+              <!-- if issue has an gitlab_iid, generate a link to the issue-detail view and pass project id and issue iid -->
+                {% if issue.gitlab_iid %}
+                  {% url 'issue-detail-view' results.user_identifier issue.linked_project.gitlab_id issue.gitlab_iid as issue_url %}
+                  <li><a href="{{issue_url}}">{{issue.title}}</a></li>
                 <!-- else (e.g., if issue is not approved), list the issue and generate a link to the pending-issue-detail-view -->
                 {% else %}
-                  {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.project_id issue.pk as issue_url %}
-                  <li><a href="{{issue_url}}" class="mr-1">{{issue.issue_title|capfirst}}</a> *** </li>
+                  {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.gitlab_id issue.pk as issue_url %}
+                  <li><a href="{{issue_url}}" class="mr-1">{{issue.title|capfirst}}</a> *** </li>
                 {% endif %}
             {% endfor %}
             </ul>

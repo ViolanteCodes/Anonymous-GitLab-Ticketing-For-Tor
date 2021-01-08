@@ -1,12 +1,12 @@
 import gitlab
 import functools
 from django.conf import settings
-from anonticket.models import UserIdentifier, GLGroup, Project, Issue
+from anonticket.models import UserIdentifier, GitLabGroup, Project, Issue
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     LoginForm,
     CreateIssueForm)
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, DetailView, ListView
 
@@ -79,6 +79,15 @@ def validate_user(view_func):
         return response
     return validate_user_identifier
 
+def validate_project_in_database(view_func):
+    """A decorator for URL validation that checks if a project is in the database."""
+    @functools.wraps(view_func)
+    def check_project(request, user_identifier, gitlab_id, *args, **kwargs):
+        get_object_or_404(Project, gitlab_id=gitlab_id)
+        response = view_func(request, user_identifier, gitlab_id, *args, **kwargs)
+        return response
+    return check_project
+
 class PassUserIdentifierMixin:
     """Mixin that passes user_identifier from CBV kwargs to view
     context in a 'results' dictionary, which allows it to be called in template
@@ -95,7 +104,7 @@ class PassUserIdentifierMixin:
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
 
 def gitlab_get_project(project):
-    """Takes an integer, and grabs a gitlab project where project_id
+    """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
     working_project = gl.projects.get(project)
     return working_project
@@ -217,14 +226,36 @@ class UserLoginErrorView(TemplateView):
 @method_decorator(validate_user, name='dispatch')
 class ProjectListView(PassUserIdentifierMixin, ListView):
     """Simple List View of all projects."""
-    queryset = Project.objects.order_by('project_name_with_namespace')
+    queryset = Project.objects.order_by('name_with_namespace')
 
+@method_decorator(validate_user, name='dispatch')
+class ProjectDetailView(DetailView):
+    """A detail view of a single project, which also validates user_identifier
+    and fetches the project and issues from gitlab."""
+    model = Project
+
+    def get_context_data(self, **kwargs):          
+        context = super().get_context_data(**kwargs)
+        context['results'] = {'user_identifier':self.kwargs['user_identifier']}
+        # Fetch the working project from the database first - if cannot
+        # be fetched, will throw a 404.                     
+        project_slug = self.kwargs['slug']
+        working_project = Project.objects.get(
+            slug=project_slug
+        )
+        working_id = working_project.gitlab_id
+        gitlab_project = gitlab_get_project(working_id)
+        context['gitlab_project'] = gitlab_project.attributes
+        issues_list = gitlab_project.issues.list()
+        context['issues_list'] = issues_list                   
+        return context
+    
 # -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.
 # ----------------------------------------------------------------------
 
 @validate_user
-def create_issue_view(request, user_identifier):
+def create_issue_view(request, user_identifier, *args):
     """View that allows a user to create an issue. Pulls the user_identifier
     from the URL path and tries to pull that UserIdentifier from database, 
     creating it if this is the user's first action."""
@@ -268,16 +299,17 @@ class PendingIssueDetailView(PassUserIdentifierMixin, DetailView):
     template_name = 'anonticket/issue_pending.html'
 
 @validate_user
-def issue_detail_view(request, user_identifier, project_id, issue_iid):
+@validate_project_in_database
+def issue_detail_view(request, user_identifier, gitlab_id, gitlab_iid):
     """Detailed view of an issue that has been approved and posted to GL."""
     results = {}
     results['user_identifier']=user_identifier
-    working_project = gitlab_get_project(project=project_id)
+    working_project = gitlab_get_project(project=gitlab_id)
     results['project'] = working_project.attributes
-    working_issue = gitlab_get_issue(project=project_id, issue=issue_iid)
+    working_issue = gitlab_get_issue(project=gitlab_id, issue=gitlab_iid)
     results['issue'] = working_issue.attributes
     results['notes'] = []
-    notes_list = gitlab_get_notes_list(project=project_id, issue=issue_iid)
+    notes_list = gitlab_get_notes_list(project=gitlab_id, issue=gitlab_iid)
     for note in notes_list:
         note_dict = note.attributes
         results['notes'].append(note_dict)
