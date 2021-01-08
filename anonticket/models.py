@@ -82,7 +82,7 @@ class Issue(models.Model):
     """A representation of a user reported issue."""
     title = models.CharField(max_length=200)
     linked_project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    linked_user = models.ForeignKey(UserIdentifier, on_delete=models.CASCADE, default=1)
+    linked_user = models.ForeignKey(UserIdentifier, on_delete=models.CASCADE)
     description= models.TextField()
     gitlab_iid = models.IntegerField(null=True, blank=True)
     
@@ -127,3 +127,61 @@ class Issue(models.Model):
 
     def __str__(self):
         return self.title
+
+class Note(models.Model):
+    """A representation of a note to be created for an issue. """
+    # Require a Foreign-Key relationship with a Project object, as notes
+    # should only be created for Projects in the database.
+    linked_project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    linked_user = models.ForeignKey(UserIdentifier, on_delete=models.CASCADE)
+    # This is the note/comment body.
+    body = models.TextField()
+    # issue_id is not a ForeignKey because Issue objects in database
+    # are for issues pending mod approval.
+    issue_id = models.IntegerField()
+    # Allow note_id field to be blank as this will be pulled from gitlab.
+    gitlab_id = models.IntegerField(blank=True, null=True)
+    
+    # The following fields related to reviewer status:
+    # Django recommends defining choice_list outside of CharField.
+    REVIEWER_STATUS_CHOICES = [
+        ('P', 'Pending Review'),
+        ('A', 'Approved'),
+        ('R', 'Rejected'),
+    ]
+    # Reviewer 
+    reviewer_status = models.CharField(
+        max_length=3,
+        choices=REVIEWER_STATUS_CHOICES,
+        default='P',  
+    )
+    # Fields related to GitLab status
+    posted_to_GitLab = models.BooleanField(default=False)
+
+    def approve_note(self):
+        """Approve a note and post to GitLab or return error."""
+        # Create the gitlab object
+        gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
+        # Grab the associated project from gitlab.
+        working_project = gl.projects.get(self.linked_project.gitlab_id)
+        # Grab the associated issue from gitlab.
+        working_issue = working_project.issues.get(self.issue_id)
+        # Try to create the note in the gitlab API, saving the newly
+        # created note id to the note.gitlab_id field.
+        try:
+            new_note = working_issue.notes.create(
+                {'body': self.body,
+                )
+            self.posted_to_GitLab = True
+            self.gitlab_id = new_note.id
+        except:
+            pass
+
+    def save(self, *args, **kwargs):
+        if self.reviewer_status == 'A' and self.gitlab_id == None:
+            self.approve_note() 
+        super(Note, self).save(*args, **kwargs) 
+
+    def __str__(self):
+        return self.body
+
