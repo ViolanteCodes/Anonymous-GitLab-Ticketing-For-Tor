@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block h3 %}
-{{object.name_with_namespace}} ({{object.project.gitlab_id}})
+{{object.name_with_namespace}} ({{object.gitlab_id}})
 {% endblock %}
 
 {% block subheader %} 
@@ -21,7 +21,13 @@
 {% block content %}
 <!-- Create the Issues List Block -->
 {% if issues_list %}
-<p>HA</p>
+<p>{% for issue in issues_list %}
+  {% url 'issue-detail-view' results.user_identifier object.gitlab_id issue.iid as detail_url %}
+  <a href="{{detail_url}}">{{issue.title}}</a>
+</p>
+{% endfor %}
+{% else %}
+no issues
 {% endif %}
 
 <!-- Generate a Back to Landing URL Link -->
