@@ -51,11 +51,11 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
         }
         result['project_status'] = 'pending'
         if self.cleaned_data['choose_project']:
-            working_project_name = self.cleaned_data['choose_project']
+            working_project = self.cleaned_data['choose_project']
         # Try to grab project matching form selection out of database.
         try: 
             working_project = get_object_or_404(
-                Project, name=working_project_name)
+                Project, name_with_namespace=working_project)
         # Once Project is found, grab project info from gitlab.
             try:
                 id_to_grab = working_project.gitlab_id 
