@@ -18,51 +18,54 @@
     <p class="col-auto mb-0 small pb-0 pt-0">{{object.name_with_namespace}} ({{object.gitlab_id}})</p>
     <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right"><a href="{{object.url}}">View this project on Gitlab</a>.</p>
 </div>
-<hr class="mb-0 mt-0 mb-0">
-<!-- Close row and col-12 from extended template -->
-</div></div></div>
+<hr class="mt-0">
 <!-- Make a true header -->
-<div class="row">
-  <div class="col-12">
-    <div class="page-header">
-      <h4 class="mt-0">{{object.name}}</h4>
-    </div>
-  </div>
-</div>
-<!--Mimic commit data.-->
-<div class="row">
-  <div class="col-12">
-    <div class="page-header">
-      <p class="small"></p>
-    </div>
-  </div>
-</div>
-
-  {% else %}
+<h4>{{object.name}}</h4>
+<!--Mimic commit/branch/tags/files/storage data.-->
+<p class="small">
+  {{object.description}}
+</p>
+{% else %}
     Project Not Found
-  {% endif %}
+{% endif %}
 {% endblock %}
-{% block subheader %} 
-  <p class="small short-height">{{results.issue.description|capfirst|markdownify}}</p>
+
+{% block subheader %}
 {% endblock %}
 
 {% block content %}
-<!-- Create the Issues List Block -->
-{% if issues_list %}
-<p>{% for issue in issues_list %}
-  {% url 'issue-detail-view' results.user_identifier object.gitlab_id issue.iid as detail_url %}
-  <a href="{{detail_url}}">{{issue.title}}</a>
-</p>
-{% endfor %}
-{% else %}
-no issues
-{% endif %}
+<!-- Generate a user-actiosn block -->
+<div class="row">
+  <div class="col-12">
+    <p>
+      You can either
+      {% url 'create-issue' results.user_identifier as create_url %}
+      <a href="{{create_url}}">create a new issue</a>
+      or 
+      {% url 'user-landing' results.user_identifier as go_back_url %}
+      <a href="{{go_back_url}}">go back to your landing page.</a>
+    </p>
+  </div>
+</div>
 
-<!-- Generate a Back to Landing URL Link -->
-{% url 'user-landing' results.user_identifier as go_back_url %}
-<div>
-  <p>
-    <a href="{{go_back_url}}">Go Back to User Landing Page</a>
-  </p>
+<!-- Create the Issues List Block -->
+<div class="row">
+  <div class="col-12">
+    <p>Issues List:</p>
+      <ul class="no-list-style">
+        {% if issues_list %}
+          {% for issue in issues_list %}
+            <li>
+            {% url 'issue-detail-view' results.user_identifier object.gitlab_id issue.iid as detail_url %}
+              <a href="{{detail_url}}">{{issue.title}}</a>
+            </li>
+          {% endfor %}
+        {% else %}
+          <li>
+            No issues at this time.
+          </li>
+      {% endif %}
+      </ul>
+  </div>
 </div>
 {% endblock %}

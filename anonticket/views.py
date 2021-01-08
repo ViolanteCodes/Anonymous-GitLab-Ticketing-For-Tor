@@ -121,12 +121,6 @@ def gitlab_get_notes_list(project, issue):
     notes_list = working_issue.notes.list()
     return notes_list
 
-def gitlab_get_issues_list(project):
-    """Grabs the issues list for a specific project."""
-    working_project = gitlab_get_project(project)
-    issues_list = working_project.issues.list()
-    return issues_list
-
 # --------------------------SPECIFIC VIEWS------------------------------
 # The functions below are listed in the order that a user is likely to 
 # encounter them (e.g., generate a codename, then login with codename.)
@@ -250,8 +244,8 @@ class ProjectDetailView(DetailView):
             slug=project_slug
         )
         working_id = working_project.gitlab_id
-        gitlab_project = gl.projects.get(working_id)
-        context['project_gitlab'] = gitlab_project
+        gitlab_project = gitlab_get_project(working_id)
+        context['gitlab_project'] = gitlab_project.attributes
         issues_list = gitlab_project.issues.list()
         context['issues_list'] = issues_list                   
         return context
@@ -261,7 +255,7 @@ class ProjectDetailView(DetailView):
 # ----------------------------------------------------------------------
 
 @validate_user
-def create_issue_view(request, user_identifier):
+def create_issue_view(request, user_identifier, *args):
     """View that allows a user to create an issue. Pulls the user_identifier
     from the URL path and tries to pull that UserIdentifier from database, 
     creating it if this is the user's first action."""
