@@ -338,7 +338,7 @@ def issue_search_view(request, user_identifier):
 # Views related to creating/looking up notes.
 # ----------------------------------------------------------------------
 
-# @method_decorator(validate_user, name='dispatch')
+@method_decorator(validate_user, name='dispatch')
 class NoteCreateView(CreateView):
     """View to create a note given a user_identifier."""
     model=Note
