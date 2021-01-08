@@ -133,7 +133,8 @@ class Note(models.Model):
     # Require a Foreign-Key relationship with a Project object, as notes
     # should only be created for Projects in the database.
     linked_project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    linked_user = models.ForeignKey(UserIdentifier, on_delete=models.CASCADE)
+    linked_user = models.ForeignKey(
+        UserIdentifier, on_delete=models.CASCADE)
     # This is the note/comment body.
     body = models.TextField()
     # issue_id is not a ForeignKey because Issue objects in database

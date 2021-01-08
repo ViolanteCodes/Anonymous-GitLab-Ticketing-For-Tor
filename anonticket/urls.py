@@ -1,5 +1,5 @@
-from django.urls import path, include
-from django.views.generic import TemplateView, DetailView, ListView
+from django.urls import path, include, reverse
+from django.views.generic import TemplateView, DetailView, ListView, CreateView
 from . import views
 from django.conf import settings
 from anonticket.views import (
@@ -9,6 +9,7 @@ from anonticket.views import (
     ProjectListView,
     ProjectDetailView,
     PendingIssueDetailView,
+    NoteCreateView
     )
 
 
@@ -20,6 +21,7 @@ urlpatterns = [
     path('user/<str:user_identifier>/create_issue/success/', views.IssueSuccessView.as_view(), name='issue-created'),        
     path('user/<str:user_identifier>/create_issue/', views.create_issue_view, name='create-issue'),
     path('user/<str:user_identifier>/projects/<slug:slug>/', views.ProjectDetailView.as_view(), name='project-detail'),
+    path('user/<str:user_identifier>/projects/<slug:project>/issue/<int:issue_id>/notes/create/', views.NoteCreateView.as_view(), name='create-note'),
     path('user/<str:user_identifier>/projects/', views.ProjectListView.as_view(), name='project-list'),
     path('user/<str:user_identifier>/issue/<int:gitlab_id>/<int:gitlab_iid>/details/', views.issue_detail_view, name='issue-detail-view'),
     path('user/<str:user_identifier>/issue/pending/<int:gitlab_id>/<int:pk>/details/', views.PendingIssueDetailView.as_view(), name='pending-issue-detail-view'),
