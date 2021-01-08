@@ -236,7 +236,8 @@ class ProjectListView(PassUserIdentifierMixin, ListView):
 
 @method_decorator(validate_user, name='dispatch')
 class ProjectDetailView(DetailView):
-    """A detail view of a single project."""
+    """A detail view of a single project, which also validates user_identifier
+    and fetches the project from gitlab."""
     model = Project
 
     def get_context_data(self, **kwargs):          
