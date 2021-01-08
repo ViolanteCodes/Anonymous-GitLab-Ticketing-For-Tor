@@ -83,10 +83,7 @@ def validate_project_in_database(view_func):
     """A decorator for URL validation that checks if a project is in the database."""
     @functools.wraps(view_func)
     def check_project(request, user_identifier, gitlab_id, *args, **kwargs):
-        try:
-            get_object_or_404(Project, gitlab_id=gitlab_id)
-        except:
-            return redirect('home')
+        get_object_or_404(Project, gitlab_id=gitlab_id)
         response = view_func(request, user_identifier, gitlab_id, *args, **kwargs)
         return response
     return check_project
@@ -307,8 +304,6 @@ class PendingIssueDetailView(PassUserIdentifierMixin, DetailView):
 @validate_project_in_database
 def issue_detail_view(request, user_identifier, gitlab_id, gitlab_iid):
     """Detailed view of an issue that has been approved and posted to GL."""
-    # Attempt to fetch the project from the database. If project is not in 
-    # database, redirect.
     results = {}
     results['user_identifier']=user_identifier
     working_project = gitlab_get_project(project=gitlab_id)
