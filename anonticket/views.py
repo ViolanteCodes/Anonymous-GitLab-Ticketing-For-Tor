@@ -6,7 +6,7 @@ from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     LoginForm,
     CreateIssueForm)
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, DetailView, ListView
 
@@ -78,6 +78,18 @@ def validate_user(view_func):
             response = view_func(request, user_identifier, *args, **kwargs)
         return response
     return validate_user_identifier
+
+def validate_project_in_database(view_func):
+    """A decorator for URL validation that checks if a project is in the database."""
+    @functools.wraps(view_func)
+    def check_project(request, user_identifier, gitlab_id, *args, **kwargs):
+        try:
+            get_object_or_404(Project, gitlab_id=gitlab_id)
+        except:
+            return redirect('home')
+        response = view_func(request, user_identifier, gitlab_id, *args, **kwargs)
+        return response
+    return check_project
 
 class PassUserIdentifierMixin:
     """Mixin that passes user_identifier from CBV kwargs to view
@@ -292,8 +304,11 @@ class PendingIssueDetailView(PassUserIdentifierMixin, DetailView):
     template_name = 'anonticket/issue_pending.html'
 
 @validate_user
+@validate_project_in_database
 def issue_detail_view(request, user_identifier, gitlab_id, gitlab_iid):
     """Detailed view of an issue that has been approved and posted to GL."""
+    # Attempt to fetch the project from the database. If project is not in 
+    # database, redirect.
     results = {}
     results['user_identifier']=user_identifier
     working_project = gitlab_get_project(project=gitlab_id)
