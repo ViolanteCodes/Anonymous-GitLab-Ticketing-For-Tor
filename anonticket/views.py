@@ -242,14 +242,16 @@ class ProjectDetailView(DetailView):
 
     def get_context_data(self, **kwargs):          
         context = super().get_context_data(**kwargs)
-        context['results'] = {'user_identifier':self.kwargs['user_identifier']}                     
+        context['results'] = {'user_identifier':self.kwargs['user_identifier']}
+        # Fetch the working project from the database first - if cannot
+        # be fetched, will throw a 404.                     
         project_slug = self.kwargs['slug']
         working_project = Project.objects.get(
             slug=project_slug
         )
         working_id = working_project.gitlab_id
         gitlab_project = gl.projects.get(working_id)
-        context['project_from_gitlab'] = gitlab_project
+        context['project_gitlab'] = gitlab_project
         issues_list = gitlab_project.issues.list()
         context['issues_list'] = issues_list                   
         return context
