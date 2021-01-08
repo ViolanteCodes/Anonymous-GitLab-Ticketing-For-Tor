@@ -7,8 +7,8 @@ from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     LoginForm,
     CreateIssueForm)
-from django.shortcuts import render, redirect, get_object_or_404, reverse
-from django.urls import reverse_lazy
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, DetailView, ListView, CreateView
 
@@ -338,13 +338,12 @@ def issue_search_view(request, user_identifier):
 # Views related to creating/looking up notes.
 # ----------------------------------------------------------------------
 
-@method_decorator(validate_user, name='dispatch')
-class NoteCreateView(PassUserIdentifierMixin, CreateView):
+# @method_decorator(validate_user, name='dispatch')
+class NoteCreateView(CreateView):
     """View to create a note given a user_identifier."""
     model=Note
     fields = ['body']
     template_name_suffix = '_create_form'
-    success_url = reverse_lazy('home')
 
     def form_valid(self, form):
         """Populate default Issue object attributes from URL path."""
@@ -361,3 +360,10 @@ class NoteCreateView(PassUserIdentifierMixin, CreateView):
         issue_id = self.kwargs['issue_id']
         form.instance.issue_id = issue_id
         return super(NoteCreateView, self).form_valid(form)
+
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        working_object = self.object
+        user_identifier_to_pass = working_object.linked_user.user_identifier
+        working_url = reverse('issue-created', args=[user_identifier_to_pass])
+        return working_url

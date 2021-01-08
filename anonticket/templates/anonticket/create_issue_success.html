@@ -13,7 +13,11 @@
 {% endblock %}
 <!-- Subheader block sets the subheader -->
 {% block subheader %} 
-  Your issue has been saved and is pending moderator approval.
+  Your issue or note has been saved and is pending moderator approval.
+{% endblock %}
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
 {% endblock %}
 <!-- block content block is where page contents go -->
 {% block content %}
