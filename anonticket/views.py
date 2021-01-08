@@ -81,16 +81,6 @@ def validate_user(view_func):
         return response
     return validate_user_identifier
 
-def validate_project_in_database(view_func):
-    """A decorator for URL validation that checks if a project is in the database."""
-    @functools.wraps(view_func)
-    def check_project(request, user_identifier, gitlab_id, *args, **kwargs):
-        working_project = get_object_or_404(Project, gitlab_id=gitlab_id)
-        project_slug = working_project.slug
-        response = view_func(request, user_identifier, gitlab_id, project_slug *args, **kwargs)
-        return response
-    return check_project
-
 class PassUserIdentifierMixin:
     """Mixin that passes user_identifier from CBV kwargs to view
     context in a 'results' dictionary, which allows it to be called in template
@@ -302,11 +292,12 @@ class PendingIssueDetailView(PassUserIdentifierMixin, DetailView):
     template_name = 'anonticket/issue_pending.html'
 
 @validate_user
-@validate_project_in_database
-def issue_detail_view(request, user_identifier, gitlab_id, gitlab_iid):
+def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
     """Detailed view of an issue that has been approved and posted to GL."""
     results = {}
+    database_project = get_object_or_404(Project, slug=project_slug)
     results['user_identifier']=user_identifier
+    gitlab_id = database_project.gitlab_id
     working_project = gitlab_get_project(project=gitlab_id)
     results['project'] = working_project.attributes
     working_issue = gitlab_get_issue(project=gitlab_id, issue=gitlab_iid)
