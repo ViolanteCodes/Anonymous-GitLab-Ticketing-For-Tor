@@ -237,7 +237,7 @@ class ProjectListView(PassUserIdentifierMixin, ListView):
 @method_decorator(validate_user, name='dispatch')
 class ProjectDetailView(DetailView):
     """A detail view of a single project, which also validates user_identifier
-    and fetches the project from gitlab."""
+    and fetches the project and issues from gitlab."""
     model = Project
 
     def get_context_data(self, **kwargs):          
@@ -249,6 +249,7 @@ class ProjectDetailView(DetailView):
         )
         working_id = working_project.gitlab_id
         gitlab_project = gl.projects.get(working_id)
+        context['project_from_gitlab'] = gitlab_project
         issues_list = gitlab_project.issues.list()
         context['issues_list'] = issues_list                   
         return context
