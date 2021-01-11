@@ -75,7 +75,31 @@ class TestViews(TestCase):
 
     def setUp(self):
         """Set up a project, user identifier, and issue in the test database."""
-
+        # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        # Create a user
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        # Create a pending issue.
+        pending_issue = Issue.objects.create (
+            title = 'A Pending Issue',
+            linked_project = new_project,
+            linked_user = new_user,
+            description= 'A description of a pending issue'
+        )
+        # Create a posted issue.
+        posted_issue = Issue.objects.create (  
+            title = 'A posted issue',
+            description = 'A posted issue description',
+            linked_project = new_project,
+            linked_user = new_user,
+            gitlab_iid = 1,
+            reviewer_status = 'A',
+            posted_to_GitLab = True
+        )
         self.client = Client()
         self.home_url = reverse('home')
         self.create_identifier_url = reverse('create-identifier')
@@ -84,48 +108,11 @@ class TestViews(TestCase):
         self.user_login_error_url = reverse('user-login-error', args=["bad-identifier"])
         self.create_issue_url = reverse('create-issue', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
         self.issue_success_url =  reverse('issue-created', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
-        self.pending_issue_url =  reverse('pending-issue-detail-view', args = ['duo-atlas-hypnotism-curry-creatable-rubble', 740, 1])
-        self.issue_detail_url = reverse('issue-detail-view', args=[ 'duo-atlas-hypnotism-curry-creatable-rubble', 740, 2])
-
-        Project.objects.create(
-            name="anon-ticket", 
-            description="Anonymous ticket handling front-end for Gitlab.",
-            slug="anon-ticket",
-            gitlab_id= 740,
-        )
-
-        Project.objects.create(
-            name="a-bad-project", 
-            description="A known bad test project.",
-            slug="known-bad",
-            gitlab_id= 1,
-        )
-
-        UserIdentifier.objects.create(
-            user_identifier = 'antonym-roundup-ravishing-leggings-chooser-oversight'
-        )
-
-        UserIdentifier.objects.create(
-            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
-        )
-
-        Issue.objects.create (
-            title = 'A pending issue',
-            description = 'A pending issue description',
-            linked_project = Project.objects.get(name='anon-ticket'),
-            linked_user = UserIdentifier.objects.get(user_identifier='duo-atlas-hypnotism-curry-creatable-rubble'),
-            id = 1
-        )
-
-        Issue.objects.create (  
-            title = 'A posted issue',
-            description = 'A posted issue description',
-            linked_project = Project.objects.get(name='anon-ticket'),
-            linked_user = UserIdentifier.objects.get(user_identifier='duo-atlas-hypnotism-curry-creatable-rubble'),
-            gitlab_iid = 1,
-            reviewer_status = 'A',
-            posted_to_GitLab = True
-        )
+        self.pending_issue_url =  reverse('pending-issue-detail-view', args = [
+            new_user, new_project.slug, pending_issue.pk])
+        self.issue_detail_url = reverse('issue-detail-view', args=[
+            new_user, new_project.slug, posted_issue.gitlab_iid])
+        self.new_user = new_user
     
     def test_home_view_GET(self):
         """Test the response for home_view"""
@@ -218,8 +205,7 @@ class TestViews(TestCase):
 
     def test_user_identifier_in_database(self):
         """Test user_identifier_in_database function"""
-        known_good_user = 'antonym-roundup-ravishing-leggings-chooser-oversight'
-        test_known_good_user = user_identifier_in_database(known_good_user)
+        test_known_good_user = user_identifier_in_database(self.new_user.user_identifier)
         self.assertEqual(test_known_good_user, True)
         known_bad_user = 'test-test-test-test-test-test'
         test_known_bad_user = user_identifier_in_database(known_bad_user)
