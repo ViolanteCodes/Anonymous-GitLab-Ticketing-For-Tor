@@ -1,11 +1,15 @@
 from django.conf import settings
+from django.test import SimpleTestCase, Client
+from test_plus.test import TestCase, CBVTestCase
+from django.urls import reverse, resolve
 from anonticket.models import UserIdentifier, Project, Issue
 from django.views.generic import TemplateView, DetailView
 from anonticket.views import *
-from django.urls import reverse, resolve
-from django.test import SimpleTestCase, Client
-from test_plus.test import TestCase, CBVTestCase
-
+from anonticket.forms import (
+    LoginForm, 
+    Anonymous_Ticket_Base_Search_Form,
+    Anonymous_Ticket_Project_Search_Form, 
+    CreateIssueForm)
 
 # Create your tests here.
 
@@ -104,10 +108,10 @@ class TestViews(TestCase):
         self.home_url = reverse('home')
         self.create_identifier_url = reverse('create-identifier')
         self.login_url = reverse('login')
-        self.user_landing_url = reverse('user-landing', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.user_landing_url = reverse('user-landing', args=[new_user])
         self.user_login_error_url = reverse('user-login-error', args=["bad-identifier"])
-        self.create_issue_url = reverse('create-issue', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
-        self.issue_success_url =  reverse('issue-created', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.create_issue_url = reverse('create-issue', args=[new_user])
+        self.issue_success_url =  reverse('issue-created', args=[new_user])
         self.pending_issue_url =  reverse('pending-issue-detail-view', args = [
             new_user, new_project.slug, pending_issue.pk])
         self.issue_detail_url = reverse('issue-detail-view', args=[
@@ -256,15 +260,86 @@ class TestViews(TestCase):
 # Tests for forms.py
 # ----------------------------------------------------------------------
 
-class TestForms(SimpleTestCase):
-    """Test forms.py."""
+class TestLoginForm(SimpleTestCase):
+    """Test the Login Form from forms.py."""
 
-    def setUp(self, parameter_list):
-        """
-        docstring
-        """
-        pass
+    def test_login_valid_data(self):
+        """Test login form with valid data."""
+        # duo-atlas-hypnotism-curry-creatable-rubble
+        form = LoginForm(data = {
+            'word_1': 'duo',
+            'word_2': 'atlas',
+            'word_3': 'hypnotism',
+            'word_4': 'curry',
+            'word_5': 'creatable',
+            'word_6': 'rubble',
+        })
+        self.assertTrue(form.is_valid())
     
+    def test_login_invalid_data(self):
+        """Test login form with invalid data."""
+        # duo-atlas-hypnotism-curry-creatable-rubble
+        form = LoginForm(data = {
+            'word_1': 'duo',
+            'word_2': 'atlas',
+            'word_3': 'hypnotism',
+            'word_4': 'curry',
+            'word_5': 'creatable',
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEquals(len(form.errors), 1)
+
+class TestAnonymousTicketProjectSearchForm(TestCase):
+    """Test the Anonymous_Ticket_Project_Search_Form"""
+
+    def setUp(self):
+        # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        self.project = new_project
+
+    def test_project_search_form_valid_data(self):
+        """Test the Project Search Form with valid data."""
+        form=Anonymous_Ticket_Project_Search_Form(data={
+            'choose_project':self.project,
+            'search_terms':'issue'
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_project_search_form_invalid_data(self):
+        """Test the Project Search Form with valid data."""
+        form=Anonymous_Ticket_Project_Search_Form(data={
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEquals(len(form.errors), 2)
+
+class TestCreateIssueForm(TestCase):
+    """Test the CreateIssueForm"""
+
+    def setUp(self):
+        # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        self.project = new_project
+
+    def test_create_issue_form_valid_data(self):
+        """Test the Project Search Form with valid data."""
+        form=CreateIssueForm(data={
+            'linked_project': self.project,
+            'title':'A descriptive issue title',
+            'description': 'A description of the issue.'
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_create_issue_form_invalid_data(self):
+        """Test the Project Search Form with valid data."""
+        form=CreateIssueForm(data={
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEquals(len(form.errors), 3)
+
 class TestFilters(TestCase):
     """Test custom filters."""
     
