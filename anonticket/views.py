@@ -295,19 +295,27 @@ class PendingIssueDetailView(PassUserIdentifierMixin, DetailView):
 def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
     """Detailed view of an issue that has been approved and posted to GL."""
     results = {}
+    #Fetch project from database via slug in URL - if cannot be fetched,
+    # return a 404 error.
     database_project = get_object_or_404(Project, slug=project_slug)
     results['user_identifier']=user_identifier
+    # Use the gitlab_id from database project to fetch project from gitlab.
+    # (Increases security.)
     gitlab_id = database_project.gitlab_id
     working_project = gitlab_get_project(project=gitlab_id)
     results['project'] = working_project.attributes
     working_issue = gitlab_get_issue(project=gitlab_id, issue=gitlab_iid)
     results['issue'] = working_issue.attributes
+    # Get the notes list, and then for every note in the list, grab that
+    # note's attributes, which includes the body text, etc.
     results['notes'] = []
     notes_list = gitlab_get_notes_list(project=gitlab_id, issue=gitlab_iid)
     for note in notes_list:
         note_dict = note.attributes
         results['notes'].append(note_dict)
     results['notes'].reverse()
+    # Generate notes link.
+    new_comment_link = reverse('create-note', args=[user_identifier, project_slug, gitlab_iid])
     return render(request, 'anonticket/issue_detail.html', {'results': results})
 
 @validate_user
