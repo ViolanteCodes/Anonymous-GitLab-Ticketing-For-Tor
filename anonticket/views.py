@@ -315,7 +315,8 @@ def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
         results['notes'].append(note_dict)
     results['notes'].reverse()
     # Generate notes link.
-    new_comment_link = reverse('create-note', args=[user_identifier, project_slug, gitlab_iid])
+    new_note_link = reverse('create-note', args=[user_identifier, project_slug, gitlab_iid])
+    results['new_note_link'] = new_note_link
     return render(request, 'anonticket/issue_detail.html', {'results': results})
 
 @validate_user
@@ -326,7 +327,7 @@ def issue_search_view(request, user_identifier):
     if 'search_terms' in request.GET:
         form = Anonymous_Ticket_Project_Search_Form(request.GET)
         if form.is_valid():
-            results = form.call_project_and_issue()
+            results = form.call_project_and_issue(user_identifier)
             results['user_identifier'] = user_identifier
     else:
         form = Anonymous_Ticket_Project_Search_Form
@@ -338,7 +339,7 @@ def issue_search_view(request, user_identifier):
 # ----------------------------------------------------------------------
 
 @method_decorator(validate_user, name='dispatch')
-class NoteCreateView(CreateView):
+class NoteCreateView(PassUserIdentifierMixin,CreateView):
     """View to create a note given a user_identifier."""
     model=Note
     fields = ['body']
@@ -356,8 +357,8 @@ class NoteCreateView(CreateView):
             new_user = UserIdentifier(user_identifier=self.kwargs['user_identifier'])
             new_user.save()
             form.instance.linked_user = new_user
-        issue_id = self.kwargs['issue_id']
-        form.instance.issue_id = issue_id
+        issue_iid = self.kwargs['issue_iid']
+        form.instance.issue_iid = issue_iid
         return super(NoteCreateView, self).form_valid(form)
 
     def get_success_url(self):

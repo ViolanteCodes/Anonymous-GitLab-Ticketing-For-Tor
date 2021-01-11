@@ -137,9 +137,9 @@ class Note(models.Model):
         UserIdentifier, on_delete=models.CASCADE)
     # This is the note/comment body.
     body = models.TextField()
-    # issue_id is not a ForeignKey because Issue objects in database
+    # issue_iid is not a ForeignKey because Issue objects in database
     # are for issues pending mod approval.
-    issue_id = models.IntegerField()
+    issue_iid = models.IntegerField()
     # Allow note_id field to be blank as this will be pulled from gitlab.
     gitlab_id = models.IntegerField(blank=True, null=True)
     
@@ -166,7 +166,7 @@ class Note(models.Model):
         # Grab the associated project from gitlab.
         working_project = gl.projects.get(self.linked_project.gitlab_id)
         # Grab the associated issue from gitlab.
-        working_issue = working_project.issues.get(self.issue_id)
+        working_issue = working_project.issues.get(self.issue_iid)
         # Try to create the note in the gitlab API, saving the newly
         # created note id to the note.gitlab_id field.
         try:
