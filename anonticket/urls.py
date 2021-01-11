@@ -21,7 +21,6 @@ urlpatterns = [
     path('user/<str:user_identifier>/projects/<slug:project>/issues/<int:issue_iid>/notes/create/', views.NoteCreateView.as_view(), name='create-note'),
     path('user/<str:user_identifier>/projects/<slug:project_slug>/issues/<int:gitlab_iid>/details/', views.issue_detail_view, name='issue-detail-view'),
     path('user/<str:user_identifier>/projects/<slug:project_slug>/issues/pending/<int:pk>/', views.PendingIssueDetailView.as_view(), name='pending-issue-detail-view'),
-    # path('user/<str:user_identifier>/projects/<slug:project_slug>/issues/search/', views.issue_search_view, name="issue-search"),
     path('user/<str:user_identifier>/projects/all/issues/search/', views.issue_search_view, name="issue-search"),
     path('user/<str:user_identifier>/projects/<slug:slug>/', views.ProjectDetailView.as_view(), name='project-detail'),
     path('user/<str:user_identifier>/projects/', views.ProjectListView.as_view(), name='project-list'),
