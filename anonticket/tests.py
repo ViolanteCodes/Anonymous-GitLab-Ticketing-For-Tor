@@ -19,6 +19,9 @@ from anonticket.forms import (
 
 class TestUrls(SimpleTestCase):
     """Test that the URLS in the anonticket resolve."""
+    def setUp(self):
+        self.new_user = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        self.project_slug = 'a-project-slug'
 
     def test_home_url_is_resolved(self):
         """Test the 'home' URL."""
@@ -40,15 +43,12 @@ class TestUrls(SimpleTestCase):
         url = reverse('user-login-error', args=["bad-identifier"])
         self.assertEqual(resolve(url).func.view_class, UserLoginErrorView)
 
-    def test_issue_created_url_is_resolved(self):
-        """Test the 'issue-created' URL."""
-        url = reverse('issue-created', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
-        self.assertEqual(resolve(url).func.view_class, IssueSuccessView)
-
-    def test_create_issue_url_is_resolved(self):
-        """Test the 'create-issue' URL."""
-        url = reverse('create-issue', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
-        self.assertEqual(resolve(url).func, create_issue_view)
+    def test_create_note_url_is_resolved(self):
+        """Test the 'create-note' URL."""
+        url = reverse('create-note', args=[
+            self.new_user, self.project_slug, 1
+        ])
+        self.assertEqual(resolve(url).func.view_class, NoteCreateView)
 
     def test_issue_detail_view_is_resolved(self):
         """Test the 'issue-detail-view' URL."""
@@ -64,6 +64,37 @@ class TestUrls(SimpleTestCase):
             747, 
             13])
         self.assertEqual(resolve(url).func.view_class, PendingIssueDetailView)
+
+    def test_issue_search_url_is_resolved(self):
+        """Test the 'issue-search' URL."""
+        url = reverse('issue-search', args = [
+            self.new_user
+        ])
+        self.assertEqual(resolve(url).func, issue_search_view)
+
+    def test_project_detail_view_url_is_resolved(self):
+        """Test the 'project-detail' URL."""
+        url = reverse('project-detail', args= [
+            self.new_user, self.project_slug
+        ])
+        self.assertEqual(resolve(url).func.view_class, ProjectDetailView)
+
+    def test_project_list_is_resolved(self):
+        """Test the 'project-list' URL."""
+        url = reverse('project-list', args=[
+            self.new_user
+        ])
+        self.assertEqual(resolve(url).func.view_class, ProjectListView)
+
+    def test_issue_created_url_is_resolved(self):
+        """Test the 'issue-created' URL."""
+        url = reverse('issue-created', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.assertEqual(resolve(url).func.view_class, IssueSuccessView)
+
+    def test_create_issue_url_is_resolved(self):
+        """Test the 'create-issue' URL."""
+        url = reverse('create-issue', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
+        self.assertEqual(resolve(url).func, create_issue_view)
         
     def test_user_landing_url_is_resolved(self):
         """Test the 'user-landing' URL."""
@@ -74,50 +105,20 @@ class TestUrls(SimpleTestCase):
 # Tests for views: status = 200, template correct.
 # ----------------------------------------------------------------------
 
-class TestViews(TestCase):
-    """Test the functions in views.py"""
+class TestIdentifierAndLoginViews(SimpleTestCase):
+    """Test the functions in views.py under the Identifier and Login
+    views section."""
 
     def setUp(self):
-        """Set up a project, user identifier, and issue in the test database."""
-        # Setup project
-        new_project = Project(gitlab_id=747)
-        # Should fetch gitlab details on save.
-        new_project.save()
         # Create a user
-        new_user = UserIdentifier.objects.create(
-            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
-        )
-        # Create a pending issue.
-        pending_issue = Issue.objects.create (
-            title = 'A Pending Issue',
-            linked_project = new_project,
-            linked_user = new_user,
-            description= 'A description of a pending issue'
-        )
-        # Create a posted issue.
-        posted_issue = Issue.objects.create (  
-            title = 'A posted issue',
-            description = 'A posted issue description',
-            linked_project = new_project,
-            linked_user = new_user,
-            gitlab_iid = 1,
-            reviewer_status = 'A',
-            posted_to_GitLab = True
-        )
+        self.new_user = 'duo-atlas-hypnotism-curry-creatable-rubble'
         self.client = Client()
         self.home_url = reverse('home')
         self.create_identifier_url = reverse('create-identifier')
         self.login_url = reverse('login')
-        self.user_landing_url = reverse('user-landing', args=[new_user])
+        self.user_landing_url = reverse('user-landing', args=[self.new_user])
         self.user_login_error_url = reverse('user-login-error', args=["bad-identifier"])
-        self.create_issue_url = reverse('create-issue', args=[new_user])
-        self.issue_success_url =  reverse('issue-created', args=[new_user])
-        self.pending_issue_url =  reverse('pending-issue-detail-view', args = [
-            new_user, new_project.slug, pending_issue.pk])
-        self.issue_detail_url = reverse('issue-detail-view', args=[
-            new_user, new_project.slug, posted_issue.gitlab_iid])
-        self.new_user = new_user
-    
+
     def test_home_view_GET(self):
         """Test the response for home_view"""
         response = self.client.get(self.home_url)
@@ -163,10 +164,10 @@ class TestViews(TestCase):
     def test_user_landing_view_GET_repeated_word(self):
         """Test the user_landing_view with a known bad identifier 
         (repeated word) and verify decorator redirect"""
-        too_many_words_url = reverse(
+        repeated_words_url = reverse(
             'user-landing', args=[
                 'duo-atlas-hypnotism-curry-creatable-creatable'])
-        response = self. client.get(too_many_words_url)
+        response = self.client.get(repeated_words_url)
         self.assertEqual(response.status_code, 302)
 
     def test_user_login_error_view_GET(self):
@@ -174,6 +175,76 @@ class TestViews(TestCase):
         response = self.client.get(self.user_login_error_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/user_login_error.html')
+
+class TestProjectViews(TestCase):
+    """Test the project functions in views.py"""
+
+    def setUp(self):
+        """Set up a project, user identifier, and issue in the test database."""
+        # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        # Create a user
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.client=Client()
+        self.project_list_view_url = reverse('project-list', args=[new_user])
+        self.project_detail_view_url = reverse('project-detail', args=[
+            new_user, new_project.slug])
+        self.new_user = new_user
+    
+    def test_project_list_GET(self):
+        """Test the response for the ProjectListView"""
+        response = self.client.get(self.project_list_view_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/project_list.html')
+
+    def test_project_detail_GET(self):
+        """Test the response for the ProjectDetailView"""
+        response = self.client.get(self.project_detail_view_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/project_detail.html')
+
+class TestIssuesViews(TestCase):
+    """Test the issues functions in views.py"""
+
+    def setUp(self):
+        """Set up a project, user identifier, and issue in the test database."""
+        # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        # Create a user
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        # Create a pending issue.
+        pending_issue = Issue.objects.create (
+            title = 'A Pending Issue',
+            linked_project = new_project,
+            linked_user = new_user,
+            description= 'A description of a pending issue'
+        )
+        # Create a posted issue.
+        posted_issue = Issue.objects.create (  
+            title = 'A posted issue',
+            description = 'A posted issue description',
+            linked_project = new_project,
+            linked_user = new_user,
+            gitlab_iid = 1,
+            reviewer_status = 'A',
+            posted_to_GitLab = True
+        )
+        self.client=Client()
+        self.create_issue_url = reverse('create-issue', args=[new_user])
+        self.issue_success_url =  reverse('issue-created', args=[new_user])
+        self.pending_issue_url =  reverse('pending-issue-detail-view', args = [
+            new_user, new_project.slug, pending_issue.pk])
+        self.issue_detail_url = reverse('issue-detail-view', args=[
+            new_user, new_project.slug, posted_issue.gitlab_iid])
+        self.new_user = new_user
 
     def test_create_issue_GET(self):
         """Test the response for create_issue view"""
@@ -199,13 +270,16 @@ class TestViews(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/issue_detail.html')
 
-    def test_get_wordlist(self):
-        """Test get_wordlist function."""
-        word_list_path = settings.WORD_LIST_PATH
-        with open(word_list_path) as f:
-            known_wordlist = f.read().splitlines()
-        test_wordlist = get_wordlist()
-        self.assertEqual(known_wordlist, test_wordlist)
+class TestViewsOtherWithDatabase(TestCase):
+    """Test the functions in views.py not directly related to one of the above
+    that require a database."""
+
+    def setUp(self):
+        """Set up a project, user identifier, and issue in the test database."""
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.new_user = new_user
 
     def test_user_identifier_in_database(self):
         """Test user_identifier_in_database function"""
@@ -214,6 +288,18 @@ class TestViews(TestCase):
         known_bad_user = 'test-test-test-test-test-test'
         test_known_bad_user = user_identifier_in_database(known_bad_user)
         self.assertEqual(test_known_bad_user, False)
+
+class TestViewsOtherWithoutDatabase(SimpleTestCase):
+    """Test the functions in views.py not directly related to one of the above
+    that do NOT require a database (simpletestcase)."""
+    
+    def test_get_wordlist(self):
+        """Test get_wordlist function."""
+        word_list_path = settings.WORD_LIST_PATH
+        with open(word_list_path) as f:
+            known_wordlist = f.read().splitlines()
+        test_wordlist = get_wordlist()
+        self.assertEqual(known_wordlist, test_wordlist)
 
     def test_generate_user_identifier_list(self):
         """Test the generate_user_identifier_list function from CreateIdentifierView."""
