@@ -67,11 +67,11 @@
             {% for issue in results.linked_issues %}
               <!-- if issue has an gitlab_iid, generate a link to the issue-detail view and pass project id and issue iid -->
                 {% if issue.gitlab_iid %}
-                  {% url 'issue-detail-view' results.user_identifier issue.linked_project.gitlab_id issue.gitlab_iid as issue_url %}
+                  {% url 'issue-detail-view' results.user_identifier issue.linked_project.slug issue.gitlab_iid as issue_url %}
                   <li><a href="{{issue_url}}">{{issue.title}}</a></li>
                 <!-- else (e.g., if issue is not approved), list the issue and generate a link to the pending-issue-detail-view -->
                 {% else %}
-                  {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.gitlab_id issue.pk as issue_url %}
+                  {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.slug issue.pk as issue_url %}
                   <li><a href="{{issue_url}}" class="mr-1">{{issue.title|capfirst}}</a> *** </li>
                 {% endif %}
             {% endfor %}

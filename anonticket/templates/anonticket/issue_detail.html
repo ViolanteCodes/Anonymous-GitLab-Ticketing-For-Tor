@@ -61,7 +61,9 @@
 {% url 'user-landing' results.user_identifier as go_back_url %}
 <div>
   <p>
-    <a href="{{go_back_url}}">Go Back to User Landing Page</a>
+    You can <a href="{{go_back_url}}">go back to your landing page</a> or
+    <!-- New_note_link is generated in views.py. -->
+    <a href="{{results.new_note_link}}">create a new note</a> for this issue.
   </p>
 </div>
 <!-- Notes Block -->

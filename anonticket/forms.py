@@ -2,6 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 import gitlab
 import random
 from .models import UserIdentifier, GitLabGroup, Project, Issue
@@ -56,6 +57,7 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
         try: 
             working_project = get_object_or_404(
                 Project, name_with_namespace=working_project)
+            self.database_project = working_project
         # Once Project is found, grab project info from gitlab.
             try:
                 id_to_grab = working_project.gitlab_id 
@@ -114,12 +116,26 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
                 result['message'] = messages['unknown_issue_error_message']                
         return result
 
-    def call_project_and_issue(self):
+    def get_issue_links(self, issue_result={}, user_identifier='user_identifier'):
+        """Formulate a link to the issue detail page for each issue in the 
+        list"""
+        result = issue_result
+        if result['status'] == 'success':
+            for issue in result['matching_issues']:
+                issue['detail_url'] = reverse(
+                    'issue-detail-view', args=[
+                        user_identifier, self.database_project.slug, issue['iid'],
+                    ])
+        return result
+
+    def call_project_and_issue(self, user_identifier):
         """Call the project_search and issue_search methods and send the
         relevant information to GitLab to look up a ticket."""
         project_result = self.project_search()
-        result = self.issue_search(project_result=project_result)
-        return result
+        issue_result = self.issue_search(project_result=project_result)
+        with_issue_links = self.get_issue_links(
+            issue_result=issue_result, user_identifier=user_identifier)
+        return with_issue_links
 
 class Anonymous_Ticket_Project_Search_Form(Anonymous_Ticket_Base_Search_Form):
     """A form to let users search for an issue or notes matching a project string."""

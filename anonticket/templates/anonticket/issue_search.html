@@ -64,8 +64,7 @@
         <h4>Issues Matching Your Search String</h4>
         <ul>
           {% for issue in results.matching_issues %}
-            {% url 'issue-detail-view' results.user_identifier issue.project_id issue.iid as issue_url %}
-          <li class="mb-1"><a href="{{issue_url}}">{{issue.title}}</a>: {{issue.description|truncatewords:20}}</li>
+          <li class="mb-1"><a href="{{issue.detail_url}}">{{issue.title}}</a>: {{issue.description|truncatewords:20}}</li>
           {% endfor %}
         </ul>
       </div>

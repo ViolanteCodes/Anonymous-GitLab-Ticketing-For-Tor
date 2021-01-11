@@ -1,14 +1,16 @@
 import gitlab
 import functools
 from django.conf import settings
-from anonticket.models import UserIdentifier, GitLabGroup, Project, Issue
+from anonticket.models import (
+    UserIdentifier, GitLabGroup, Project, Issue, Note)
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     LoginForm,
     CreateIssueForm)
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView, DetailView, ListView
+from django.views.generic import TemplateView, DetailView, ListView, CreateView
 
 # ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
 # Functions that need to be accessed from within multiple views go here,
@@ -78,15 +80,6 @@ def validate_user(view_func):
             response = view_func(request, user_identifier, *args, **kwargs)
         return response
     return validate_user_identifier
-
-def validate_project_in_database(view_func):
-    """A decorator for URL validation that checks if a project is in the database."""
-    @functools.wraps(view_func)
-    def check_project(request, user_identifier, gitlab_id, *args, **kwargs):
-        get_object_or_404(Project, gitlab_id=gitlab_id)
-        response = view_func(request, user_identifier, gitlab_id, *args, **kwargs)
-        return response
-    return check_project
 
 class PassUserIdentifierMixin:
     """Mixin that passes user_identifier from CBV kwargs to view
@@ -299,21 +292,31 @@ class PendingIssueDetailView(PassUserIdentifierMixin, DetailView):
     template_name = 'anonticket/issue_pending.html'
 
 @validate_user
-@validate_project_in_database
-def issue_detail_view(request, user_identifier, gitlab_id, gitlab_iid):
+def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
     """Detailed view of an issue that has been approved and posted to GL."""
     results = {}
+    #Fetch project from database via slug in URL - if cannot be fetched,
+    # return a 404 error.
+    database_project = get_object_or_404(Project, slug=project_slug)
     results['user_identifier']=user_identifier
+    # Use the gitlab_id from database project to fetch project from gitlab.
+    # (Increases security.)
+    gitlab_id = database_project.gitlab_id
     working_project = gitlab_get_project(project=gitlab_id)
     results['project'] = working_project.attributes
     working_issue = gitlab_get_issue(project=gitlab_id, issue=gitlab_iid)
     results['issue'] = working_issue.attributes
+    # Get the notes list, and then for every note in the list, grab that
+    # note's attributes, which includes the body text, etc.
     results['notes'] = []
     notes_list = gitlab_get_notes_list(project=gitlab_id, issue=gitlab_iid)
     for note in notes_list:
         note_dict = note.attributes
         results['notes'].append(note_dict)
     results['notes'].reverse()
+    # Generate notes link.
+    new_note_link = reverse('create-note', args=[user_identifier, project_slug, gitlab_iid])
+    results['new_note_link'] = new_note_link
     return render(request, 'anonticket/issue_detail.html', {'results': results})
 
 @validate_user
@@ -324,10 +327,43 @@ def issue_search_view(request, user_identifier):
     if 'search_terms' in request.GET:
         form = Anonymous_Ticket_Project_Search_Form(request.GET)
         if form.is_valid():
-            results = form.call_project_and_issue()
+            results = form.call_project_and_issue(user_identifier)
             results['user_identifier'] = user_identifier
     else:
         form = Anonymous_Ticket_Project_Search_Form
         results['user_identifier'] = user_identifier
     return render(request, 'anonticket/issue_search.html', {'form': form, 'results': results})
 
+# ---------------------------NOTE_VIEWS---------------------------------
+# Views related to creating/looking up notes.
+# ----------------------------------------------------------------------
+
+@method_decorator(validate_user, name='dispatch')
+class NoteCreateView(PassUserIdentifierMixin,CreateView):
+    """View to create a note given a user_identifier."""
+    model=Note
+    fields = ['body']
+    template_name_suffix = '_create_form'
+
+    def form_valid(self, form):
+        """Populate default Issue object attributes from URL path."""
+        linked_project = get_object_or_404(Project, slug=self.kwargs['project'])
+        form.instance.linked_project = linked_project
+        try:
+            linked_user = UserIdentifier.objects.get(user_identifier=self.kwargs['user_identifier'])
+            form.instance.linked_user = linked_user
+            # If lookup fails, create the user.
+        except: 
+            new_user = UserIdentifier(user_identifier=self.kwargs['user_identifier'])
+            new_user.save()
+            form.instance.linked_user = new_user
+        issue_iid = self.kwargs['issue_iid']
+        form.instance.issue_iid = issue_iid
+        return super(NoteCreateView, self).form_valid(form)
+
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        working_object = self.object
+        user_identifier_to_pass = working_object.linked_user.user_identifier
+        working_url = reverse('issue-created', args=[user_identifier_to_pass])
+        return working_url

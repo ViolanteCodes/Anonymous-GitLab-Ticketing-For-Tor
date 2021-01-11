@@ -56,7 +56,7 @@
         {% if issues_list %}
           {% for issue in issues_list %}
             <li>
-            {% url 'issue-detail-view' results.user_identifier object.gitlab_id issue.iid as detail_url %}
+            {% url 'issue-detail-view' results.user_identifier object.slug issue.iid as detail_url %}
               <a href="{{detail_url}}">{{issue.title}}</a>
             </li>
           {% endfor %}
