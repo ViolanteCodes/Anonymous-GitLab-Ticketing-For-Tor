@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.test import SimpleTestCase, Client
+from django.test import SimpleTestCase, Client, tag
 from test_plus.test import TestCase, CBVTestCase
 from django.urls import reverse, resolve
 from anonticket.models import UserIdentifier, Project, Issue
@@ -105,9 +105,9 @@ class TestUrls(SimpleTestCase):
 # Tests for views: status = 200, template correct.
 # ----------------------------------------------------------------------
 
-class TestIdentifierAndLoginViews(SimpleTestCase):
+class TestIdentifierAndLoginViewsWithoutDatabase(SimpleTestCase):
     """Test the functions in views.py under the Identifier and Login
-    views section."""
+    views section that do not require database."""
 
     def setUp(self):
         # Create a user
@@ -136,6 +136,18 @@ class TestIdentifierAndLoginViews(SimpleTestCase):
         response = self.client.get(self.login_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/user_login.html')
+
+    def test_login_view_GET_with_data(self):
+        """Test the response for the login_view with data."""
+        response = self.client.get(self.login_url, data={
+            'word_1': 'duo',
+            'word_2': 'atlas',
+            'word_3': 'hypnotism',
+            'word_4': 'curry',
+            'word_5': 'creatable',
+            'word_6': 'rubble',
+        })
+        self.assertEqual(response.status_code, 302)
 
     def test_user_landing_view_GET(self):
         """Test the response for user_landing_view with known good user_identifier."""
@@ -176,6 +188,46 @@ class TestIdentifierAndLoginViews(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/user_login_error.html')
 
+class TestIdentifierAndLoginViewsWithDatabase(TestCase):
+    """ Test the functions in views.py under the Identifier and Login
+    views section that require database."""
+
+    def setUp(self):
+        """Set up a project, user identifier, and issue in the test database."""
+        # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        # Create a user
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        # Create a pending issue.
+        pending_issue = Issue.objects.create (
+            title = 'A Pending Issue',
+            linked_project = new_project,
+            linked_user = new_user,
+            description= 'A description of a pending issue'
+        )
+        # Create a posted issue.
+        posted_issue = Issue.objects.create (  
+            title = 'A posted issue',
+            description = 'A posted issue description',
+            linked_project = new_project,
+            linked_user = new_user,
+            gitlab_iid = 1,
+            reviewer_status = 'A',
+            posted_to_GitLab = True
+        )
+        self.client=Client()
+        self.user_landing_url = reverse('user-landing', args=[new_user])
+
+    def test_user_landing_view_GET_with_data(self):
+        """Test the response for user_landing_view with known good user_identifier."""
+        response = self.client.get(self.user_landing_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/user_landing.html')
+
 class TestProjectViews(TestCase):
     """Test the project functions in views.py"""
 
@@ -207,6 +259,7 @@ class TestProjectViews(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/project_detail.html')
 
+@tag('working')
 class TestIssuesViews(TestCase):
     """Test the issues functions in views.py"""
 
@@ -244,13 +297,28 @@ class TestIssuesViews(TestCase):
             new_user, new_project.slug, pending_issue.pk])
         self.issue_detail_url = reverse('issue-detail-view', args=[
             new_user, new_project.slug, posted_issue.gitlab_iid])
+        self.issue_search_url = reverse('issue-search', args=[new_user])
         self.new_user = new_user
+        self.project = new_project
 
     def test_create_issue_GET(self):
         """Test the response for create_issue view"""
         response = self.client.get(self.create_issue_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/create_new_issue.html')
+
+    # def test_create_issue_POST(self):
+    #     """Test the response for create_issue view"""
+    #     form_data = {
+    #         'linked_project': self.project,
+    #         'title':'A new descriptive issue title',
+    #         'description': 'Yet another description of the issue.'
+    #     }
+    #     form=CreateIssueForm(form_data)
+    #     expected_url = reverse('issue-created', args=[self.new_user])
+    #     response = self.client.post(self.create_issue_url, form=form, data=form_data, follow=False)
+    #     self.assertRedirects(response, expected_url)
+    #     #maria come back and finish this stupid test.
 
     def test_issue_success_view_GET(self):
         """Test the response for IssueSuccessView"""
@@ -409,14 +477,21 @@ class TestCreateIssueForm(TestCase):
         # Should fetch gitlab details on save.
         new_project.save()
         self.project = new_project
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.new_user = new_user
+        self.create_issue_url = reverse('create-issue', args=[new_user])
+        client=Client()
 
     def test_create_issue_form_valid_data(self):
         """Test the Project Search Form with valid data."""
-        form=CreateIssueForm(data={
+        form_data = {
             'linked_project': self.project,
             'title':'A descriptive issue title',
             'description': 'A description of the issue.'
-        })
+        }
+        form=CreateIssueForm(form_data)
         self.assertTrue(form.is_valid())
 
     def test_create_issue_form_invalid_data(self):
