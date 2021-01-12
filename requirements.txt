@@ -1,4 +1,4 @@
-Django~=3.1.4
+Django~=3.1.5
 python-decouple~=3.3
 python-gitlab~=2.5.0
 django-test-plus~=1.3
