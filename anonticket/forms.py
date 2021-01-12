@@ -90,7 +90,8 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
             'could_not_fetch_issue_message': """Your project was found, but 
             this issue could not be fetched from gitlab. It likely does 
             not exist, or you don't have access to it.""",
-            'successful_issue_lookup_message': """Issues were found matching this search string.""",
+            'successful_issue_lookup_message': """Issues matching this search string 
+            are displayed in the table below.""",
             'no_matching_issues_message': """Your search executed successfully,
             but no issues matching this search string were found.""",
             'unknown_issue_error_message': """This lookup failed for
