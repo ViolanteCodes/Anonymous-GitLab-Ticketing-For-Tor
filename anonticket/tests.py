@@ -137,6 +137,18 @@ class TestIdentifierAndLoginViews(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/user_login.html')
 
+    def test_login_view_with_data_GET(self):
+        """Test the response for the login_view with data."""
+        response = self.client.get(self.login_url, data={
+            'word_1': 'duo',
+            'word_2': 'atlas',
+            'word_3': 'hypnotism',
+            'word_4': 'curry',
+            'word_5': 'creatable',
+            'word_6': 'rubble',
+        })
+        self.assertEqual(response.status_code, 302)
+
     def test_user_landing_view_GET(self):
         """Test the response for user_landing_view with known good user_identifier."""
         response = self.client.get(self.user_landing_url)
@@ -244,6 +256,7 @@ class TestIssuesViews(TestCase):
             new_user, new_project.slug, pending_issue.pk])
         self.issue_detail_url = reverse('issue-detail-view', args=[
             new_user, new_project.slug, posted_issue.gitlab_iid])
+        self.issue_search_url = reverse('issue-search', args=[new_user])
         self.new_user = new_user
 
     def test_create_issue_GET(self):
