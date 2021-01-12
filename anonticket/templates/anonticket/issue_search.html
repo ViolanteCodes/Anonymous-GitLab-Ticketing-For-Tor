@@ -35,39 +35,61 @@
 <!-- Results Rendering -->
 {% if results.status %}
 <div class="row">
-  <div class="col-12 mb-3">
-      <h3 class="mt-3">Result of this lookup was: <mark>{{results.status|title}}</mark></h3>
-      <p>{{results.message}}</p> 
-        {% if results.matching_project %}
-          {% with project=results.matching_project %}
-          <ul class="list-unstyled">
-            <li class="ml-2">
-              <h6 class="d-inline">Project Details</h6>: {{project.name}} 
-            </li>
-            <li class="ml-2">
-              <h6 class="d-inline">Project Description:</h6> {{project.description}}
-            </li>
-            <li class="ml-2">
-              <h6 class="d-inline">Note</h6>: (If you didn't find what you were looking for, you can see 
-              <a href="{{project.web_url}}">this project's page on TorProject's
-              GitLab account</a> to take advantage of GitLab's search functions.)
-            </li>
-          </ul>
+  <div class="col-12 ml-3 mb-1 form-control">
+    {% if results.matching_project %}
+      {% with project=results.matching_project %}
+      <ul class="list-unstyled mb-2">
+        <li class="ml-2">
+          <h6 class="d-inline">Project Details</h6>: {{project.name}} 
+        </li>
+        <li class="ml-2">
+          <h6 class="d-inline">Project Description:</h6> {{project.description}}
+        </li>
+        <li class="ml-2">
+          <h6 class="d-inline">Note</h6>: (If you didn't find what you were looking for, you can see 
+          <a href="{{project.web_url}}">this project's page on TorProject's
+          GitLab account</a> to take advantage of GitLab's search functions.)
+        </li>
+      </ul>
       {% endwith %}
-      {% endif %}
+    {% endif %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <h3 class="mt-4">Result of this lookup was: {{results.status|upper}}</h3>
+    <p>{{results.message}}</p> 
   </div>
 </div>
   {% if results.matching_issues %}
   <div class="row">
-    <div class="col-12">
-      <div class="bg-light ml-3 mr-3 p-4 form-control"> 
-        <h4>Issues Matching Your Search String</h4>
-        <ul>
+    <div class="col-12 p-1">
+      <table class="table ml-4 mr-4 mt-3 mb-3">
+        <thead>
+          <th>
+            Issue Title/Detail Link
+          </th>
+          <th>
+            Issue Description
+          </th>
+          <th>
+            Gitlab
+          </th>
+        </thead>
           {% for issue in results.matching_issues %}
-          <li class="mb-1"><a href="{{issue.detail_url}}">{{issue.title}}</a>: {{issue.description|truncatewords:20}}</li>
+          <tr>
+            <td>
+                <a href="{{issue.detail_url}}">
+                {{issue.title}}</a>
+            </td>
+            <td>
+                {{issue.description|truncatewords:20}}
+            </td>
+            <td>
+                <a href="{{issue.web_url}}">Gitlab</a>
+            </td>
           {% endfor %}
-        </ul>
-      </div>
+      </table>
     </div>
   </div>
   {% endif %}
