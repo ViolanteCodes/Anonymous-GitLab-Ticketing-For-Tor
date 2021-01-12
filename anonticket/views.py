@@ -339,7 +339,7 @@ def issue_search_view(request, user_identifier):
 # ----------------------------------------------------------------------
 
 @method_decorator(validate_user, name='dispatch')
-class NoteCreateView(PassUserIdentifierMixin,CreateView):
+class NoteCreateView(PassUserIdentifierMixin, CreateView):
     """View to create a note given a user_identifier."""
     model=Note
     fields = ['body']

@@ -167,7 +167,10 @@ class CreateIssueForm(ModelForm):
             'title': ("""Give your issue a descriptive title."""),
             'description': ("""Describe the issue you are reporting. 
             Please be as specific as possible about the circumstances that
-            provoked the issue and the behavior that was noticed."""),
+            provoked the issue and the behavior that was noticed. You 
+            can use <a href='https://docs.gitlab.com/ee/user/markdown.html'
+            target="_blank">
+            GitLab Flavored Markdown (GFM)</a> on this form.""")
         }
 
 

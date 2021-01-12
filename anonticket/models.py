@@ -16,7 +16,9 @@ class GitLabGroup(models.Model):
     """Representation of a Gitlab Group in the database. This does not
     need to be supplied by the admin; it will automatically be created if
     a project is put into the database."""
-    name = models.CharField(max_length=200, null=True, blank=True)
+    name = models.CharField(max_length=200, null=True, blank=True, help_text=
+    """IMPORTANT: GLGROUPS are AUTOMATICALLY CREATED when a project requiring
+    the group has been added--so you shouldn't have to do anything here!""")
     gitlab_id = models.IntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     url = models.URLField(null=True, blank=True)
@@ -29,7 +31,12 @@ class Project(models.Model):
     to the database, only the gitlab id number needs to be supplied in the
     gitlab_id field. Upon saving, the project details and any necessary
     group details will be fetched from gitlab."""
-    gitlab_id = models.IntegerField()
+    gitlab_id = models.IntegerField(help_text="""IMPORTANT: Enter a 
+    gitlab ID into this field and save, and the project's details will 
+    be fetched from gitlab! NOTHING ELSE ON THIS FORM NEEDS TO BE 
+    FILLED IN. Additionally, if a project is saved, a fresh copy of
+    the gitlab details will be fetched and the database entries will
+    be updated.""")
     name = models.CharField(max_length=200, null=True, blank=True)
     name_with_namespace = models.CharField(max_length=200, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -136,7 +143,12 @@ class Note(models.Model):
     linked_user = models.ForeignKey(
         UserIdentifier, on_delete=models.CASCADE)
     # This is the note/comment body.
-    body = models.TextField()
+    body = models.TextField(
+        verbose_name='Note Contents',
+        help_text="""Type your note body here. You 
+            can use <a href='https://docs.gitlab.com/ee/user/markdown.html'
+            target="_blank">
+            GitLab Flavored Markdown (GFM)</a> on this form.""")
     # issue_iid is not a ForeignKey because Issue objects in database
     # are for issues pending mod approval.
     issue_iid = models.IntegerField()
@@ -186,4 +198,3 @@ class Note(models.Model):
 
     def __str__(self):
         return self.body
-
