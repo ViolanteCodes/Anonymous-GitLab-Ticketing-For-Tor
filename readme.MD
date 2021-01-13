@@ -73,6 +73,28 @@ field in the .env file, and that DEBUG is set to "True". If DEBUG is
 set to "False", you will need to make sure something is filled in for
 the allowed hosts field.
 
+### Notes on Moderators Group:
+
+Once the project has been installed and migrations applied, it is 
+recommended to run create_groups for ease of admin administration.
+
+/anonticket/management/commands has a file in it, "create_groups.py", 
+which will automatically create a group called "Moderators" when 
+run from the command line with:
+
+$ python manage.py create_groups
+
+This group will automatically have the following permissions assigned:
+- View User Identifier
+- View Git Lab Group
+- View Project
+- Add/Delete/Change/View Issue
+- Add/Delete/Change/View Note
+
+Once the file is run, this group can be selected any time a new user/
+moderator is added. Make sure moderators also have "staff" status so 
+that they are able to log in with the admin panel.
+
 ### To run it locally
 
 You need to start by setting the `SECRET_KEY` variable in the .env file.
@@ -92,6 +114,13 @@ Then run the following commands:
     $ python manage.py migrate
 6. You can check or launch by using the "runserver command."
     $ python manage.py runserver
+7. Create the superuser
+    $ python manage.py createsuperuser
+    (follow the prompts):
+8. Create the moderators group (see explanation above):
+    $ python manage.py create_groups
+9. Add gitlab tokens and other variables in the .env file.
+
 ```
 
 When `runserver` is running, you should be able to point your browser to
