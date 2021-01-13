@@ -338,6 +338,27 @@ class TestIssuesViews(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/issue_detail.html')
 
+    def test_issue_search_view_GET_valid_data(self):
+        """Test the reponse for the issue_search_view"""
+        url = reverse('issue-search', args=[self.new_user])
+        form_data = {
+            'choose_project': self.project.pk,
+            'search_terms': 'issue'
+        }
+        response = self.client.get(url, form_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/issue_search.html')
+
+    def test_issue_search_view_GET_invalid_data(self):
+        """Test the response for the issue_search_view with no search_terms."""
+        url = reverse('issue-search', args=[self.new_user])
+        form_data = {
+            'choose_project': self.project.pk,
+        }
+        response = self.client.get(url, form_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/issue_search.html')
+
 class TestViewsOtherWithDatabase(TestCase):
     """Test the functions in views.py not directly related to one of the above
     that require a database."""
