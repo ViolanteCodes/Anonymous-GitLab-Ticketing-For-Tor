@@ -12,11 +12,15 @@ from anonticket.forms import (
     CreateIssueForm)
 
 # Create your tests here.
+# NOTE: If you run a tests with --tag prefix, you can test a small suite
+# of tests, (eg python manage.py test --tag url or coverage run
+# manage.py --tag url.)
 
 # ---------------------------URL TESTS----------------------------------
 # URL Tests using Django SimpleTestCase (no need for database.)
 # ----------------------------------------------------------------------
 
+@tag('url')
 class TestUrls(SimpleTestCase):
     """Test that the URLS in the anonticket resolve."""
     def setUp(self):
@@ -105,6 +109,7 @@ class TestUrls(SimpleTestCase):
 # Tests for views: status = 200, template correct.
 # ----------------------------------------------------------------------
 
+@tag('id_no_db')
 class TestIdentifierAndLoginViewsWithoutDatabase(SimpleTestCase):
     """Test the functions in views.py under the Identifier and Login
     views section that do not require database."""
@@ -188,6 +193,7 @@ class TestIdentifierAndLoginViewsWithoutDatabase(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/user_login_error.html')
 
+@tag('id_with_db')
 class TestIdentifierAndLoginViewsWithDatabase(TestCase):
     """ Test the functions in views.py under the Identifier and Login
     views section that require database."""
@@ -228,6 +234,7 @@ class TestIdentifierAndLoginViewsWithDatabase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/user_landing.html')
 
+@tag('project')
 class TestProjectViews(TestCase):
     """Test the project functions in views.py"""
 
@@ -259,7 +266,7 @@ class TestProjectViews(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/project_detail.html')
 
-@tag('working')
+@tag('issues')
 class TestIssuesViews(TestCase):
     """Test the issues functions in views.py"""
 
@@ -307,18 +314,33 @@ class TestIssuesViews(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/create_new_issue.html')
 
-    # def test_create_issue_POST(self):
-    #     """Test the response for create_issue view"""
-    #     form_data = {
-    #         'linked_project': self.project,
-    #         'title':'A new descriptive issue title',
-    #         'description': 'Yet another description of the issue.'
-    #     }
-    #     form=CreateIssueForm(form_data)
-    #     expected_url = reverse('issue-created', args=[self.new_user])
-    #     response = self.client.post(self.create_issue_url, form=form, data=form_data, follow=False)
-    #     self.assertRedirects(response, expected_url)
-    #     #maria come back and finish this stupid test.
+    def test_create_issue_POST_current_user(self):
+        """Test the response for create_issue view with a current user."""
+        form_data = {
+            'linked_project': self.project.pk,
+            'title':'A new descriptive issue title',
+            'description': 'Yet another description of the issue.'
+        }
+        form=CreateIssueForm(form_data)
+        expected_url = reverse('issue-created', args=[self.new_user])
+        response = self.client.post(self.create_issue_url, form=form, data=form_data, follow=False)
+        self.assertRedirects(response, expected_url)
+
+    def test_create_issue_POST_new_user(self):
+        """Test the response for create_issue view with a new user."""
+        create_url = reverse('create-issue', args=[
+            'autopilot-stunt-unfasten-dirtiness-wipe-blissful'
+        ])
+        form_data = {
+            'linked_project': self.project.pk,
+            'title':'A new descriptive issue title',
+            'description': 'Yet another description of the issue.'
+        }
+        form=CreateIssueForm(form_data)
+        expected_url = reverse('issue-created', args=[
+            'autopilot-stunt-unfasten-dirtiness-wipe-blissful'])
+        response = self.client.post(create_url, form=form, data=form_data, follow=False)
+        self.assertRedirects(response, expected_url)
 
     def test_issue_success_view_GET(self):
         """Test the response for IssueSuccessView"""
@@ -359,6 +381,79 @@ class TestIssuesViews(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/issue_search.html')
 
+    def test_issue_search_view_GET_no_matches(self):
+        """Test the reponse for the issue_search_view"""
+        url = reverse('issue-search', args=[self.new_user])
+        form_data = {
+            'choose_project': self.project.pk,
+            'search_terms': 'i-dont-match-anything'
+        }
+        response = self.client.get(url, form_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/issue_search.html')  
+
+@tag('notes')
+class TestNotesViews(TestCase):
+    """Test the notes functions in views.py."""
+
+    def setUp(self):
+        """Set up a project, user identifier, and issue in the test database."""
+        # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        # Create a user
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        # Create a pending issue.
+        pending_issue = Issue.objects.create (
+            title = 'A Pending Issue',
+            linked_project = new_project,
+            linked_user = new_user,
+            description= 'A description of a pending issue'
+        )
+        # Create a posted issue.
+        posted_issue = Issue.objects.create (  
+            title = 'A posted issue',
+            description = 'A posted issue description',
+            linked_project = new_project,
+            linked_user = new_user,
+            gitlab_iid = 1,
+            reviewer_status = 'A',
+            posted_to_GitLab = True
+        )
+        self.client=Client()
+        self.new_user = new_user
+        self.project = new_project
+        self.issue = posted_issue
+
+    def test_note_create_view_POST_existing_user(self):
+        """Test the note create view with valid data, with a 
+        user that already exists."""
+        url = reverse('create-note', args=[
+            self.new_user, self.project.slug, self.issue.gitlab_iid])
+        form_data = {
+            'body': """A new note body."""
+        }
+        expected_url = reverse('issue-created', args=[self.new_user])
+        response = self.client.post(url, form_data)
+        self.assertRedirects(response, expected_url)
+
+    def test_note_create_view_POST_new_user(self):
+        """Test the note create view with valid_data, with a
+        user that doesn't get exist."""
+        new_user = 'autopilot-stunt-unfasten-dirtiness-wipe-blissful'
+        url = reverse('create-note', args=[
+            new_user, self.project.slug, self.issue.gitlab_iid])
+        form_data = {
+            'body': """A new note body."""
+        }
+        expected_url = reverse('issue-created', args=[new_user])
+        response = self.client.post(url, form_data)
+        self.assertRedirects(response, expected_url)
+
+@tag('other_with_db')
 class TestViewsOtherWithDatabase(TestCase):
     """Test the functions in views.py not directly related to one of the above
     that require a database."""
@@ -378,6 +473,7 @@ class TestViewsOtherWithDatabase(TestCase):
         test_known_bad_user = user_identifier_in_database(known_bad_user)
         self.assertEqual(test_known_bad_user, False)
 
+@tag('other_no_db')
 class TestViewsOtherWithoutDatabase(SimpleTestCase):
     """Test the functions in views.py not directly related to one of the above
     that do NOT require a database (simpletestcase)."""
@@ -435,6 +531,7 @@ class TestViewsOtherWithoutDatabase(SimpleTestCase):
 # Tests for forms.py
 # ----------------------------------------------------------------------
 
+@tag('login')
 class TestLoginForm(SimpleTestCase):
     """Test the Login Form from forms.py."""
 
@@ -464,6 +561,7 @@ class TestLoginForm(SimpleTestCase):
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.errors), 1)
 
+@tag('search_form')
 class TestAnonymousTicketProjectSearchForm(TestCase):
     """Test the Anonymous_Ticket_Project_Search_Form"""
 
@@ -489,6 +587,7 @@ class TestAnonymousTicketProjectSearchForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.errors), 2)
 
+@tag('create_issue_form')
 class TestCreateIssueForm(TestCase):
     """Test the CreateIssueForm"""
 
@@ -522,12 +621,101 @@ class TestCreateIssueForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.errors), 3)
 
-class TestFilters(TestCase):
+# --------------------------OTHER TESTS---------------------------------
+# Tests for filters, custom template tags, etc.
+# ----------------------------------------------------------------------
+
+@tag('filters')
+class TestFilters(SimpleTestCase):
     """Test custom filters."""
     
-    def test_pretty_datetime(self):
-        """Test the pretty_datetime filter."""
+    def test_pretty_datetime_january(self):
+        """Test the pretty_datetime filter for january."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-01-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '19 January, 2020 - 14:09 UTC')
+
+    def test_pretty_datetime_february(self):
+        """Test the pretty_datetime filter for february."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-02-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '19 February, 2020 - 14:09 UTC')
+    
+    def test_pretty_datetime_march(self):
+        """Test the pretty_datetime filter for march."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-03-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '19 March, 2020 - 14:09 UTC')
+
+    def test_pretty_datetime_april(self):
+        """Test the pretty_datetime filter for april."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-04-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '19 April, 2020 - 14:09 UTC')
+
+    def test_pretty_datetime_may(self):
+        """Test the pretty_datetime filter for may."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-05-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '19 May, 2020 - 14:09 UTC')
+
+    def test_pretty_datetime_june(self):
+        """Test the pretty_datetime filter for june."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-06-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '19 June, 2020 - 14:09 UTC')
+
+    def test_pretty_datetime_july(self):
+        """Test the pretty_datetime filter for july."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-07-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '19 July, 2020 - 14:09 UTC')
+
+    def test_pretty_datetime_august(self):
+        """Test the pretty_datetime filter for march."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-08-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '19 August, 2020 - 14:09 UTC')
+
+    def test_pretty_datetime_september(self):
+        """Test the pretty_datetime filter for september."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-09-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '19 September, 2020 - 14:09 UTC')
+    
+    def test_pretty_datetime_october(self):
+        """Test the pretty_datetime filter for october."""
         from shared.templatetags.custom_filters import pretty_datetime
         iso_test_string = "2020-10-19T14:09:46.500Z"
         pretty_iso_string = pretty_datetime(iso_test_string)
-        self.assertEqual(pretty_iso_string, '19 February, 2020 - 14:09 UTC')
+        self.assertEqual(pretty_iso_string, '19 October, 2020 - 14:09 UTC')
+
+    def test_pretty_datetime_november(self):
+        """Test the pretty_datetime filter for november."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-11-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '19 November, 2020 - 14:09 UTC')
+    
+    def test_pretty_datetime_december(self):
+        """Test the pretty_datetime filter for december."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-12-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '19 December, 2020 - 14:09 UTC')
+
+    def test_pretty_datetime_undefined_month(self):
+        """Test the pretty_datetime filter for a bad month."""
+        from shared.templatetags.custom_filters import pretty_datetime
+        iso_test_string = "2020-13-19T14:09:46.500Z"
+        pretty_iso_string = pretty_datetime(iso_test_string)
+        self.assertEqual(pretty_iso_string, '19 undefined, 2020 - 14:09 UTC')

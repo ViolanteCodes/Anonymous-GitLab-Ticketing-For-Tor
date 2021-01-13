@@ -23,25 +23,25 @@ def pretty_datetime(iso_string):
         elif month_digits =='02':
             month = 'February'
         elif month_digits =='03':
-            month = 'February'
+            month = 'March'
         elif month_digits =='04':
-            month = 'February'
+            month = 'April'
         elif month_digits =='05':
-            month = 'February'
+            month = 'May'
         elif month_digits =='06':
-            month = 'February'
+            month = 'June'
         elif month_digits =='07':
-            month = 'February'
+            month = 'July'
         elif month_digits =='08':
-            month = 'February'
+            month = 'August'
         elif month_digits =='09':
-            month = 'February'
+            month = 'September'
         elif month_digits =='10':
-            month = 'February'
+            month = 'October'
         elif month_digits =='11':
-            month = 'February'
+            month = 'November'
         elif month_digits =='12':
-            month = 'February'
+            month = 'December'
         else:
             month = 'undefined'
         day = f"{iso_string[8]}{iso_string[9]}"
