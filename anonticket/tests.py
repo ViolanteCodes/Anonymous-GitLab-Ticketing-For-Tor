@@ -12,9 +12,12 @@ from anonticket.forms import (
     CreateIssueForm)
 
 # Create your tests here.
+
 # Note: If you run tests with --tag prefix, you can test a small suite
-# of tests, (eg python manage.py test --tag url or coverage run
-# manage.py --tag url.)
+# of tests with one of the tags below (registered with '@tag'.)
+#   Examples:
+#   $ python manage.py test --tag url 
+#   (or with coverage) $ coverage run manage.py --tag url.)
 
 # ---------------------------URL TESTS----------------------------------
 # URL Tests using Django SimpleTestCase (no need for database.)
@@ -106,7 +109,8 @@ class TestUrls(SimpleTestCase):
         self.assertEqual(resolve(url).func, user_landing_view)
 
 # --------------------------VIEW TESTS----------------------------------
-# Tests for views: status = 200, template correct.
+# Tests for views: (generally for status = 200, template correct,
+# although some POST views also test for redirects, etc.
 # ----------------------------------------------------------------------
 
 @tag('id_no_db')
@@ -528,7 +532,8 @@ class TestViewsOtherWithoutDatabase(SimpleTestCase):
         self.assertNotIn('user_found', test_get_context.keys())
 
 # --------------------------FORM TESTS----------------------------------
-# Tests for forms.py
+# Tests for forms.py: basic tests to see that form_is_valid(). Testing
+# for integration with views, etc., is done in views.py above.
 # ----------------------------------------------------------------------
 
 @tag('login')
