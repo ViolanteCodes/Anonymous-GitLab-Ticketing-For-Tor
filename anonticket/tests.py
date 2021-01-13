@@ -12,7 +12,7 @@ from anonticket.forms import (
     CreateIssueForm)
 
 # Create your tests here.
-# NOTE: If you run a tests with --tag prefix, you can test a small suite
+# Note: If you run tests with --tag prefix, you can test a small suite
 # of tests, (eg python manage.py test --tag url or coverage run
 # manage.py --tag url.)
 
