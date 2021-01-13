@@ -2,6 +2,9 @@ from django.core.management import BaseCommand
 from django.contrib.auth.models import User, Group , Permission
 import logging
 
+# Note: If you would like to create more groups than just Moderators,
+# you can expand the below GROUPS dictionary.
+
 GROUPS = {
     "Moderators": {
         # Add specific model permissions here.
