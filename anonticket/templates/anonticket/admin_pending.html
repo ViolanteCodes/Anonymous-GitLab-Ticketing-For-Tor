@@ -1,0 +1,84 @@
+{% extends 'shared/layout.html' %}
+{% load static %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Search for an issue on GitLab.
+{% endblock %}
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<h1>Pending Notes</h1>
+<form method="post" action="">
+  {% csrf_token %}
+  {{ note_formset.management_form }}
+  {% for form in note_formset %}
+    {% for field in form %}
+        <div class="fieldWrapper form-group">
+          {{ field.errors }}
+          
+          <div class="row">
+            <div class="col-12">
+              <div class="mb-0">{{ field.label_tag }}</div>
+            </div>
+          </div>
+<!-- 
+          {% if field.help_text %}
+          <div class="row">
+            <div class="col-12">
+              <div class="help small p-0 text-muted mb-2">
+                {{ field.help_text|safe }}
+              </div>
+            </div>
+          </div>
+          {% endif %} -->
+
+          <div class="row">
+            <div class="col-12">
+              <div class="flex-form mb-3">{{ field }}</div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% endfor %}
+
+<h1>Pending Issues</h1>
+  {{ issue_formset.management_form }}
+      
+      {% for form in issue_formset %}
+      {% for field in form %}
+      <div class="fieldWrapper form-group">
+        {{ field.errors }}
+        
+        <div class="row">
+          <div class="col-12">
+            <div class="mb-0">{{ field.label_tag }}</div>
+          </div>
+        </div>
+
+        <!-- {% if field.help_text %}
+        <div class="row">
+          <div class="col-12">
+            <div class="help small p-0 text-muted mb-2">
+              {{ field.help_text|safe }}
+            </div>
+          </div>
+        </div>
+        {% endif %} -->
+
+        <div class="row">
+          <div class="col-12">
+            <div class="flex-form mb-3">{{ field }}</div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% endfor %}
+<button type="submit" class="btn btn-lg btn-primary mr-2">Make Changes</button>
+</form>
+{% endblock %}
+</html>

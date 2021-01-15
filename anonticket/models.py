@@ -191,6 +191,14 @@ class Note(models.Model):
         except:
             pass
 
+    def get_issue_title(self):
+        """Returns the title of the issue from GitLab."""
+        gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
+        working_project = gl.projects.get(self.linked_project.gitlab_id)
+        working_issue = working_project.issues.get(self.issue_iid)
+        return working_issue.title
+
+
     def save(self, *args, **kwargs):
         if self.reviewer_status == 'A' and self.gitlab_id == None:
             self.approve_note() 

@@ -6,11 +6,15 @@ from anonticket.models import (
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     LoginForm,
-    CreateIssueForm)
+    CreateIssueForm,
+    PendingNoteFormSet,
+    PendingIssueFormSet)
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView, DetailView, ListView, CreateView
+from django.views.generic import TemplateView, DetailView, ListView, CreateView, FormView
+from django.contrib.admin.views.decorators import staff_member_required
+
 
 # ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
 # Functions that need to be accessed from within multiple views go here,
@@ -367,3 +371,18 @@ class NoteCreateView(PassUserIdentifierMixin, CreateView):
         user_identifier_to_pass = working_object.linked_user.user_identifier
         working_url = reverse('issue-created', args=[user_identifier_to_pass])
         return working_url
+
+@staff_member_required
+def pending_admin_view(request):
+    if request.method == 'POST':
+        note_formset = PendingNoteFormSet(prefix="note_formset", data=request.POST)
+        issue_formset = PendingIssueFormSet(prefix="issue_formset", data=request.POST)
+        if note_formset.is_valid() and issue_formset.is_valid():
+            note_formset.save()
+            issue_formset.save()
+            url = reverse('pending-admin')
+        return redirect(url)
+    else:
+        note_formset = PendingNoteFormSet(prefix="note_formset")
+        issue_formset = PendingIssueFormSet(prefix="issue_formset")
+    return render(request, "anonticket/admin_pending.html", {"note_formset": note_formset, "issue_formset":issue_formset})

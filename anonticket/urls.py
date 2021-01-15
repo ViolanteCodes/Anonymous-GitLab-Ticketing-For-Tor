@@ -27,5 +27,5 @@ urlpatterns = [
     path('user/<str:user_identifier>/create/success/', views.IssueSuccessView.as_view(), name='issue-created'),        
     path('user/<str:user_identifier>/create_issue/', views.create_issue_view, name='create-issue'),
     path('user/<str:user_identifier>/', views.user_landing_view, name='user-landing'),
-
+    path('pending/', views.pending_admin_view, name='pending-admin'),
 ]
