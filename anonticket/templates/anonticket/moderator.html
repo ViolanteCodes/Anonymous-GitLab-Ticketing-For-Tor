@@ -1,0 +1,115 @@
+{% extends 'shared/layout.html' %}
+{% load static %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Items Awaiting Staff Moderation
+{% endblock %}
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
+
+<!-- Start Content Block -->
+<!-- Start Issues Block -->
+{% block content %}
+
+<div class="row">
+  <div class="col-12">
+    <form method="post" action="/moderator/">
+      {% csrf_token %}
+    <h2>Pending Issues</h2>
+    <!-- If there are pending issues, render them here. -->
+      {% if issue_formset %}
+          <table>
+            <thead>
+              <th>
+                Related Details
+              </th>
+              <th>
+                Issue Text
+              </th>
+              <th>
+                Mod Status
+              </th>
+            </thead>
+            <tbody>
+            {{ issue_formset.management_form }}
+            {% for form in issue_formset %}
+              {% for hidden in form.hidden_fields %}
+              {{ hidden }}
+              {% endfor %}
+              <tr>
+                <td>
+                  <ul>
+                    <li>Project: {{form.instance.linked_project}}</li>
+                    <li>User: {{form.instance.linked_user}}</li>
+                    <li>Issue Title: {{form.instance.title}}</li>
+                  </ul>
+                </td>
+                <td>{{form.instance.description}}</td>
+                <td>{{form.reviewer_status}}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p>No pending issues at this time.</p>
+        {% endif %}
+    </div>
+  </div>
+<!-- End Issues Block -->
+<!-- Start Notes Block -->
+<!-- Render Notes Table -->
+<div class="row">
+  <div class="col-12">
+    <h2>Pending Notes</h2>
+      <!-- If there are pending notes, render them here. -->
+      {% if note_formset %}
+      {{ note_formset.management_form }}
+        <table>
+          <thead>
+            <th>
+              Related Details 
+            </th>
+            <th>
+              Note Details
+            </th>
+            <th>
+              Reviewer Status
+            </th>
+          </thead>
+          {% for form in note_formset %}
+            {% for hidden in form.hidden_fields %}
+              {{ hidden }}
+            {% endfor %}
+          <tr>
+            <td>
+              <ul>
+                <li>Project: {{form.instance.linked_project}}</li>
+                <li>Linked Issue: {{form.instance.gitlab_issue_title}}</li>
+                <li>User: {{form.instance.linked_user}}</li>
+              </ul>
+            </td>
+            <td style="width: 50%">
+              {{form.instance.body}}
+            </td>
+            <td>
+              {{form.reviewer_status}}
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+      {% else %}
+      <p>No Pending Notes at this Time.</p>
+      {% endif %}
+    </div>
+  </div>
+<div class="row">
+  <div class="col-12">
+    <button type="submit" class="btn btn-lg btn-primary mr-2">Make Changes</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

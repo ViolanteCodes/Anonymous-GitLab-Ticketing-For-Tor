@@ -1,11 +1,11 @@
 from django import forms
-from django.forms import ModelForm
+from django.forms import ModelForm, modelformset_factory, BaseModelFormSet
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 import gitlab
 import random
-from .models import UserIdentifier, GitLabGroup, Project, Issue
+from .models import UserIdentifier, GitLabGroup, Project, Issue, Note
 
 # Initialize GitLab Object
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
@@ -173,7 +173,57 @@ class CreateIssueForm(ModelForm):
             GitLab Flavored Markdown (GFM)</a> on this form.""")
         }
 
+#Formsets for Pending Admin View:
 
+class PendingIssueForm(forms.ModelForm):
+    """A special version of the Issue Form to be used with PendingIssueFormset."""
+    class Meta:
+        model = Issue
+        fields = (
+            'reviewer_status',)
+    
+    def __init__(self, *args, **kwargs):
+       super(PendingIssueForm, self).__init__(*args, **kwargs)
+    #    self.fields['linked_project'].disabled = True
+    #    self.fields['title'].disabled = True
+    #    self.fields['description'].disabled = True
+
+class BasePendingIssueFormSet(BaseModelFormSet):
+    """Subclass of Base Formset that sets issue queryset."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.queryset=Issue.objects.filter(reviewer_status='P')
+
+
+class PendingNoteForm(forms.ModelForm):
+    """A special version of the Note Form to be used with PendingNoteFormSet."""
+    class Meta:
+        model = Note
+        fields = (
+            'reviewer_status',)
+    
+    def __init__(self, *args, **kwargs):
+       super(PendingNoteForm, self).__init__(*args, **kwargs)
+    #    self.fields['linked_project'].disabled = True
+
+class BasePendingNoteFormSet(BaseModelFormSet):
+    """Subclass of Base Formset that sets queryset."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.queryset=Note.objects.filter(reviewer_status='P')
+
+# Formset Variables to be fed to view.
+PendingNoteFormSet = modelformset_factory(
+    Note, 
+    form=PendingNoteForm, 
+    formset=BasePendingNoteFormSet,
+    extra=0)
+
+PendingIssueFormSet = modelformset_factory(
+    Issue,
+    form=PendingIssueForm,
+    formset=BasePendingIssueFormSet, 
+    extra=0)
 
 
 
