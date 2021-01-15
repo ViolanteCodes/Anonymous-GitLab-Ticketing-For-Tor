@@ -373,16 +373,18 @@ class NoteCreateView(PassUserIdentifierMixin, CreateView):
         return working_url
 
 @staff_member_required
-def pending_admin_view(request):
+def moderator_view(request):
     if request.method == 'POST':
         note_formset = PendingNoteFormSet(prefix="note_formset", data=request.POST)
         issue_formset = PendingIssueFormSet(prefix="issue_formset", data=request.POST)
         if note_formset.is_valid() and issue_formset.is_valid():
-            note_formset.save()
             issue_formset.save()
-            url = reverse('pending-admin')
-        return redirect(url)
+            note_formset.save()
+        else:
+            print(issue_formset.errors)
+            print(note_formset.errors)
+        return redirect('/moderator/')
     else:
         note_formset = PendingNoteFormSet(prefix="note_formset")
         issue_formset = PendingIssueFormSet(prefix="issue_formset")
-    return render(request, "anonticket/admin_pending.html", {"note_formset": note_formset, "issue_formset":issue_formset})
+    return render(request, "anonticket/moderator.html", {"note_formset": note_formset, "issue_formset":issue_formset})

@@ -180,11 +180,13 @@ class PendingIssueForm(forms.ModelForm):
     class Meta:
         model = Issue
         fields = (
-            'linked_project',
-            'linked_user',
-            'title',
-            'description',
-            'reviewer_status')
+            'reviewer_status',)
+    
+    def __init__(self, *args, **kwargs):
+       super(PendingIssueForm, self).__init__(*args, **kwargs)
+    #    self.fields['linked_project'].disabled = True
+    #    self.fields['title'].disabled = True
+    #    self.fields['description'].disabled = True
 
 class BasePendingIssueFormSet(BaseModelFormSet):
     """Subclass of Base Formset that sets issue queryset."""
@@ -192,15 +194,17 @@ class BasePendingIssueFormSet(BaseModelFormSet):
         super().__init__(*args, **kwargs)
         self.queryset=Issue.objects.filter(reviewer_status='P')
 
+
 class PendingNoteForm(forms.ModelForm):
     """A special version of the Note Form to be used with PendingNoteFormSet."""
     class Meta:
         model = Note
         fields = (
-            'linked_project',
-            'linked_user',
-            'body',
-            'reviewer_status')
+            'reviewer_status',)
+    
+    def __init__(self, *args, **kwargs):
+       super(PendingNoteForm, self).__init__(*args, **kwargs)
+    #    self.fields['linked_project'].disabled = True
 
 class BasePendingNoteFormSet(BaseModelFormSet):
     """Subclass of Base Formset that sets queryset."""
@@ -213,13 +217,13 @@ PendingNoteFormSet = modelformset_factory(
     Note, 
     form=PendingNoteForm, 
     formset=BasePendingNoteFormSet,
-    extra=-1)
+    extra=0)
 
 PendingIssueFormSet = modelformset_factory(
     Issue,
     form=PendingIssueForm,
     formset=BasePendingIssueFormSet, 
-    extra=-1)
+    extra=0)
 
 
 

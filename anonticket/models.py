@@ -153,8 +153,9 @@ class Note(models.Model):
     # are for issues pending mod approval.
     issue_iid = models.IntegerField()
     # Allow note_id field to be blank as this will be pulled from gitlab.
+    # gitlab_issue_title = models.CharField(blank=True, max_length=200, null=True)
     gitlab_id = models.IntegerField(blank=True, null=True)
-    
+    gitlab_issue_title = models.CharField(blank=True, max_length=200)
     # The following fields related to reviewer status:
     # Django recommends defining choice_list outside of CharField.
     REVIEWER_STATUS_CHOICES = [
@@ -200,6 +201,8 @@ class Note(models.Model):
 
 
     def save(self, *args, **kwargs):
+        if not self.gitlab_issue_title:
+            self.gitlab_issue_title = self.get_issue_title()
         if self.reviewer_status == 'A' and self.gitlab_id == None:
             self.approve_note() 
         super(Note, self).save(*args, **kwargs) 
