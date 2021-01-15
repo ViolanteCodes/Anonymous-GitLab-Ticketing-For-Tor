@@ -7,13 +7,18 @@
   Items Awaiting Staff Moderation
   <p>
     The following items below are pending and awaiting staff moderation.
-    You can approve and/or reject multiple items at once by selecting 
-    the "mod status" field on the right to "approved" or "rejected" and 
-    clicking on the "Make Changes" button at the bottom.
+    You can <mark>approve and/or reject multiple items at once</mark> by
+    changing the "pending review" field in the right-hand column
+    to "approved" or "rejected" and  then clicking on the "Make Changes" 
+    button at the bottom.
   </p>
   <p>
-    You also can change individual notes/issues by clicking the "Alter"
-    MARIA FINISH THIS TEMPLATE.
+    You also can change the text in  individual notes/issues by clicking 
+    the <span class="btn btn-primary p-1 mr-1 ml-1">Change Note Text</span> or 
+    <span class="btn btn-primary p-1 mr-1 ml-1">Change Issue Text</span> buttons; 
+    note that 
+    you will lose pending status changes if you perform this action 
+    before the form posts.
   </p>
 {% endblock %}
 <!-- Extra links block for pages that have a user_identifier piped to them.-->
@@ -88,7 +93,7 @@
               Note Details
             </th>
             <th>
-              Reviewer Status
+              Mod Actions
             </th>
           </thead>
           {% for form in note_formset %}
@@ -107,9 +112,20 @@
               {{form.instance.body}}
             </td>
             <td>
-              {{form.reviewer_status}}
+              <div>
+                Set Note Status:
+              </div>
+              <div class="mt-3">
+                {{form.reviewer_status}}
+              </div>
+              <div class="mt-3">
+                Or Update:
+              </div>
+              <div class="mt-3">
+                <a href="{% url 'mod-update-note' form.instance.pk %}"
+                class="btn btn-large btn-primary">Change Note Text</a>
+              </div>
               <br>
-              <a href="{% url 'mod-update-note' form.instance.pk %}">Update Me!</a>
             </td>
           </tr>
           {% endfor %}
