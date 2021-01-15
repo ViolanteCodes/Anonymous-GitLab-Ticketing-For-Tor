@@ -12,6 +12,7 @@ from .forms import (
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import user_passes_test
 from django.views.generic import (
     TemplateView, DetailView, ListView, CreateView, FormView, UpdateView)
 from django.contrib.admin.views.decorators import staff_member_required
@@ -375,9 +376,21 @@ class NoteCreateView(PassUserIdentifierMixin, CreateView):
 
 # ----------------------MODERATOR_VIEWS---------------------------------
 # Views related to moderators. Should all have decorator 
-# @staff_member_required, which forces staff status on login.
+# @staff_member_required, which forces staff status and allows access
+# to the login form from the admin panel, and the @is_moderator 
+# decorator, which tests that user is a member of the group Moderator.
 # ----------------------------------------------------------------------
 
+def is_moderator(user):
+    """A function to check that a logged in user is part of the
+    Moderators group."""
+    return user.groups.filter(name='Moderators').exists() 
+
+# Set the login_redirect_url variable 
+login_redirect_url = "/tor_admin/login/?next=/moderator/"
+
+@user_passes_test(
+    is_moderator, login_url=login_redirect_url)
 @staff_member_required
 def moderator_view(request):
     """A view that allows moderators to approve notes and issues."""
@@ -396,6 +409,8 @@ def moderator_view(request):
         issue_formset = PendingIssueFormSet(prefix="issue_formset")
     return render(request, "anonticket/moderator.html", {"note_formset": note_formset, "issue_formset":issue_formset})
 
+@method_decorator(user_passes_test(
+    is_moderator, login_url="/tor_admin/login/?next=/moderator/"), name='dispatch')
 @method_decorator(staff_member_required, name='dispatch')
 class ModeratorNoteUpdateView(UpdateView):
     """View that allows a moderator to update a Note."""
@@ -408,6 +423,8 @@ class ModeratorNoteUpdateView(UpdateView):
         url = reverse('moderator')
         return url
 
+@method_decorator(user_passes_test(
+    is_moderator, login_url="/tor_admin/login/?next=/moderator/"), name='dispatch')
 @method_decorator(staff_member_required, name='dispatch')
 class ModeratorIssueUpdateView(UpdateView):
     """View that allows a moderator to update an issue."""
