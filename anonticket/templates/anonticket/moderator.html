@@ -7,13 +7,14 @@
   Items Awaiting Staff Moderation
   <p>
     The following items below are pending and awaiting staff moderation.
-    You can <mark>approve and/or reject multiple items at once</mark> by
-    changing the "pending review" field in the right-hand column
-    to "approved" or "rejected" and  then clicking on the "Make Changes" 
+    You can approve and/or reject multiple items at once by
+    changing status fields in the right-hand column
+    to "approved" or "rejected" and  then clicking on the 
+    <span class="btn btn-primary p-1 mr-1 ml-1">Save All Changes</span>
     button at the bottom.
   </p>
   <p>
-    You also can change the text in  individual notes/issues by clicking 
+    You also can change the details of individual notes/issues by clicking 
     the <span class="btn btn-primary p-1 mr-1 ml-1">Change Note Text</span> or 
     <span class="btn btn-primary p-1 mr-1 ml-1">Change Issue Text</span> buttons; 
     note that 
@@ -31,7 +32,7 @@
 {% block content %}
 
 <div class="row">
-  <div class="col-12">
+  <div class="col-12 mt-3">
     <form method="post" action="/moderator/">
       {% csrf_token %}
     <h2>Pending Issues</h2>
@@ -46,7 +47,7 @@
                 Issue Text
               </th>
               <th>
-                Mod Status
+                Mod Actions
               </th>
             </thead>
             <tbody>
@@ -63,8 +64,18 @@
                     <li>Issue Title: {{form.instance.title}}</li>
                   </ul>
                 </td>
-                <td>{{form.instance.description}}</td>
-                <td>{{form.reviewer_status}}
+                <td style="width:50%">{{form.instance.description}}</td>
+                <td>
+                  <div>
+                    Set Issue Status:
+                  </div>
+                  <div class="mt-3">
+                    {{form.reviewer_status}}
+                  </div>
+                  <div class="mt-3">
+                    <a href="{% url 'mod-update-issue' form.instance.pk %}"
+                    class="btn btn-large btn-primary">Change Issue Text</a>
+                  </div>
                 </td>
               </tr>
             {% endfor %}
@@ -79,7 +90,7 @@
 <!-- Start Notes Block -->
 <!-- Render Notes Table -->
 <div class="row">
-  <div class="col-12">
+  <div class="col-12 mt-3">
     <h2>Pending Notes</h2>
       <!-- If there are pending notes, render them here. -->
       {% if note_formset %}
@@ -119,13 +130,9 @@
                 {{form.reviewer_status}}
               </div>
               <div class="mt-3">
-                Or Update:
-              </div>
-              <div class="mt-3">
                 <a href="{% url 'mod-update-note' form.instance.pk %}"
                 class="btn btn-large btn-primary">Change Note Text</a>
               </div>
-              <br>
             </td>
           </tr>
           {% endfor %}
@@ -137,7 +144,7 @@
   </div>
 <div class="row">
   <div class="col-12">
-    <button type="submit" class="btn btn-lg btn-primary mr-2">Make Changes</button>
+    <button type="submit" class="btn btn-lg btn-primary mr-2">Save All Changes</button>
     </form>
   </div>
 </div>

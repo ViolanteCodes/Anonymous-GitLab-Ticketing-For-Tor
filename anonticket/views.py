@@ -407,3 +407,15 @@ class ModeratorNoteUpdateView(UpdateView):
         """Return the URL to redirect to after processing a valid form."""
         url = reverse('moderator')
         return url
+
+@method_decorator(staff_member_required, name='dispatch')
+class ModeratorIssueUpdateView(UpdateView):
+    """View that allows a moderator to update an issue."""
+    model = Issue
+    fields= ['linked_project', 'description', 'reviewer_status']
+    template_name_suffix = '_update_form'
+
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        url = reverse('moderator')
+        return url

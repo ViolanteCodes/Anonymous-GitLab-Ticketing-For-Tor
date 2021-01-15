@@ -12,6 +12,7 @@ from anonticket.views import (
     PendingIssueDetailView,
     NoteCreateView,
     ModeratorNoteUpdateView,
+    ModeratorIssueUpdateView,
     )
 
 
@@ -31,4 +32,5 @@ urlpatterns = [
     path('user/<str:user_identifier>/', views.user_landing_view, name='user-landing'),
     path('moderator/', views.moderator_view, name='moderator'),
     path('moderator/update_note/<int:pk>', views.ModeratorNoteUpdateView.as_view(), name='mod-update-note'),
+    path('moderator/update_issue/<int:pk>', views.ModeratorIssueUpdateView.as_view(), name='mod-update-issue'),
 ]
