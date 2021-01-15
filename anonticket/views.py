@@ -374,6 +374,7 @@ class NoteCreateView(PassUserIdentifierMixin, CreateView):
 
 @staff_member_required
 def moderator_view(request):
+    """A view that allows moderators to approve notes and issues."""
     if request.method == 'POST':
         note_formset = PendingNoteFormSet(prefix="note_formset", data=request.POST)
         issue_formset = PendingIssueFormSet(prefix="issue_formset", data=request.POST)
