@@ -1,5 +1,6 @@
 from django.urls import path, include, reverse
-from django.views.generic import TemplateView, DetailView, ListView, CreateView
+from django.views.generic import (
+    TemplateView, DetailView, ListView, CreateView, UpdateView)
 from . import views
 from django.conf import settings
 from anonticket.views import (
@@ -9,7 +10,8 @@ from anonticket.views import (
     ProjectListView,
     ProjectDetailView,
     PendingIssueDetailView,
-    NoteCreateView
+    NoteCreateView,
+    ModeratorNoteUpdateView,
     )
 
 
@@ -28,4 +30,5 @@ urlpatterns = [
     path('user/<str:user_identifier>/create_issue/', views.create_issue_view, name='create-issue'),
     path('user/<str:user_identifier>/', views.user_landing_view, name='user-landing'),
     path('moderator/', views.moderator_view, name='moderator'),
+    path('moderator/update_note/<int:pk>', views.ModeratorNoteUpdateView.as_view(), name='mod-update-note'),
 ]

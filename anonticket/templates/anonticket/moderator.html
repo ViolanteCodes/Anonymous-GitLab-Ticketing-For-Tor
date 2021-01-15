@@ -59,7 +59,8 @@
                   </ul>
                 </td>
                 <td>{{form.instance.description}}</td>
-                <td>{{form.reviewer_status}}</td>
+                <td>{{form.reviewer_status}}
+                </td>
               </tr>
             {% endfor %}
             </tbody>
@@ -107,6 +108,8 @@
             </td>
             <td>
               {{form.reviewer_status}}
+              <br>
+              <a href="{% url 'mod-update-note' form.instance.pk %}">Update Me!</a>
             </td>
           </tr>
           {% endfor %}

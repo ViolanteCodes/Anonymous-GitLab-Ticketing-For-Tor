@@ -12,7 +12,8 @@ from .forms import (
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView, DetailView, ListView, CreateView, FormView
+from django.views.generic import (
+    TemplateView, DetailView, ListView, CreateView, FormView, UpdateView)
 from django.contrib.admin.views.decorators import staff_member_required
 
 
@@ -372,6 +373,11 @@ class NoteCreateView(PassUserIdentifierMixin, CreateView):
         working_url = reverse('issue-created', args=[user_identifier_to_pass])
         return working_url
 
+# ----------------------MODERATOR_VIEWS---------------------------------
+# Views related to moderators. Should all have decorator 
+# @staff_member_required, which forces staff status on login.
+# ----------------------------------------------------------------------
+
 @staff_member_required
 def moderator_view(request):
     """A view that allows moderators to approve notes and issues."""
@@ -389,3 +395,15 @@ def moderator_view(request):
         note_formset = PendingNoteFormSet(prefix="note_formset")
         issue_formset = PendingIssueFormSet(prefix="issue_formset")
     return render(request, "anonticket/moderator.html", {"note_formset": note_formset, "issue_formset":issue_formset})
+
+@method_decorator(staff_member_required, name='dispatch')
+class ModeratorNoteUpdateView(UpdateView):
+    """View that allows a moderator to update a Note."""
+    model = Note
+    fields= ['body', 'reviewer_status']
+    template_name_suffix = '_update_form'
+
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        url = reverse('moderator')
+        return url
