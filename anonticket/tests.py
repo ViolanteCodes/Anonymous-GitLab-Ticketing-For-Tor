@@ -3,7 +3,8 @@ from django.test import SimpleTestCase, Client, tag
 from test_plus.test import TestCase, CBVTestCase
 from django.urls import reverse, resolve
 from anonticket.models import UserIdentifier, Project, Issue
-from django.views.generic import TemplateView, DetailView
+from django.contrib.auth.models import User, Group, Permission
+# from django.views.generic import TemplateView, DetailView, CreateView, UpdateView
 from anonticket.views import *
 from anonticket.forms import (
     LoginForm, 
@@ -23,7 +24,7 @@ from anonticket.forms import (
 # URL Tests using Django SimpleTestCase (no need for database.)
 # ----------------------------------------------------------------------
 
-@tag('url')
+@tag('urls')
 class TestUrls(SimpleTestCase):
     """Test that the URLS in the anonticket resolve."""
     def setUp(self):
@@ -107,6 +108,21 @@ class TestUrls(SimpleTestCase):
         """Test the 'user-landing' URL."""
         url = reverse('user-landing', args=['duo-atlas-hypnotism-curry-creatable-rubble'])
         self.assertEqual(resolve(url).func, user_landing_view)
+
+    def test_moderator_url_is_resolved(self):
+        """Test the 'moderator' URL."""
+        url  = reverse('moderator')
+        self.assertEqual(resolve(url).func, moderator_view)
+
+    def test_mod_update_issue_url_is_resolved(self):
+        """Test the 'mod-update-issue' url."""
+        url = reverse('mod-update-issue', args=[1])
+        self.assertEqual(resolve(url).func.view_class, ModeratorIssueUpdateView)
+    
+    def test_mod_update_note_url_is_resolved(self):
+        """Test the 'mod-update-note' url."""
+        url = reverse('mod-update-note', args=[1])
+        self.assertEqual(resolve(url).func.view_class, ModeratorNoteUpdateView)
 
 # --------------------------VIEW TESTS----------------------------------
 # Tests for views: (generally for status = 200, template correct,
@@ -625,6 +641,105 @@ class TestCreateIssueForm(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.errors), 3)
+
+# ---------------------MODERATOR PORTAL TESTS---------------------------
+# Tests for views, etc. associated with the moderator panel.
+# ----------------------------------------------------------------------
+
+@tag('moderators')
+class TestModeratorViews(TestCase):
+    """Test the Views associated with Moderators."""
+
+    def setUp(self):
+        # Set Up Moderators group using the create_groups.py file. This
+        # will allow test group permissions to exactly match those from file.
+        from anonticket.management.commands.create_groups import GROUPS
+        from anonticket.management.commands.create_groups import Command as create_groups
+        create_groups.handle(create_groups)
+        self.Moderators = Group.objects.get(name="Moderators")
+
+        # Set up users to test the staff decorator and is_mod decorator.
+        UserStaffNoGroup = User.objects.create(
+            username='UserStaffNoGroup', 
+            password='IAmATestPassword',
+            is_staff=True
+        )
+        self.UserStaffNoGroup = UserStaffNoGroup
+
+        UserGroupNoStaff = User.objects.create(
+            username='UserGroupNoStaff', 
+            password='IAmATestPassword',
+            is_staff=False,
+        )
+        self.UserGroupNoStaff = UserGroupNoStaff
+        self.Moderators.user_set.add(UserGroupNoStaff)
+
+        UserGroupAndStaff = User.objects.create(
+            username='UserGroupAndStaff', 
+            password='IAmATestPassword',
+            is_staff=True,
+        )
+        self.UserGroupAndStaff = UserGroupAndStaff
+        self.Moderators.user_set.add(UserGroupAndStaff)
+
+        # set the login redirect url for views testing
+        self.login_redirect_url = login_redirect_url
+        self.admin_url = '/tor_admin/'
+    
+    def test_moderators_created_successfully(self):
+        """Test that there's a group called Moderators."""
+        self.assertEqual(self.Moderators.name, "Moderators")
+
+    def test_user_staff_no_group_created_successfully(self):
+        """Check that the username exists, that the user is
+        staff, and that the user is NOT part of the Moderators group."""
+        self.assertEqual(self.UserStaffNoGroup.username, "UserStaffNoGroup")
+        self.assertTrue(self.UserStaffNoGroup.is_staff)
+        self.assertFalse(self.UserStaffNoGroup.groups.filter(name="Moderators").exists())
+
+    def test_user_group_no_staff_created_successfully(self):
+        """Test that the username exists, that the user is NOT staff, 
+        and that the user IS part of the Moderators group."""
+        self.assertEqual(self.UserGroupNoStaff.username, "UserGroupNoStaff")
+        self.assertFalse(self.UserGroupNoStaff.is_staff)
+        self.assertTrue(self.UserGroupNoStaff.groups.filter(name="Moderators").exists())
+
+    def test_user_group_and_staff_created_successfully(self):
+        """Test that the username exists, that the user IS staff, and that
+        the user IS part of the Moderators group."""
+        self.assertEqual(self.UserGroupAndStaff.username, "UserGroupAndStaff")
+        self.assertTrue(self.UserGroupAndStaff.is_staff)
+        self.assertTrue(self.UserGroupAndStaff.groups.filter(name="Moderators").exists())
+    
+    def test_moderator_view_GET_not_logged_in(self):
+        """Test that the moderator view redirects to a login form
+        if there is no logged in user."""
+        url = reverse('moderator')
+        response = self.client.get(url)
+        self.assertRedirects(response, self.login_redirect_url)
+
+    def test_moderator_view_GET_no_group(self):
+        """Test that the moderator view redirects to the admin site 
+        with no permissions if a user is logged in and a staff member 
+        but is not part of the Moderators Group."""
+        # self.assertTrue(logged_in)
+        # url = reverse('moderator')
+        # response = self.client.get(url)
+        # self.assertEqual(response.status_code, 302)
+        # print(response.)
+
+    def test_moderator_view_GET_no_staff(self):
+        """Test that the moderator view redirects to a login if user
+        is staff, but is not part of the Moderators group."""
+        pass
+
+    def test_moderator_view_GET_valid_moderator(self):
+        """Test that the moderator view redirects to a login if user
+        is staff, but is not part of the Moderators group."""
+        pass
+
+
+
 
 # --------------------------OTHER TESTS---------------------------------
 # Tests for filters, custom template tags, etc.

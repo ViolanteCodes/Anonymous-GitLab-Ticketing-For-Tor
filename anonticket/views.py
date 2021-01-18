@@ -384,9 +384,16 @@ class NoteCreateView(PassUserIdentifierMixin, CreateView):
 def is_moderator(user):
     """A function to check that a logged in user is part of the
     Moderators group."""
-    return user.groups.filter(name='Moderators').exists() 
+    if user.groups.filter(name='Moderators').exists() or user.is_superuser:
+        return True
+    else:
+        return False
 
-# Set the login_redirect_url variable 
+# Set the login_redirect_url variable. Staff should not be able to
+# access NoteUpdateView or IssueUpdateView without going through
+# /moderator first, so all moderator views can redirect to the 
+# same place in the event the staff member is not logged in.
+ 
 login_redirect_url = "/tor_admin/login/?next=/moderator/"
 
 @user_passes_test(
@@ -410,7 +417,7 @@ def moderator_view(request):
     return render(request, "anonticket/moderator.html", {"note_formset": note_formset, "issue_formset":issue_formset})
 
 @method_decorator(user_passes_test(
-    is_moderator, login_url="/tor_admin/login/?next=/moderator/"), name='dispatch')
+    is_moderator, login_url=login_redirect_url), name='dispatch')
 @method_decorator(staff_member_required, name='dispatch')
 class ModeratorNoteUpdateView(UpdateView):
     """View that allows a moderator to update a Note."""
@@ -424,7 +431,7 @@ class ModeratorNoteUpdateView(UpdateView):
         return url
 
 @method_decorator(user_passes_test(
-    is_moderator, login_url="/tor_admin/login/?next=/moderator/"), name='dispatch')
+    is_moderator, login_url=login_redirect_url), name='dispatch')
 @method_decorator(staff_member_required, name='dispatch')
 class ModeratorIssueUpdateView(UpdateView):
     """View that allows a moderator to update an issue."""
