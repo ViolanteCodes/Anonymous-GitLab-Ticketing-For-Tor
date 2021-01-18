@@ -381,10 +381,22 @@ class NoteCreateView(PassUserIdentifierMixin, CreateView):
 # decorator, which tests that user is a member of the group Moderator.
 # ----------------------------------------------------------------------
 
+#Functions that check group status:
+
 def is_moderator(user):
-    """A function to check that a logged in user is part of the
-    Moderators group."""
-    if user.groups.filter(name='Moderators').exists() or user.is_superuser:
+    """Check if the user is a moderator."""
+    is_moderator = user.groups.filter(name="Moderators").exists()
+    return is_moderator
+
+def is_account_approver(user):
+    """Check if the user is an account approver."""
+    is_account_approver = user.groups.filter(name="Account Approvers").exists()
+    return is_account_approver
+
+def is_allowed(user):
+    """A function to check that a logged-in user is either a moderator,
+    an account approver, or a super_user."""
+    if is_moderator(user) or is_account_approver(user) or user.is_superuser:
         return True
     else:
         return False
