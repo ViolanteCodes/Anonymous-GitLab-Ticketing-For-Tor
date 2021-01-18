@@ -427,14 +427,15 @@ def moderator_view(request):
     """A view that allows moderators to approve notes and issues."""
     user = request.user
     if request.method == 'POST':
-        note_formset = PendingNoteFormSet(prefix="note_formset", data=request.POST)
-        issue_formset = PendingIssueFormSet(prefix="issue_formset", data=request.POST)
-        if note_formset.is_valid() and issue_formset.is_valid():
-            issue_formset.save()
-            note_formset.save()
-        else:
-            print(issue_formset.errors)
-            print(note_formset.errors)
+        if is_moderator(user) == True:
+            note_formset = PendingNoteFormSet(prefix="note_formset", data=request.POST)
+            issue_formset = PendingIssueFormSet(prefix="issue_formset", data=request.POST)
+            if note_formset.is_valid() and issue_formset.is_valid():
+                issue_formset.save()
+                note_formset.save()
+            else:
+                print(issue_formset.errors)
+                print(note_formset.errors)
         return redirect('/moderator/')
     else:
         if is_moderator(user) == True:
