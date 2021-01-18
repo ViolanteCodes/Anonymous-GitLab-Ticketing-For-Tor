@@ -426,12 +426,14 @@ login_redirect_url = "/tor_admin/login/?next=/moderator/"
 def moderator_view(request):
     """A view that allows moderators to approve notes and issues."""
     user = request.user
+    messages = {}
     if request.method == 'POST':
         if is_moderator(user) == True:
             note_formset = PendingNoteFormSet(prefix="note_formset", data=request.POST)
             issue_formset = PendingIssueFormSet(prefix="issue_formset", data=request.POST)
-            if note_formset.is_valid() and issue_formset.is_valid():
+            if issue_formset.is_valid():
                 issue_formset.save()
+            if note_formset.is_valid():
                 note_formset.save()
             else:
                 print(issue_formset.errors)
@@ -442,9 +444,11 @@ def moderator_view(request):
             note_formset = PendingNoteFormSet(prefix="note_formset")
             issue_formset = PendingIssueFormSet(prefix="issue_formset")
         else:
-            note_formset = {}
-            issue_formset = {}
-    return render(request, "anonticket/moderator.html", {"note_formset": note_formset, "issue_formset":issue_formset})
+            messages = {
+                note_message: 'You do not have permission to view pending notes at this time.',
+                issue_message: 'You do not have permission to view pending issues at this time.'
+            }
+    return render(request, "anonticket/moderator.html", {"note_formset": note_formset, "issue_formset":issue_formset, "messages": messages})
 
 @method_decorator(user_passes_test(
     is_moderator, login_url=login_redirect_url), name='dispatch')

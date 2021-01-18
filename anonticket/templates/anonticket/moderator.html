@@ -38,6 +38,9 @@
     <h2>Pending Issues</h2>
     <!-- If there are pending issues, render them here. -->
       {% if issue_formset %}
+      {{ issue_formset.management_form }}
+      {% endif %}
+      {% if issue_formset.forms %}
           <table>
             <thead>
               <th>
@@ -51,7 +54,6 @@
               </th>
             </thead>
             <tbody>
-            {{ issue_formset.management_form }}
             {% for form in issue_formset %}
               {% for hidden in form.hidden_fields %}
               {{ hidden }}
@@ -81,8 +83,12 @@
             {% endfor %}
             </tbody>
           </table>
+        <!-- If user was not in moderators group, issue_formset dictionary will have permission message. -->
+        {% elif messages %}
+          <p>{{messages.issue_message}}</p>
+        <!-- If user was in moderators group, but there are no issues, display no issues message. -->
         {% else %}
-          <p>No pending issues at this time.</p>
+        <p>No pending issues at this time.</p>
         {% endif %}
     </div>
   </div>
@@ -95,6 +101,8 @@
       <!-- If there are pending notes, render them here. -->
       {% if note_formset %}
       {{ note_formset.management_form }}
+      {% endif %}
+      {% if note_formset.forms %}
         <table>
           <thead>
             <th>
@@ -137,6 +145,10 @@
           </tr>
           {% endfor %}
         </table>
+<!-- If user was not in moderators group, issue_formset dictionary will have permission message. -->
+      {% elif messages %}
+      <p>{{messages.note_messages}}</p>
+<!-- If user was in moderators group, but there are no issues, display no issues message. -->
       {% else %}
       <p>No Pending Notes at this Time.</p>
       {% endif %}
