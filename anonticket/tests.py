@@ -729,6 +729,8 @@ class TestModeratorViews(TestCase):
         response = self.client.get(url, follow=False)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, self.login_redirect_url)
+        self.assertTemplateNotUsed(response, 'anonticket/moderator.html')
+
         # print(response)
 
     def test_moderator_view_GET_no_staff(self):
@@ -740,7 +742,6 @@ class TestModeratorViews(TestCase):
         response = self.client.get(url)
         self.assertTemplateNotUsed(response, 'anonticket/moderator.html')
         # print(response)
-
 
     def test_moderator_view_GET_valid_moderator(self):
         """Test that the moderator view displays correctly if
