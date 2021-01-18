@@ -381,10 +381,34 @@ class NoteCreateView(PassUserIdentifierMixin, CreateView):
 # decorator, which tests that user is a member of the group Moderator.
 # ----------------------------------------------------------------------
 
+#Functions that check group status:
+
 def is_moderator(user):
-    """A function to check that a logged in user is part of the
-    Moderators group."""
-    if user.groups.filter(name='Moderators').exists() or user.is_superuser:
+    """Check if the user is either in the Moderators group or a superuser."""
+    check_passed = False
+    check_moderator = user.groups.filter(name="Moderators").exists()
+    check_super = user.is_superuser
+    if check_moderator == True:
+        check_passed = True
+    elif check_super == True:
+        check_passed = True
+    return check_passed
+
+def is_account_approver(user):
+    """Check if the user is in the Account Approvers group or superuser."""
+    check_passed = False
+    check_account_approver = user.groups.filter(name="Account Approvers").exists()
+    check_super = user.is_superuser
+    if check_account_approver == True:
+        check_passed = True
+    elif check_super == True:
+        check_passed = True
+    return check_passed
+
+def is_mod_or_approver(user):
+    """A function to check that a logged-in user is either a moderator,
+    an account approver, or a super_user."""
+    if is_moderator(user) or is_account_approver(user):
         return True
     else:
         return False
@@ -397,24 +421,39 @@ def is_moderator(user):
 login_redirect_url = "/tor_admin/login/?next=/moderator/"
 
 @user_passes_test(
-    is_moderator, login_url=login_redirect_url)
+    is_mod_or_approver, login_url=login_redirect_url)
 @staff_member_required
 def moderator_view(request):
-    """A view that allows moderators to approve notes and issues."""
+    """View that allows moderators and account approvers to approve pending items."""
+    user = request.user
+    messages = {}
     if request.method == 'POST':
-        note_formset = PendingNoteFormSet(prefix="note_formset", data=request.POST)
-        issue_formset = PendingIssueFormSet(prefix="issue_formset", data=request.POST)
-        if note_formset.is_valid() and issue_formset.is_valid():
-            issue_formset.save()
-            note_formset.save()
-        else:
-            print(issue_formset.errors)
-            print(note_formset.errors)
+        # if POST, verify that the user is in the moderators group. If not, 
+        # just redirect back to moderators.
+        if is_moderator(user) == True:
+            note_formset = PendingNoteFormSet(prefix="note_formset", data=request.POST)
+            issue_formset = PendingIssueFormSet(prefix="issue_formset", data=request.POST)
+            if issue_formset.is_valid():
+                issue_formset.save()
+            if note_formset.is_valid():
+                note_formset.save()
+            else:
+                print(issue_formset.errors)
+                print(note_formset.errors)
         return redirect('/moderator/')
     else:
-        note_formset = PendingNoteFormSet(prefix="note_formset")
-        issue_formset = PendingIssueFormSet(prefix="issue_formset")
-    return render(request, "anonticket/moderator.html", {"note_formset": note_formset, "issue_formset":issue_formset})
+        # if request method is not POST, pull formsets and render them in the template.
+        if is_moderator(user) == True:
+            note_formset = PendingNoteFormSet(prefix="note_formset")
+            issue_formset = PendingIssueFormSet(prefix="issue_formset")
+        else:
+            note_formset = {}
+            issue_formset = {}
+            messages = {
+                'note_message': 'You do not have permission to view pending notes at this time.',
+                'issue_message': 'You do not have permission to view pending issues at this time.'
+            }
+    return render(request, "anonticket/moderator.html", {"note_formset": note_formset, "issue_formset":issue_formset, "messages": messages})
 
 @method_decorator(user_passes_test(
     is_moderator, login_url=login_redirect_url), name='dispatch')
