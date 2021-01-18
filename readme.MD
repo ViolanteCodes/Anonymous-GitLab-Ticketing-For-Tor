@@ -79,21 +79,37 @@ Once the project has been installed and migrations applied, it is
 recommended to run create_groups for ease of admin administration.
 
 /anonticket/management/commands has a file in it, "create_groups.py", 
-which will automatically create a group called "Moderators" when 
-run from the command line with:
+which will automatically create two groups, "Moderators" and "Account
+Approvers", when run from the command line with:
 
 $ python manage.py create_groups
 
-This group will automatically have the following permissions assigned:
+The "Moderators" will automatically have the following permissions assigned:
 - View User Identifier
 - View Git Lab Group
 - View Project
 - Add/Delete/Change/View Issue
 - Add/Delete/Change/View Note
 
-Once the file is run, this group can be selected any time a new user/
-moderator is added. Make sure moderators also have "staff" status so 
-that they are able to log in with the admin panel.
+The "Acount Approvers" will automatically have the following permissions assigned:
+- View User Identifier
+- Add/Delete/Change/View Gitlab Account Request
+
+Once create_groups.py is run, users can be created by a super_user via
+the admin panel. make sure to:
+1. Assign "staff" status to moderators and account approvers so that
+they are able to login.
+2. Assign the group "Moderators" to users that will be editing notes
+and issues.
+3. Assign the group "Account Approvers" to users that will be approving
+Gitlab Account Requests (this functionality has not yet been added to the
+portal but should be coming at a future date.)
+4. Note: Users can be in more than one group.
+
+If, in the future, you wish to update the permissions for the group, you
+can do so via the admin panel, but it's recommended to update the file
+in anonticket/management/commands/create_groups.py instead, as this 
+will ensure consistency at a later date.
 
 ### To run it locally
 
@@ -117,7 +133,7 @@ Then run the following commands:
 7. Create the superuser
     $ python manage.py createsuperuser
     (follow the prompts):
-8. Create the moderators group (see explanation above):
+8. Create groups "Moderators" and "Account Approvers"(see explanation above):
     $ python manage.py create_groups
 9. Add gitlab tokens and other variables in the .env file.
 
