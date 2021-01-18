@@ -683,6 +683,7 @@ class TestModeratorViews(TestCase):
         self.Moderators.user_set.add(UserGroupAndStaff)
 
         # set the login redirect url for views testing
+        from anonticket.views import login_redirect_url as login_redirect_url
         self.login_redirect_url = login_redirect_url
         self.admin_url = '/tor_admin/'
     
@@ -721,25 +722,35 @@ class TestModeratorViews(TestCase):
     def test_moderator_view_GET_no_group(self):
         """Test that the moderator view redirects to the admin site 
         with no permissions if a user is logged in and a staff member 
-        but is not part of the Moderators Group."""
-        # self.assertTrue(logged_in)
-        # url = reverse('moderator')
-        # response = self.client.get(url)
-        # self.assertEqual(response.status_code, 302)
-        # print(response.)
+        but is not part of the Moderators or Account Approvers Group."""
+        current_user = self.UserStaffNoGroup
+        self.client.force_login(current_user)
+        url = reverse('moderator')
+        response = self.client.get(url, follow=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.login_redirect_url)
+        # print(response)
 
     def test_moderator_view_GET_no_staff(self):
-        """Test that the moderator view redirects to a login if user
-        is staff, but is not part of the Moderators group."""
-        pass
+        """Test that the moderator view fails if a user has moderator
+        permissions but is not staff."""
+        current_user = self.UserGroupNoStaff
+        self.client.force_login(current_user)
+        url = reverse('moderator')
+        response = self.client.get(url)
+        self.assertTemplateNotUsed(response, 'anonticket/moderator.html')
+        # print(response)
+
 
     def test_moderator_view_GET_valid_moderator(self):
-        """Test that the moderator view redirects to a login if user
-        is staff, but is not part of the Moderators group."""
-        pass
-
-
-
+        """Test that the moderator view displays correctly if
+        the user has moderator permissions and is staff."""
+        current_user = self.UserGroupAndStaff
+        self.client.force_login(current_user)
+        url = reverse('moderator')
+        response = self.client.get(url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/moderator.html')
 
 # --------------------------OTHER TESTS---------------------------------
 # Tests for filters, custom template tags, etc.
