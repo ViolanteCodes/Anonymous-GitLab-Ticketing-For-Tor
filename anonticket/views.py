@@ -384,7 +384,7 @@ class NoteCreateView(PassUserIdentifierMixin, CreateView):
 #Functions that check group status:
 
 def is_moderator(user):
-    """Check if the user is a moderator or superuser."""
+    """Check if the user is either in the Moderators group or a superuser."""
     check_passed = False
     check_moderator = user.groups.filter(name="Moderators").exists()
     check_super = user.is_superuser
@@ -395,7 +395,7 @@ def is_moderator(user):
     return check_passed
 
 def is_account_approver(user):
-    """Check if the user is an account approver or superuser."""
+    """Check if the user is in the Account Approvers group or superuser."""
     check_passed = False
     check_account_approver = user.groups.filter(name="Account Approvers").exists()
     check_super = user.is_superuser
