@@ -14,6 +14,11 @@ GROUPS = {
         "note" : ["add","delete","change","view"],
         "user identifier" : ["view"]
     },
+    "Account Approvers": {
+        # Add specific model permissions here.
+        "gitlab account request" : ["add","delete","change","view"],
+        "user identifier" : ["view"],
+    },
 }
 
 class Command(BaseCommand):
@@ -25,7 +30,7 @@ class Command(BaseCommand):
         for group_name in GROUPS:
 
             new_group, created = Group.objects.get_or_create(name=group_name)
-            print("Creating Moderators Group")
+            print(f"Creating {group_name}")
             # Loop models in group
             for app_model in GROUPS[group_name]:
 
@@ -34,7 +39,7 @@ class Command(BaseCommand):
 
                     # Generate permission name as Django would generate it
                     name = "Can {} {}".format(permission_name, app_model)
-                    print("Creating {}".format(name))
+                    print("Adding Permission {}".format(name))
 
                     try:
                         model_add_perm = Permission.objects.get(name=name)

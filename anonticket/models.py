@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
+from django import forms
 import gitlab
 
 # Create your models here.
@@ -199,7 +201,6 @@ class Note(models.Model):
         working_issue = working_project.issues.get(self.issue_iid)
         return working_issue.title
 
-
     def save(self, *args, **kwargs):
         if not self.gitlab_issue_title:
             self.gitlab_issue_title = self.get_issue_title()
@@ -209,3 +210,86 @@ class Note(models.Model):
 
     def __str__(self):
         return self.body
+
+#Define a custom validator for the GitLab Account Request that checks
+# if the username already exists in Gitlab.
+
+def check_if_user_in_gitlab(username_to_test):
+    """Validator to check if a username already exists in GitLab."""
+    # Create the gitlab object using the ACCOUNTS token
+    gl = gitlab.Gitlab(
+        settings.GITLAB_URL, 
+        private_token=settings.GITLAB_ACCOUNTS_SECRET_TOKEN
+        )
+    try: 
+        user = gl.users.list(username=f"{username_to_test}")[0]
+        raise ValidationError(
+            _('%(username_to_test)s is already taken.'),
+            params={'username_to_test': username_to_test},
+        )
+    #An IndexError means the username was not found.
+    except IndexError:
+        pass
+
+class GitlabAccountRequest(models.Model):
+    """A model of a user's request to create a GitLab account."""
+    # SlugField chosen over CharField due to Gitlab's restrictions
+    # on usernames.
+    username = models.SlugField(
+        max_length=64, 
+        unique=True, 
+        help_text= """Type your requested username here. Note that your 
+        username MUST start with a letter or number, and that usernames
+        can only use letters (A-Z, a-z), numbers, underscores (_), and 
+        hyphens(-).""",
+        validators=[check_if_user_in_gitlab]
+        )
+    email = models.EmailField()
+    reason = models.CharField(
+        max_length=256, 
+        help_text = """Please explain why you want to collaborate with the 
+        Tor Community.""",
+    )
+    REVIEWER_STATUS_CHOICES = [
+        ('P', 'Pending Review'),
+        ('A', 'Approved'),
+        ('R', 'Rejected'),
+    ]
+    reviewer_status = models.CharField(
+        max_length=3,
+        choices=REVIEWER_STATUS_CHOICES,
+        default='P',  
+    )
+    approved_to_GitLab = models.BooleanField(default=False)
+
+    def approve_request(self):
+        """Approve a request and create the user on Gitlab."""
+        # Create the gitlab object
+        gl = gitlab.Gitlab(
+            settings.GITLAB_URL, 
+            private_token=settings.GITLAB_ACCOUNTS_SECRET_TOKEN
+            )
+        try:
+            new_user = gl.users.create({
+                "name":              self.username,
+                "username":          self.username,
+                "email":             self.email,
+                "reset_password":    True,
+                "can_create_group":  False,
+                "skip_confirmation": True, # The password reset mail is enough.
+            })
+            new_user.projects_limit = 5
+            new_user.save()
+        except Exception as e:
+            print("Error: {}".format(e))
+    
+    def save(self, *args, **kwargs):
+        if self.reviewer_status == 'A' and self.posted_to_GitLab == False:
+            try:
+                self.approve_request()
+            except Exception as e:
+                print("Error: {}".format(e))
+        super(GitlabAccountRequest, self).save(*args, **kwargs) 
+
+    def __str__(self):
+        return self.username

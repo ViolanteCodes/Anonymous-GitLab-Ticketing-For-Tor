@@ -2,10 +2,11 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import UserIdentifier, GitLabGroup, Project, Issue, Note
+from .models import UserIdentifier, GitLabGroup, Project, Issue, Note, GitlabAccountRequest
 admin.site.register(UserIdentifier)
 admin.site.register(GitLabGroup)
 admin.site.register(Project)
+admin.site.register(GitlabAccountRequest)
 
 def bulk_approve_issues(modeladmin, request, queryset):
     """Add a bulk approval method for issues to admin panel."""
