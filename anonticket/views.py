@@ -384,19 +384,31 @@ class NoteCreateView(PassUserIdentifierMixin, CreateView):
 #Functions that check group status:
 
 def is_moderator(user):
-    """Check if the user is a moderator."""
-    is_moderator = user.groups.filter(name="Moderators").exists()
-    return is_moderator
+    """Check if the user is a moderator or superuser."""
+    check_passed = False
+    check_moderator = user.groups.filter(name="Moderators").exists()
+    check_super = user.is_superuser
+    if check_moderator == True:
+        check_passed = True
+    elif check_super == True:
+        check_passed = True
+    return check_passed
 
 def is_account_approver(user):
-    """Check if the user is an account approver."""
-    is_account_approver = user.groups.filter(name="Account Approvers").exists()
-    return is_account_approver
+    """Check if the user is an account approver or superuser."""
+    check_passed = False
+    check_account_approver = user.groups.filter(name="Account Approvers").exists()
+    check_super = user.is_superuser
+    if check_account_approver == True:
+        check_passed = True
+    elif check_super == True:
+        check_passed = True
+    return check_passed
 
-def is_allowed(user):
+def is_mod_or_approver(user):
     """A function to check that a logged-in user is either a moderator,
     an account approver, or a super_user."""
-    if is_moderator(user) or is_account_approver(user) or user.is_superuser:
+    if is_moderator(user) or is_account_approver(user):
         return True
     else:
         return False
@@ -409,10 +421,11 @@ def is_allowed(user):
 login_redirect_url = "/tor_admin/login/?next=/moderator/"
 
 @user_passes_test(
-    is_moderator, login_url=login_redirect_url)
+    is_mod_or_approver, login_url=login_redirect_url)
 @staff_member_required
 def moderator_view(request):
     """A view that allows moderators to approve notes and issues."""
+    user = request.user
     if request.method == 'POST':
         note_formset = PendingNoteFormSet(prefix="note_formset", data=request.POST)
         issue_formset = PendingIssueFormSet(prefix="issue_formset", data=request.POST)
@@ -424,8 +437,12 @@ def moderator_view(request):
             print(note_formset.errors)
         return redirect('/moderator/')
     else:
-        note_formset = PendingNoteFormSet(prefix="note_formset")
-        issue_formset = PendingIssueFormSet(prefix="issue_formset")
+        if is_moderator(user) == True:
+            note_formset = PendingNoteFormSet(prefix="note_formset")
+            issue_formset = PendingIssueFormSet(prefix="issue_formset")
+        else:
+            note_formset = {}
+            issue_formset = {}
     return render(request, "anonticket/moderator.html", {"note_formset": note_formset, "issue_formset":issue_formset})
 
 @method_decorator(user_passes_test(
