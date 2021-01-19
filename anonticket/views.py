@@ -58,6 +58,11 @@ def get_linked_issues(UserIdentifier):
     linked_issues = Issue.objects.filter(linked_user=UserIdentifier)
     return linked_issues
 
+def get_linked_notes(UserIdentifier):
+    """Gets a list of the notes assigned to a User Identifier."""
+    linked_notes = Note.objects.filter(linked_user=UserIdentifier)
+    return linked_notes
+
 # --------------------DECORATORS AND MIXINS-----------------------------
 # Django decorators wrap functions (such as views) in other functions. 
 # Mixins perform a similar function for class based views.
@@ -209,8 +214,10 @@ def user_landing_view(request, user_identifier):
         # results dictionary.
         working_user = get_user_as_object(user_identifier)
         linked_issues = get_linked_issues(working_user)
-        results['linked_issues'] = linked_issues        
-    # if found or not found, pass 'user_identifier' to context dictionary
+        linked_notes = get_linked_notes(working_user)
+        results['linked_issues'] = linked_issues
+        results['linked_notes'] = linked_notes        
+    # whether user found or not found, pass 'user_identifier' to context dictionary
     results['user_identifier'] = user_identifier
     return render(request, 'anonticket/user_landing.html', {'results': results})
 
