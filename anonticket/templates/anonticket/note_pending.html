@@ -1,0 +1,48 @@
+{% extends 'shared/layout.html' %}
+{% load static %}
+<!-- Load custom filters from shared app, including ISO 8901 Date-Time Converter -->
+{% load custom_filters %}
+<!-- Load markdownify -->
+{% load markdownify %}
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
+<!-- Start Page Render -->
+{% block h3 %}
+  </h3>
+  <div class="row justify-content-between">
+      <p class="col-auto mb-0 small pb-0 pt-0">{note.linked_project}}</p>
+      <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right">Created by {{note.linked_user.user_identifier}}</p>
+  </div>
+  <hr class="mb-0 mt-0">
+  <div class="row justify-content-between">
+    <div class="col-auto"><p class="mb-0 small pb-0 pt-0">Milestone: NA, Issue Pending Mod Approval.</p></div>
+    <div class="col-auto">
+      <p class="text-muted small mb-0 pb-0 pt-0 text-right">    
+        Labels: NA, Issue Pending Mod Approval</p>
+    </div>
+  </div>
+  <div class="row  mt-5">
+    <div class="col-12">
+      <h4><span class="badge badge-primary mr-2">Pending</span>{{issue.body|capfirst}}</h4>
+    </div>
+  <div class="col-12 small mt-0 mb-3 text-right">
+  </div>
+</div>
+{% endblock %}
+{% block subheader %} 
+  <p class="small short-height">{{note.body|capfirst|markdownify}}</p>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+<!-- Generate a link to go back to the user's landing page -->
+    {% url 'user-landing' note.linked_user.user_identifier as go_back_url %}
+    <p>
+      <a href="{{go_back_url}}">Go Back To Landing Page</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
