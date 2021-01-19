@@ -788,6 +788,111 @@ class TestModeratorViews(TestCase):
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/moderator.html')
+    
+    def test_note_update_view_GET_valid_moderator(self):
+        """Test that the note update view displays correctly
+        for Moderator."""
+        # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        # Create a user
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        # Create a pending issue.
+        pending_issue = Issue.objects.create (
+            title = 'A Pending Issue',
+            linked_project = new_project,
+            linked_user = new_user,
+            description= 'A description of a pending issue'
+        )
+        # Create a posted issue.
+        posted_issue = Issue.objects.create (  
+            title = 'A posted issue',
+            description = 'A posted issue description',
+            linked_project = new_project,
+            linked_user = new_user,
+            gitlab_iid = 1,
+            reviewer_status = 'A',
+            posted_to_GitLab = True
+        )
+        pending_note = Note.objects.create(
+            body = 'A pending note body',
+            linked_project = new_project,
+            linked_user = new_user,
+            reviewer_status='P',
+            issue_iid='1',
+        )
+        self.client=Client()
+        self.new_user = new_user
+        self.project = new_project
+        self.pending_issue = pending_issue
+        self.posted_issue = posted_issue
+        self.pending_note = pending_note
+
+        self.client.force_login(self.UserGroupAndStaff)
+        url = reverse('pending-note', args=[
+            self.new_user,
+            self.project.slug, 
+            self.pending_note.issue_iid, 
+            self.pending_note.pk])
+        response = self.client.get(url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'anonticket/note_pending.html')
+    
+    def test_note_update_view_POST_valid_moderator(self):
+         # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        # Create a user
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        # Create a pending issue.
+        pending_issue = Issue.objects.create (
+            title = 'A Pending Issue',
+            linked_project = new_project,
+            linked_user = new_user,
+            description= 'A description of a pending issue'
+        )
+        # Create a posted issue.
+        posted_issue = Issue.objects.create (  
+            title = 'A posted issue',
+            description = 'A posted issue description',
+            linked_project = new_project,
+            linked_user = new_user,
+            gitlab_iid = 1,
+            reviewer_status = 'A',
+            posted_to_GitLab = True
+        )
+        pending_note = Note.objects.create(
+            body = 'A pending note body',
+            linked_project = new_project,
+            linked_user = new_user,
+            reviewer_status='P',
+            issue_iid='1',
+        )
+        self.new_user = new_user
+        self.project = new_project
+        self.pending_issue = pending_issue
+        self.posted_issue = posted_issue
+        self.pending_note = pending_note
+        self.client.force_login(self.UserGroupAndStaff)
+        url = reverse('mod-update-note', args=[
+            self.pending_note.pk])
+        form_data = {
+            'body': "A new note body.",
+            'reviewer_status': 'P',
+            }
+        response = self.client.post(url, form_data)
+        self.assertEqual(response.status_code, 302)
+        expected_url = reverse('moderator')
+        self.assertRedirects(response, expected_url)
+        # Fetch a fresh copy of the updated note.
+        updated_note = Note.objects.get(pk=1)
+        self.assertEqual(updated_note.body, "A new note body.")
 
 # --------------------------OTHER TESTS---------------------------------
 # Tests for filters, custom template tags, etc.
