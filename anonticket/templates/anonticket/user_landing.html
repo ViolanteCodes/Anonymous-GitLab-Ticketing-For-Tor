@@ -83,4 +83,32 @@
         {% endif %}
   </div>
 </div>
+
+<!-- List the notes the user has created. -->
+<div class="row">
+  <div class="col-12">
+    <h4 class="mt-4">You have created the following notes:</h4>
+      <!-- If there are notes, list them -->
+        {% if results.linked_notes %}
+        <p class="small">(Notes marked with *** have not been approved by moderators and therefore have not been posted to GitLab.)</p>
+          <ul>
+            {% for note in results.linked_notes %}
+              <!-- if note has an gitlab_id, generate a link to the issue-detail view-->
+                {% if note.gitlab_id %}
+                  {% url 'issue-detail-view' results.user_identifier note.linked_project.slug note.issue_iid as issue_url %}
+                  <li>Note: {{note.body}} on <a href="{{issue_url}}">{{note.gitlab_issue_title}}</a></li>
+                <!-- else (e.g., if note is not approved), list the note and generate a link to the pending-note-detail-view -->
+                {% else %}
+                  {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.slug issue.pk as issue_url %}
+                  <li><a href="{{issue_url}}" class="mr-1">{{issue.title|capfirst}}</a> *** </li>
+                {% endif %}
+            {% endfor %}
+            </ul>
+      </p>
+        {% else %}
+        <!-- Or tell the user are there are no issues -->
+          <p class="small">You have not created any issues.</p>
+        {% endif %}
+  </div>
+  </div>
 {% endblock %}
