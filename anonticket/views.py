@@ -381,6 +381,11 @@ class NoteCreateView(PassUserIdentifierMixin, CreateView):
         working_url = reverse('issue-created', args=[user_identifier_to_pass])
         return working_url
 
+class PendingNoteDetailView(PassUserIdentifierMixin, DetailView):
+    """View For Pending Notes that have not been  mod approved."""
+    model = Note
+    template_name = 'anonticket/note_pending.html'
+    
 # ----------------------MODERATOR_VIEWS---------------------------------
 # Views related to moderators. Should all have decorator 
 # @staff_member_required, which forces staff status and allows access
