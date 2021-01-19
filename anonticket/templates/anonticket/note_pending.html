@@ -12,27 +12,28 @@
 {% block h3 %}
   </h3>
   <div class="row justify-content-between">
-      <p class="col-auto mb-0 small pb-0 pt-0">{note.linked_project}}</p>
+      <p class="col-auto mb-0 small pb-0 pt-0">{{note.linked_project}}</p>
       <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right">Created by {{note.linked_user.user_identifier}}</p>
   </div>
   <hr class="mb-0 mt-0">
   <div class="row justify-content-between">
-    <div class="col-auto"><p class="mb-0 small pb-0 pt-0">Milestone: NA, Issue Pending Mod Approval.</p></div>
+    <div class="col-auto"><p class="mb-0 small pb-0 pt-0">Milestone: NA, Note Pending Mod Approval.</p></div>
     <div class="col-auto">
       <p class="text-muted small mb-0 pb-0 pt-0 text-right">    
-        Labels: NA, Issue Pending Mod Approval</p>
+        Labels: NA, Note Pending Mod Approval</p>
     </div>
   </div>
   <div class="row  mt-5">
     <div class="col-12">
-      <h4><span class="badge badge-primary mr-2">Pending</span>{{issue.body|capfirst}}</h4>
+      <h4><span class="badge badge-primary mr-2">Pending Note</span>on Issue: "{{note.gitlab_issue_title|capfirst|truncatewords:20}}"</h4>
     </div>
   <div class="col-12 small mt-0 mb-3 text-right">
   </div>
 </div>
 {% endblock %}
 {% block subheader %} 
-  <p class="small short-height">{{note.body|capfirst|markdownify}}</p>
+  <p class="form-control bg-light">"{{note.body|capfirst|markdownify}}"</p>
+  <p class="small text-muted ml-3">(***This note is pending moderator approval.)</p>
 {% endblock %}
 
 {% block content %}
