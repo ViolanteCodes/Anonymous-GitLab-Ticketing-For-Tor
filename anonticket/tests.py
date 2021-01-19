@@ -894,6 +894,42 @@ class TestModeratorViews(TestCase):
         updated_note = Note.objects.get(pk=1)
         self.assertEqual(updated_note.body, "A new note body.")
 
+    def test_issue_update_view_POST_valid_moderator(self):
+         # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        # Create a user
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        # Create a pending issue.
+        pending_issue = Issue.objects.create (
+            title = 'A Pending Issue',
+            linked_project = new_project,
+            linked_user = new_user,
+            description= 'A description of a pending issue'
+        )
+        self.new_user = new_user
+        self.project = new_project
+        self.pending_issue = pending_issue
+        self.client.force_login(self.UserGroupAndStaff)
+        url = reverse('mod-update-issue', args=[
+            self.pending_issue.pk])
+        form_data = {
+            'linked_project': self.project.id,
+            'description': "An updated issue description",
+            'reviewer_status': 'P',
+            }
+        response = self.client.post(url, form_data)
+        self.assertEqual(response.status_code, 302)
+        expected_url = reverse('moderator')
+        self.assertRedirects(response, expected_url)
+        # Fetch a fresh copy of the updated note.
+        updated_issue = Issue.objects.get(pk=1)
+        self.assertEqual(
+            updated_issue.description, "An updated issue description")
+
 # --------------------------OTHER TESTS---------------------------------
 # Tests for filters, custom template tags, etc.
 # ----------------------------------------------------------------------
