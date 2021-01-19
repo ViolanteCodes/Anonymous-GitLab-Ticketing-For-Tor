@@ -46,11 +46,15 @@
       <p class='mt-4 mb-0'>
         <ul>
           <li>{% url 'project-list' results.user_identifier as project_list_url %}
-            See a list of <a href="{{project_list_url}}">all projects</a> using this portal.</li>
+            <a href="{{project_list_url}}">See a list all projects</a> using this portal. Each project links 
+          to a detail page with a list of issues.</li>
           <li>{% url 'issue-search' results.user_identifier as search_url %}
-          <a href="{{search_url}}">Search</a> for an issue inside of a given project.</li>
+          <a href="{{search_url}}">Search for an issue</a> inside of a given project.</li>
           <li>{% url 'create-issue' results.user_identifier as create_url %}
-          <a href="{{create_url}}">Create</a> an issue inside of a given project.</li>
+          <a href="{{create_url}}">Create an issue</a> inside of a given project.</li>
+          <li>You can also create a note on an issue by searching for the issue first or 
+            selecting it from the project page using one of the above methods.
+          </li>
         </ul>
       </p>
     </div>
@@ -89,25 +93,33 @@
   <div class="col-12">
     <h4 class="mt-4">You have created the following notes:</h4>
       <!-- If there are notes, list them -->
+        {% url 'issue-search' results.user_identifier as search_url %}
+        {% url 'project-list' results.user_identifier as project_list_url%}
+        <p class="small short-height">(To create a new note, <a href="{{search_url}}">
+          search for the issue</a> you want to comment on, or look at the 
+          <a href="{{project_list_url}}">project's detail view</a> to find an issue. 
+          Notes marked with *** have not been approved by moderators 
+          and therefore have not been posted to GitLab.)</p>
         {% if results.linked_notes %}
-        <p class="small">(Notes marked with *** have not been approved by moderators and therefore have not been posted to GitLab.)</p>
-          <ul>
-            {% for note in results.linked_notes %}
-              <!-- if note has an gitlab_id, generate a link to the issue-detail view-->
-                {% if note.gitlab_id %}
-                  {% url 'issue-detail-view' results.user_identifier note.linked_project.slug note.issue_iid as issue_url %}
-                  <li>Note: {{note.body}} on <a href="{{issue_url}}">{{note.gitlab_issue_title}}</a></li>
-                <!-- else (e.g., if note is not approved), list the note and generate a link to the pending-note-detail-view -->
-                {% else %}
-                  {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.slug issue.pk as issue_url %}
-                  <li><a href="{{issue_url}}" class="mr-1">{{issue.title|capfirst}}</a> *** </li>
-                {% endif %}
-            {% endfor %}
-            </ul>
+        <ul>
+          {% for note in results.linked_notes %}
+            <!-- if note has an gitlab_id, generate a link to the issue-detail view-->
+              {% if note.gitlab_id %}
+                {% url 'issue-detail-view' results.user_identifier note.linked_project.slug note.issue_iid as issue_url %}
+                <li>Posted on {{note.linked_project.name_with_namespace}} > <a href="{{issue_url}}">{{note.gitlab_issue_title}}</a>: 
+                  "{{note.body|truncatewords:20}}"</li>
+              <!-- else (e.g., if note is not approved), list the note and generate a link to the pending-note-detail-view -->
+              {% else %}
+                {% url 'pending-note' results.user_identifier note.linked_project.slug note.issue_iid note.pk as note_url %}
+                <li>(Pending) on {{note.linked_project.name_with_namespace}} > {{note.gitlab_issue_title}}:
+                  <a href="{{note_url}}" class="mr-1">"{{note.body|capfirst|truncatewords:20}}"</a> *** </li>
+              {% endif %}
+          {% endfor %}
+          </ul>
       </p>
         {% else %}
         <!-- Or tell the user are there are no issues -->
-          <p class="small">You have not created any issues.</p>
+          <p class="small">You have not created any Notes.</p>
         {% endif %}
   </div>
   </div>
