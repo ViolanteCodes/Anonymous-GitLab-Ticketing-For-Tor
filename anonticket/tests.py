@@ -11,6 +11,8 @@ from anonticket.forms import (
     Anonymous_Ticket_Base_Search_Form,
     Anonymous_Ticket_Project_Search_Form, 
     CreateIssueForm)
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 
 # Create your tests here.
 
@@ -655,8 +657,11 @@ class TestModeratorViews(TestCase):
         # will allow test group permissions to exactly match those from file.
         from anonticket.management.commands.create_groups import GROUPS
         from anonticket.management.commands.create_groups import Command as create_groups
+        # Add a bad permission call so that you can test this part of the code.
+        GROUPS["Account Approvers"]["user identifier"].append("smash")
         create_groups.handle(create_groups)
         self.Moderators = Group.objects.get(name="Moderators")
+        self.AccountApprovers = Group.objects.get(name="Account Approvers")
 
         # Set up users to test the staff decorator and is_mod decorator.
         UserStaffNoGroup = User.objects.create(
@@ -681,6 +686,14 @@ class TestModeratorViews(TestCase):
         )
         self.UserGroupAndStaff = UserGroupAndStaff
         self.Moderators.user_set.add(UserGroupAndStaff)
+
+        UserAccountApprover = User.objects.create(
+            username='UserAccountApprover', 
+            password='IAmATestPassword',
+            is_staff=True,
+        )
+        self.UserAccountApprover = UserAccountApprover
+        self.AccountApprovers.user_set.add(UserAccountApprover)
 
         # set the login redirect url for views testing
         from anonticket.views import login_redirect_url as login_redirect_url
@@ -711,7 +724,15 @@ class TestModeratorViews(TestCase):
         self.assertEqual(self.UserGroupAndStaff.username, "UserGroupAndStaff")
         self.assertTrue(self.UserGroupAndStaff.is_staff)
         self.assertTrue(self.UserGroupAndStaff.groups.filter(name="Moderators").exists())
-    
+
+    def test_user_account_approver_created_successfully(self):
+        """Tese that the username exists, that the user is staff, and that
+        the user is part of the Account Approvers group."""
+        self.assertEqual(self.UserAccountApprover.username, "UserAccountApprover")
+        self.assertTrue(self.UserAccountApprover.is_staff)
+        self.assertTrue(
+        self.UserAccountApprover.groups.filter(name="Account Approvers").exists())
+
     def test_moderator_view_GET_not_logged_in(self):
         """Test that the moderator view redirects to a login form
         if there is no logged in user."""
@@ -741,7 +762,22 @@ class TestModeratorViews(TestCase):
         url = reverse('moderator')
         response = self.client.get(url)
         self.assertTemplateNotUsed(response, 'anonticket/moderator.html')
-        # print(response)
+
+    def test_moderator_view_GET_account_approver(self):
+        """Test that the moderator view loads if a user is an account
+        approver."""
+        current_user = self.UserAccountApprover
+        self.client.force_login(current_user)
+        url = reverse('moderator')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        # Assert that the correct template loaded
+        self.assertTemplateUsed(response, 'anonticket/moderator.html')
+        # But that users in Account Approvers Group and not in Moderators
+        # Group do not have access to pending issues.
+        self.assertInHTML(
+            "You do not have permission to view pending issues at this time.",
+            '<p>You do not have permission to view pending issues at this time.</p>')
 
     def test_moderator_view_GET_valid_moderator(self):
         """Test that the moderator view displays correctly if
