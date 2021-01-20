@@ -473,7 +473,7 @@ def moderator_view(request):
 class ModeratorNoteUpdateView(UpdateView):
     """View that allows a moderator to update a Note."""
     model = Note
-    fields= ['body', 'reviewer_status']
+    fields= ['body', 'mod_comment', 'reviewer_status']
     template_name_suffix = '_update_form'
 
     def get_success_url(self):
@@ -487,7 +487,7 @@ class ModeratorNoteUpdateView(UpdateView):
 class ModeratorIssueUpdateView(UpdateView):
     """View that allows a moderator to update an issue."""
     model = Issue
-    fields= ['linked_project', 'description', 'reviewer_status']
+    fields= ['linked_project', 'description', 'mod_comment', 'reviewer_status']
     template_name_suffix = '_update_form'
 
     def get_success_url(self):
