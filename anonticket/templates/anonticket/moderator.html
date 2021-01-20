@@ -85,7 +85,11 @@
                   </div>
                   <div class="mt-3">
                     <a href="{% url 'mod-update-issue' form.instance.pk %}"
-                    class="btn btn-large btn-primary">Change Issue Text</a>
+                    class="btn-link mr-2">Change Issue Text</a>
+                  </div>
+                  <div class="mt-3">
+                    <a href="{% url 'mod-update-issue' form.instance.pk %}"
+                    class="btn-sm btn-primary mr-2" style="width: 100%">Add Mod Comment</a>
                   </div>
                 </td>
               </tr>
