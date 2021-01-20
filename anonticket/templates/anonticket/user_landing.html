@@ -72,11 +72,11 @@
               <!-- if issue has an gitlab_iid, generate a link to the issue-detail view and pass project id and issue iid -->
                 {% if issue.gitlab_iid %}
                   {% url 'issue-detail-view' results.user_identifier issue.linked_project.slug issue.gitlab_iid as issue_url %}
-                  <li><a href="{{issue_url}}">{{issue.title}}</a></li>
+                  <li>{{issue.linked_project.name_with_namespace}} > Issue # {{issue.gitlab_iid}}: <a href="{{issue_url}}">{{issue.title}}</a></li>
                 <!-- else (e.g., if issue is not approved), list the issue and generate a link to the pending-issue-detail-view -->
                 {% else %}
                   {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.slug issue.pk as issue_url %}
-                  <li><a href="{{issue_url}}" class="mr-1">{{issue.title|capfirst}}</a> *** </li>
+                  <li>{{issue.linked_project.name_with_namespace}} > Issue # (Pending): <a href="{{issue_url}}" class="mr-1">{{issue.title|capfirst}}</a> *** </li>
                 {% endif %}
             {% endfor %}
             </ul>
@@ -106,12 +106,13 @@
             <!-- if note has an gitlab_id, generate a link to the issue-detail view-->
               {% if note.gitlab_id %}
                 {% url 'issue-detail-view' results.user_identifier note.linked_project.slug note.issue_iid as issue_url %}
-                <li>Posted on {{note.linked_project.name_with_namespace}} > <a href="{{issue_url}}">{{note.gitlab_issue_title}}</a>: 
+                <li>Posted on {{note.linked_project.name_with_namespace}} > Issue # {{note.issue_iid}}: 
+                  <a href="{{issue_url}}">{{note.gitlab_issue_title}}</a>: 
                   "{{note.body|truncatewords:20}}"</li>
               <!-- else (e.g., if note is not approved), list the note and generate a link to the pending-note-detail-view -->
               {% else %}
                 {% url 'pending-note' results.user_identifier note.linked_project.slug note.issue_iid note.pk as note_url %}
-                <li>(Pending) on {{note.linked_project.name_with_namespace}} > {{note.gitlab_issue_title}}:
+                <li>(Pending) on {{note.linked_project.name_with_namespace}} > Issue # {{note.issue_iid}}: {{note.gitlab_issue_title}}:
                   <a href="{{note_url}}" class="mr-1">"{{note.body|capfirst|truncatewords:20}}"</a> *** </li>
               {% endif %}
           {% endfor %}
