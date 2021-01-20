@@ -123,10 +123,12 @@
             {% endfor %}
           <tr>
             <td>
-              <ul>
+              <ul class="list-unstyled">
                 <li>Project: {{form.instance.linked_project}}</li>
                 <li>Linked Issue: {{form.instance.gitlab_issue_title}}</li>
                 <li>User: {{form.instance.linked_user}}</li>
+                <li>Created At: {{form.instance.created_at|date:"d M, Y" }} 
+                  -{{form.instance.created_at|time:"H:i" }}</li>
               </ul>
             </td>
             <td style="width: 50%">
