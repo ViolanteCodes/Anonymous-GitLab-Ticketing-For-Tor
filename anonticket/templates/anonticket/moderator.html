@@ -47,7 +47,7 @@
                 Related Details
               </th>
               <th>
-                Issue Details and Mod Comments
+                Issue Details and Moderator Comments
               </th>
               <th>
                 Mod Actions
@@ -68,7 +68,14 @@
                       -{{form.instance.created_at|time:"H:i" }}</li>
                   </ul>
                 </td>
-                <td style="width:50%">{{form.instance.description}}</td>
+                <td style="width:50%">
+                  {% if form.instance.mod_comment %}
+                  <p class="strong short-height">                     
+                      <span class="badge badge-primary">Mod Note:</span>
+                     <span class="small ml-1"><em>{{form.instance.mod_comment}}</em></span class="small"></p>
+                  {% endif %}
+                  {{form.instance.description}}
+                </td>
                 <td>
                   <div>
                     Set Issue Status:
@@ -132,6 +139,11 @@
               </ul>
             </td>
             <td style="width: 50%">
+              {% if form.instance.mod_comment %}
+              <p class="strong short-height">
+                <span class="badge badge-primary">Mod Note:</span>
+                <span class="small ml-1"><em>{{form.instance.mod_comment}}</em></span class="small"></p>
+             {% endif %}
               {{form.instance.body}}
             </td>
             <td>
