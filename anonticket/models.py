@@ -10,6 +10,7 @@ import gitlab
 class UserIdentifier(models.Model):
     """Representation of a user identifier."""
     user_identifier = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True, blank=False)
 
     def __str__(self):
         return self.user_identifier
@@ -94,6 +95,7 @@ class Issue(models.Model):
     linked_user = models.ForeignKey(UserIdentifier, on_delete=models.CASCADE)
     description= models.TextField()
     gitlab_iid = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=False)
     
     # The following fields related to reviewer status:
     # Django recommends defining choice_list outside of CharField.
@@ -160,6 +162,7 @@ class Note(models.Model):
     gitlab_issue_title = models.CharField(blank=True, max_length=200)
     # The following fields related to reviewer status:
     # Django recommends defining choice_list outside of CharField.
+    created_at = models.DateTimeField(auto_now_add=True, blank=False)
     REVIEWER_STATUS_CHOICES = [
         ('P', 'Pending Review'),
         ('A', 'Approved'),
@@ -261,6 +264,7 @@ class GitlabAccountRequest(models.Model):
         default='P',  
     )
     approved_to_GitLab = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, blank=False)
 
     def approve_request(self):
         """Approve a request and create the user on Gitlab."""
