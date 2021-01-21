@@ -7,8 +7,7 @@ from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     LoginForm,
     CreateIssueForm,
-    PendingNoteFormSet,
-    PendingIssueFormSet)
+    )
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -16,7 +15,6 @@ from django.contrib.auth.decorators import user_passes_test
 from django.views.generic import (
     TemplateView, DetailView, ListView, CreateView, FormView, UpdateView)
 from django.contrib.admin.views.decorators import staff_member_required
-
 
 # ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
 # Functions that need to be accessed from within multiple views go here,
@@ -436,6 +434,7 @@ login_redirect_url = "/tor_admin/login/?next=/moderator/"
     is_mod_or_approver, login_url=login_redirect_url)
 @staff_member_required
 def moderator_view(request):
+    from anonticket.forms import PendingNoteFormSet, PendingIssueFormSet
     """View that allows moderators and account approvers to approve pending items."""
     user = request.user
     messages = {}
