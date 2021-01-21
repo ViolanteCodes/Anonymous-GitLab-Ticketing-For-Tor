@@ -2,7 +2,7 @@ import gitlab
 import functools
 from django.conf import settings
 from anonticket.models import (
-    UserIdentifier, GitLabGroup, Project, Issue, Note)
+    UserIdentifier, GitLabGroup, Project, Issue, Note, GitlabAccountRequest)
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     LoginForm,
@@ -487,6 +487,20 @@ class ModeratorIssueUpdateView(UpdateView):
     """View that allows a moderator to update an issue."""
     model = Issue
     fields= ['linked_project', 'description', 'mod_comment', 'reviewer_status']
+    template_name_suffix = '_update_form'
+
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        url = reverse('moderator')
+        return url
+
+@method_decorator(user_passes_test(
+    is_account_approver, login_url=login_redirect_url), name='dispatch')
+@method_decorator(staff_member_required, name='dispatch')
+class ModeratorGitLabRequestUpdateView(UpdateView):
+    """View that allows a moderator to update an issue."""
+    model = GitlabAccountRequest
+    fields= ['username', 'email', 'reason', 'mod_comment','reviewer_status']
     template_name_suffix = '_update_form'
 
     def get_success_url(self):
