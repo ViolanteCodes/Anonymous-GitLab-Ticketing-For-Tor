@@ -43,16 +43,19 @@
       {% if issue_formset.forms %}
           <table>
             <thead>
-              <th>
+              <th class="align-middle">
                 Related Details
               </th>
-              <th>
-                User Identifier
+              <th class="align-middle">
+                User
               </th>
-              <th>
-                Issue Details and Moderator Comments
+              <th class="align-middle">
+                Issue Title
               </th>
-              <th>
+              <th class="align-middle">
+                Description and Moderator Comments
+              </th>
+              <th class="align-middle">
                 Mod Actions
               </th>
             </thead>
@@ -62,18 +65,22 @@
               {{ hidden }}
               {% endfor %}
               <tr>
-                <td>
+                <td style="width:15%">
                   <ul class="list-unstyled">
-                    <li><strong>Project:</strong> {{form.instance.linked_project.short_name_with_namespace}}</li>
-                    <li><strong>Title:</strong> {{form.instance.title}}</li>
-                    <li><strong>Created:</strong> {{form.instance.created_at|date:"d M, Y"}}
+                    <li><strong>Project:</strong></li>
+                    <li>{{form.instance.linked_project.short_name_with_namespace}}</li>
+                    <li><strong>Created:</strong></li>
+                    </li>{{form.instance.created_at|date:"d M, Y"}}
                     -{{form.instance.created_at|time:"H:i" }}</li>
                   </ul>
                 </td>
                 <td style="width:11%">
                   <p class="small short-height">{{form.instance.linked_user}}</p>
                 </td>
-                <td style="width:50%">
+                <td style="width:15%">
+                  <p class="small short-height">{{form.instance.title}}</p>
+                </td>
+                <td style="">
                   {% if form.instance.mod_comment %}
                   <p class="strong short-height">                     
                       <span class="badge badge-primary">Mod Note:</span>
@@ -81,7 +88,7 @@
                   {% endif %}
                   {{form.instance.description}}
                 </td>
-                <td>
+                <td style="width: 10%">
                   <div class="mt-0">
                     <a href="{% url 'mod-update-issue' form.instance.pk %}"
                     class="btn-link mr-2">Change Issue Text</a>
@@ -143,10 +150,9 @@
           <tr>
             <td>
               <ul class="list-unstyled">
-                <li>Project: {{form.instance.linked_project}}</li>
-                <li>Linked Issue: {{form.instance.gitlab_issue_title}}</li>
-                <li>User: {{form.instance.linked_user}}</li>
-                <li>Created At: {{form.instance.created_at|date:"d M, Y" }} 
+                <li><strong>Project:</strong> {{form.instance.linked_project.short_name_with_namespace}}</li>
+                <li><strong>Issue:</strong> #{{form.instance.issue_iid}}: {{form.instance.gitlab_issue_title}}</li>
+                <li><strong>Created:</strong> {{form.instance.created_at|date:"d M, Y" }} 
                   -{{form.instance.created_at|time:"H:i" }}</li>
               </ul>
             </td>
@@ -157,21 +163,22 @@
               {% if form.instance.mod_comment %}
               <p class="strong short-height">
                 <span class="badge badge-primary">Mod Note:</span>
-                <span class="small ml-1"><em>{{form.instance.mod_comment}}</em></span class="small"></p>
+                <span class="small ml-1"><strong>{{form.instance.mod_comment}}</strong></span class="small"></p>
              {% endif %}
               {{form.instance.body}}
             </td>
-            <td>
-              <div>
+            <td style="width: 10%">
+              <div class="mt-3">
+                <a href="{% url 'mod-update-note' form.instance.pk %}"
+                class="btn btn-large btn-primary">Change Note Text</a>
+              </div>
+              <div class="mt-0">
                 Set Note Status:
               </div>
               <div class="mt-3">
                 {{form.reviewer_status}}
               </div>
-              <div class="mt-3">
-                <a href="{% url 'mod-update-note' form.instance.pk %}"
-                class="btn btn-large btn-primary">Change Note Text</a>
-              </div>
+
             </td>
           </tr>
           {% endfor %}
