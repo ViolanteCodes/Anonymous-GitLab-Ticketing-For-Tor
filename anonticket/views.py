@@ -497,7 +497,7 @@ class ModeratorIssueUpdateView(UpdateView):
 @method_decorator(user_passes_test(
     is_account_approver, login_url=login_redirect_url), name='dispatch')
 @method_decorator(staff_member_required, name='dispatch')
-class ModeratorGitLabRequestUpdateView(UpdateView):
+class ModeratorGitlabAccountRequestUpdateView(UpdateView):
     """View that allows a moderator to update an issue."""
     model = GitlabAccountRequest
     fields= ['username', 'email', 'reason', 'mod_comment','reviewer_status']
