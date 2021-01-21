@@ -269,6 +269,7 @@ class GitlabAccountRequest(models.Model):
         hyphens(-).""",
         validators=[check_if_user_in_gitlab]
         )
+    user_identifier = models.ForeignKey(UserIdentifier, blank=True, null=True)
     email = models.EmailField()
     reason = models.CharField(
         max_length=256, 
