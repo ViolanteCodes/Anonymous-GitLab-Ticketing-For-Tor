@@ -42,6 +42,7 @@ class Project(models.Model):
     be updated.""")
     name = models.CharField(max_length=200, null=True, blank=True)
     name_with_namespace = models.CharField(max_length=200, null=True, blank=True)
+    short_name_with_namespace = models.CharField(max_length=200, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     slug = models.SlugField(max_length=50, null=True, blank=True)
     url = models.URLField(null=True, blank=True)
@@ -83,6 +84,12 @@ class Project(models.Model):
     def save(self, *args, **kwargs):
         """Update the save method to fetch fresh info from gitlab when projects are saved."""
         self.fetch_from_gitlab()
+        group_name = self.gitlab_group.name
+        if not self.short_name_with_namespace:
+            try:
+                self.short_name_with_namespace = f"{group_name} > {self.name}"
+            except:
+                pass
         super(Project, self).save(*args, **kwargs)
 
     def __str__(self):
