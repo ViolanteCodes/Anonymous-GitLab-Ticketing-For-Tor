@@ -77,5 +77,5 @@ urlpatterns = [
     path(
         'moderator/update-gitlab-account-request/<int:pk>', 
         views.ModeratorGitlabAccountRequestUpdateView.as_view(), 
-        name='mod-update-issue'),
+        name='mod-update-gitlab-account-request'),
 ]
