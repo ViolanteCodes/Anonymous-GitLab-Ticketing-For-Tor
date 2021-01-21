@@ -173,7 +173,7 @@ class CreateIssueForm(ModelForm):
             GitLab Flavored Markdown (GFM)</a> on this form.""")
         }
 
-#Formsets for Pending Admin View:
+# The following forms and formsets are used to created the 'moderator' view
 
 class PendingIssueForm(forms.ModelForm):
     """A special version of the Issue Form to be used with PendingIssueFormset."""
@@ -194,7 +194,6 @@ class BasePendingIssueFormSet(BaseModelFormSet):
         super().__init__(*args, **kwargs)
         self.queryset=Issue.objects.filter(reviewer_status='P')
 
-
 class PendingNoteForm(forms.ModelForm):
     """A special version of the Note Form to be used with PendingNoteFormSet."""
     class Meta:
@@ -212,7 +211,7 @@ class BasePendingNoteFormSet(BaseModelFormSet):
         super().__init__(*args, **kwargs)
         self.queryset=Note.objects.filter(reviewer_status='P')
 
-# Formset Variables to be fed to view.
+# Formset Variables to be fed to Pending Admin View.
 PendingNoteFormSet = modelformset_factory(
     Note, 
     form=PendingNoteForm, 
