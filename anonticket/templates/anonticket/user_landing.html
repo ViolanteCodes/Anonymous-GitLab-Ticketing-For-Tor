@@ -60,33 +60,161 @@
     </div>
   </div>
 
+<div class="row">
+  <div class="col-12 mt-3">
+    <form method="post" action="/moderator/">
+      {% csrf_token %}
+    <h2>Pending Issues</h2>
+    <!-- If there are pending issues, render them here. -->
+      {% if issue_formset %}
+      {{ issue_formset.management_form }}
+      {% endif %}
+      {% if issue_formset.forms %}
+          <table>
+            <thead>
+              <th class="align-middle">
+                Related Details
+              </th>
+              <th class="align-middle">
+                User
+              </th>
+              <th class="align-middle">
+                Issue Title
+              </th>
+              <th class="align-middle">
+                Description and Moderator Comments
+              </th>
+              <th class="align-middle">
+                Mod Actions
+              </th>
+            </thead>
+            <tbody>
+            {% for form in issue_formset %}
+              {% for hidden in form.hidden_fields %}
+              {{ hidden }}
+              {% endfor %}
+              <tr>
+                <td style="width:15%">
+                  <ul class="list-unstyled">
+                    <li><strong>Project:</strong></li>
+                    <li>{{form.instance.linked_project.short_name_with_namespace}}</li>
+                    <li><strong>Created:</strong></li>
+                    </li>{{form.instance.created_at|date:"d M, Y"}}
+                    -{{form.instance.created_at|time:"H:i" }}</li>
+                  </ul>
+                </td>
+                <td style="width:11%">
+                  <p class="small short-height">{{form.instance.linked_user}}</p>
+                </td>
+                <td style="width:15%">
+                  <p class="small short-height"> 
+                    {{form.instance.title}}</p>
+                </td>
+                <td>
+                  {% if form.instance.mod_comment %}
+                  <p class="strong short-height">                     
+                      <span class="badge badge-primary">Mod Note:</span>
+                      <span class="small ml-1 short-height"><strong>{{form.instance.mod_comment}}</strong></span></p>
+                  {% endif %}
+                  {{form.instance.description}}
+                </td>
+                <td style="width: 10%">
+                  <div class="mt-0">
+                    <a href="{% url 'mod-update-issue' form.instance.pk %}"
+                    class="btn-link mr-2">Change Issue Text</a>
+                  </div>
+                  <div class="mt-0">
+                    <a href="{% url 'mod-update-issue' form.instance.pk %}"
+                    class="btn-link mr-2" style="width: 100%">Add Comment</a>
+                  </div>
+                  <div class="mt-3">
+                    Or Set Status:
+                  </div>
+                  <div class="mt-1">
+                    {{form.reviewer_status}}
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        <!-- If user was not in moderators group, issue_formset dictionary will have permission message. -->
+        {% elif messages %}
+          <p>{{messages.issue_message}}</p>
+        <!-- If user was in moderators group, but there are no issues, display no issues message. -->
+        {% else %}
+        <p>No pending issues at this time.</p>
+        {% endif %}
+    </div>
+  </div>
+
   <!-- List the issues the user has created. -->
 <div class="row">
-  <div class="col-12">
+  <div class="col-12 mt-3">
     <h4 class="mt-4">You have created the following issues:</h4>
-      <!-- If there are issues, list them -->
-        {% if results.linked_issues %}
-        <p class="small">(Issues marked with *** have not been approved by moderators and therefore have not been posted to GitLab.)</p>
-          <ul>
-            {% for issue in results.linked_issues %}
-              <!-- if issue has an gitlab_iid, generate a link to the issue-detail view and pass project id and issue iid -->
-                {% if issue.gitlab_iid %}
-                  {% url 'issue-detail-view' results.user_identifier issue.linked_project.slug issue.gitlab_iid as issue_url %}
-                  <li>{{issue.linked_project.name_with_namespace}} > Issue # {{issue.gitlab_iid}}: <a href="{{issue_url}}">{{issue.title}}</a></li>
-                <!-- else (e.g., if issue is not approved), list the issue and generate a link to the pending-issue-detail-view -->
-                {% else %}
-                  {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.slug issue.pk as issue_url %}
-                  <li>{{issue.linked_project.name_with_namespace}} > Issue # (Pending): <a href="{{issue_url}}" class="mr-1">{{issue.title|capfirst}}</a> *** </li>
-                {% endif %}
-            {% endfor %}
-            </ul>
-      </p>
-        {% else %}
-        <!-- Or tell the user are there are no issues -->
-          <p class="small">You have not created any issues.</p>
-        {% endif %}
   </div>
 </div>
+<!-- If results.linked_issues, render the issues table. -->
+{% if results.linked_issues %}
+<div class="row">
+  <div class="col-12 mt-3">
+    <table>
+      <thead>
+        <th class="align-middle">
+          Project
+        </th>
+        <th class="align-middle">
+          Issue # / Issue Title
+        </th>
+        <th class="align-middle">
+          Issue Status
+        </th>
+      </thead>
+      <tbody>
+        {% for issue in results.linked_issues %}
+        <!-- If the issue has a gitlab.iid, it has been approved. -->
+        {% if issue.gitlab_iid %}
+        <tr>
+          <td>
+            {{issue.linked_project.short_name_with_namespace}}
+          </td>
+          <td>
+            <!-- Generate issue-detail-view url -->
+            {% url 'issue-detail-view' results.user_identifier issue.linked_project.slug issue.gitlab_iid as issue_url %}
+            Issue #{{issue.gitlab_iid}}: <a href="{{issue_url}}">{{issue.title}}</a>
+          </td>
+          <td>
+            {{ issue.get_reviewer_status_display }}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td>
+            {{issue.linked_project.short_name_with_namespace}}
+          </td>
+          <td>
+            <!-- Generated Pending Issue Detail View URL -->
+            {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.slug issue.pk as issue_url %}
+            Issue # (NA): <a href="{{issue_url}}">{{issue.title}}</a>
+          </td>
+          <td>
+            {{ issue.get_reviewer_status_display }}
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- Else, render the following block -->
+{% else %}
+<div class="row">
+  <div class="col-12 mt-3">
+    <p class="small">You have not created any issues.</p>
+  </div>
+</div>
+{% endif %}
 
 <!-- List the notes the user has created. -->
 <div class="row">
