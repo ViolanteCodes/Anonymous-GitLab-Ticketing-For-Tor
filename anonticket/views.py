@@ -434,16 +434,20 @@ login_redirect_url = "/tor_admin/login/?next=/moderator/"
     is_mod_or_approver, login_url=login_redirect_url)
 @staff_member_required
 def moderator_view(request):
-    from anonticket.forms import PendingNoteFormSet, PendingIssueFormSet
     """View that allows moderators and account approvers to approve pending items."""
+    from anonticket.forms import (
+        PendingNoteFormSet, 
+        PendingIssueFormSet, 
+        PendingGitlabAccountRequestFormSet)
     user = request.user
     messages = {}
     if request.method == 'POST':
-        # if POST, verify that the user is in the moderators group. If not, 
-        # just redirect back to moderators.
+        # if POST, verify that the user is in the moderators group.
         if is_moderator(user) == True:
-            note_formset = PendingNoteFormSet(prefix="note_formset", data=request.POST)
-            issue_formset = PendingIssueFormSet(prefix="issue_formset", data=request.POST)
+            note_formset = PendingNoteFormSet(
+                prefix="note_formset", data=request.POST)
+            issue_formset = PendingIssueFormSet(
+                prefix="issue_formset", data=request.POST)
             if issue_formset.is_valid():
                 issue_formset.save()
             if note_formset.is_valid():
@@ -451,6 +455,15 @@ def moderator_view(request):
             else:
                 print(issue_formset.errors)
                 print(note_formset.errors)
+        # or that the user is in the account approvers group.
+        if is_account_approver == True:
+            gitlab_account_request_formset = PendingGitlabAccountRequestFormSet(
+                prefix="gitlab_account_request_formset", data=request.POST)
+            if gitlab_account_request_formset.is_valid():
+                gitlab_account_request_formset.save()
+            else:
+                print(gitlab_account_request_formset.errors)
+        # Regardless of result, return redirect to 'moderator' 
         return redirect('/moderator/')
     else:
         # if request method is not POST, pull formsets and render them in the template.
@@ -460,11 +473,22 @@ def moderator_view(request):
         else:
             note_formset = {}
             issue_formset = {}
-            messages = {
-                'note_message': 'You do not have permission to view pending notes at this time.',
-                'issue_message': 'You do not have permission to view pending issues at this time.'
-            }
-    return render(request, "anonticket/moderator.html", {"note_formset": note_formset, "issue_formset":issue_formset, "messages": messages})
+            messages['note_message'] = """You do not have permission to 
+            view pending notes at this time."""
+            messages['issue_message'] = """You do not have permission to 
+            view pending issues at this time."""
+        if is_account_approver(user) == True:
+            gitlab_account_request_formset = PendingGitlabAccountRequestFormSet(
+                prefix="gitlab_formset")
+        else:
+            gitlab_account_request_formset = {}
+            messages['gitlab_account_request_message'] = """You do not 
+            have permission to view pending Gitlab account requests at this time."""
+    return render(request, "anonticket/moderator.html", {
+        "note_formset": note_formset, 
+        "issue_formset":issue_formset,
+        "gitlab_account_request_formset": gitlab_account_request_formset, 
+        "messages": messages})
 
 @method_decorator(user_passes_test(
     is_moderator, login_url=login_redirect_url), name='dispatch')
