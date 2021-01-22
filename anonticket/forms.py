@@ -219,6 +219,9 @@ class PendingGitlabAccountRequestForm(forms.ModelForm):
         fields = (
             'reviewer_status',)
 
+    def __init__(self, *args, **kwargs):
+       super(PendingGitlabAccountRequestForm, self).__init__(*args, **kwargs)
+
 class BasePendingGitlabAccountRequestFormset(BaseModelFormSet):
     """Subclass of Base Formset that sets queryset."""
     def __init__(self, *args, **kwargs):

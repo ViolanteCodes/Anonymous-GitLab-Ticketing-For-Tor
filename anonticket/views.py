@@ -395,30 +395,28 @@ class PendingNoteDetailView(PassUserIdentifierMixin, DetailView):
 
 def is_moderator(user):
     """Check if the user is either in the Moderators group or a superuser."""
-    check_passed = False
-    check_moderator = user.groups.filter(name="Moderators").exists()
-    check_super = user.is_superuser
-    if check_moderator == True:
-        check_passed = True
-    elif check_super == True:
-        check_passed = True
-    return check_passed
+    if user.groups.filter(name="Moderators").exists() == True:
+        return True
+    elif user.is_superuser:
+        return True
+    else:
+        return False
 
 def is_account_approver(user):
     """Check if the user is in the Account Approvers group or superuser."""
-    check_passed = False
-    check_account_approver = user.groups.filter(name="Account Approvers").exists()
-    check_super = user.is_superuser
-    if check_account_approver == True:
-        check_passed = True
-    elif check_super == True:
-        check_passed = True
-    return check_passed
+    if user.groups.filter(name="Account Approvers").exists() == True:
+        return True
+    elif user.is_superuser:
+        return True
+    else:
+        return False
 
 def is_mod_or_approver(user):
     """A function to check that a logged-in user is either a moderator,
     an account approver, or a super_user."""
-    if is_moderator(user) or is_account_approver(user):
+    if is_moderator(user) == True:
+        return True
+    elif is_account_approver(user) == True:
         return True
     else:
         return False
@@ -438,7 +436,8 @@ def moderator_view(request):
     from anonticket.forms import (
         PendingNoteFormSet, 
         PendingIssueFormSet, 
-        PendingGitlabAccountRequestFormSet)
+        PendingGitlabAccountRequestFormSet,
+        )
     user = request.user
     messages = {}
     if request.method == 'POST':
@@ -456,13 +455,13 @@ def moderator_view(request):
                 print(issue_formset.errors)
                 print(note_formset.errors)
         # or that the user is in the account approvers group.
-        if is_account_approver == True:
-            gitlab_account_request_formset = PendingGitlabAccountRequestFormSet(
-                prefix="gitlab_account_request_formset", data=request.POST)
-            if gitlab_account_request_formset.is_valid():
-                gitlab_account_request_formset.save()
+        if is_account_approver(user) == True:
+            gitlab_formset = PendingGitlabAccountRequestFormSet(
+                prefix="gitlab_formset", data=request.POST)
+            if gitlab_formset.is_valid():
+                gitlab_formset.save()
             else:
-                print(gitlab_account_request_formset.errors)
+                print(gitlab_formset.errors)
         # Regardless of result, return redirect to 'moderator' 
         return redirect('/moderator/')
     else:
@@ -478,17 +477,18 @@ def moderator_view(request):
             messages['issue_message'] = """You do not have permission to 
             view pending issues at this time."""
         if is_account_approver(user) == True:
-            gitlab_account_request_formset = PendingGitlabAccountRequestFormSet(
+            gitlab_formset = PendingGitlabAccountRequestFormSet(
                 prefix="gitlab_formset")
         else:
-            gitlab_account_request_formset = {}
-            messages['gitlab_account_request_message'] = """You do not 
+            gitlab_formset = {}
+            messages['gitlab_message'] = """You do not 
             have permission to view pending Gitlab account requests at this time."""
     return render(request, "anonticket/moderator.html", {
         "note_formset": note_formset, 
         "issue_formset":issue_formset,
-        "gitlab_account_request_formset": gitlab_account_request_formset, 
-        "messages": messages})
+        "gitlab_formset": gitlab_formset, 
+        "messages": messages
+        })
 
 @method_decorator(user_passes_test(
     is_moderator, login_url=login_redirect_url), name='dispatch')
