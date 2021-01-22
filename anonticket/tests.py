@@ -658,42 +658,41 @@ class TestModeratorViews(TestCase):
         from anonticket.management.commands.create_groups import GROUPS
         from anonticket.management.commands.create_groups import Command as create_groups
         # Add a bad permission call so that you can test this part of the code.
-        GROUPS["Account Approvers"]["user identifier"].append("smash")
         create_groups.handle(create_groups)
         self.Moderators = Group.objects.get(name="Moderators")
         self.AccountApprovers = Group.objects.get(name="Account Approvers")
 
         # Set up users to test the staff decorator and is_mod decorator.
-        UserStaffNoGroup = User.objects.create(
-            username='UserStaffNoGroup', 
+        StaffOnly = User.objects.create(
+            username='StaffOnly', 
             password='IAmATestPassword',
             is_staff=True
         )
-        self.UserStaffNoGroup = UserStaffNoGroup
+        self.StaffOnly = StaffOnly
 
-        UserGroupNoStaff = User.objects.create(
-            username='UserGroupNoStaff', 
+        NoStaff = User.objects.create(
+            username='NoStaff', 
             password='IAmATestPassword',
             is_staff=False,
         )
-        self.UserGroupNoStaff = UserGroupNoStaff
-        self.Moderators.user_set.add(UserGroupNoStaff)
+        self.NoStaff = NoStaff
+        self.Moderators.user_set.add(NoStaff)
 
-        UserGroupAndStaff = User.objects.create(
-            username='UserGroupAndStaff', 
+        Moderator = User.objects.create(
+            username='Moderator', 
             password='IAmATestPassword',
             is_staff=True,
         )
-        self.UserGroupAndStaff = UserGroupAndStaff
-        self.Moderators.user_set.add(UserGroupAndStaff)
+        self.Moderator = Moderator
+        self.Moderators.user_set.add(Moderator)
 
-        UserAccountApprover = User.objects.create(
-            username='UserAccountApprover', 
+        AccountApprover = User.objects.create(
+            username='AccountApprover', 
             password='IAmATestPassword',
             is_staff=True,
         )
-        self.UserAccountApprover = UserAccountApprover
-        self.AccountApprovers.user_set.add(UserAccountApprover)
+        self.AccountApprover = AccountApprover
+        self.AccountApprovers.user_set.add(AccountApprover)
 
         # set the login redirect url for views testing
         from anonticket.views import login_redirect_url as login_redirect_url
@@ -703,35 +702,40 @@ class TestModeratorViews(TestCase):
     def test_moderators_created_successfully(self):
         """Test that there's a group called Moderators."""
         self.assertEqual(self.Moderators.name, "Moderators")
+    
+    def test_account_approvers_created_successfully(self):
+        """Test that there's a group called Account Approvers."""
+        self.assertEqual(self.AccountApprovers.name, "Account Approvers")
 
-    def test_user_staff_no_group_created_successfully(self):
+    def test_staff_only_created_successfully(self):
         """Check that the username exists, that the user is
-        staff, and that the user is NOT part of the Moderators group."""
-        self.assertEqual(self.UserStaffNoGroup.username, "UserStaffNoGroup")
-        self.assertTrue(self.UserStaffNoGroup.is_staff)
-        self.assertFalse(self.UserStaffNoGroup.groups.filter(name="Moderators").exists())
+        staff, and that the user is NOT part of the Any groups."""
+        self.assertEqual(self.StaffOnly.username, "StaffOnly")
+        self.assertTrue(self.StaffOnly.is_staff)
+        #Check that StaffOnly is not a member of mods or account approvers.
+        self.assertFalse(is_mod_or_approver(self.StaffOnly))
 
-    def test_user_group_no_staff_created_successfully(self):
+    def test_no_staff_created_successfully(self):
         """Test that the username exists, that the user is NOT staff, 
         and that the user IS part of the Moderators group."""
-        self.assertEqual(self.UserGroupNoStaff.username, "UserGroupNoStaff")
-        self.assertFalse(self.UserGroupNoStaff.is_staff)
-        self.assertTrue(self.UserGroupNoStaff.groups.filter(name="Moderators").exists())
+        self.assertEqual(self.NoStaff.username, "NoStaff")
+        self.assertFalse(self.NoStaff.is_staff)
+        self.assertTrue(is_moderator(self.NoStaff))
 
-    def test_user_group_and_staff_created_successfully(self):
+    def test_moderator_created_successfully(self):
         """Test that the username exists, that the user IS staff, and that
         the user IS part of the Moderators group."""
-        self.assertEqual(self.UserGroupAndStaff.username, "UserGroupAndStaff")
-        self.assertTrue(self.UserGroupAndStaff.is_staff)
-        self.assertTrue(self.UserGroupAndStaff.groups.filter(name="Moderators").exists())
+        self.assertEqual(self.Moderator.username, "Moderator")
+        self.assertTrue(self.Moderator.is_staff)
+        self.assertTrue(is_moderator(self.Moderator))
 
-    def test_user_account_approver_created_successfully(self):
+    def test_account_approver_created_successfully(self):
         """Tese that the username exists, that the user is staff, and that
         the user is part of the Account Approvers group."""
-        self.assertEqual(self.UserAccountApprover.username, "UserAccountApprover")
-        self.assertTrue(self.UserAccountApprover.is_staff)
-        self.assertTrue(
-        self.UserAccountApprover.groups.filter(name="Account Approvers").exists())
+        self.assertEqual(self.AccountApprover.username, "AccountApprover")
+        self.assertTrue(self.AccountApprover.is_staff)
+        self.assertTrue(is_account_approver(self.AccountApprover))
+        self.assertFalse(is_moderator(self.AccountApprover))
 
     def test_moderator_view_GET_not_logged_in(self):
         """Test that the moderator view redirects to a login form
@@ -744,7 +748,7 @@ class TestModeratorViews(TestCase):
         """Test that the moderator view redirects to the admin site 
         with no permissions if a user is logged in and a staff member 
         but is not part of the Moderators or Account Approvers Group."""
-        current_user = self.UserStaffNoGroup
+        current_user = self.StaffOnly
         self.client.force_login(current_user)
         url = reverse('moderator')
         response = self.client.get(url, follow=False)
@@ -752,12 +756,10 @@ class TestModeratorViews(TestCase):
         self.assertEqual(response.url, self.login_redirect_url)
         self.assertTemplateNotUsed(response, 'anonticket/moderator.html')
 
-        # print(response)
-
     def test_moderator_view_GET_no_staff(self):
         """Test that the moderator view fails if a user has moderator
         permissions but is not staff."""
-        current_user = self.UserGroupNoStaff
+        current_user = self.NoStaff
         self.client.force_login(current_user)
         url = reverse('moderator')
         response = self.client.get(url)
@@ -766,7 +768,7 @@ class TestModeratorViews(TestCase):
     def test_moderator_view_GET_account_approver(self):
         """Test that the moderator view loads if a user is an account
         approver."""
-        current_user = self.UserAccountApprover
+        current_user = self.AccountApprover
         self.client.force_login(current_user)
         url = reverse('moderator')
         response = self.client.get(url)
@@ -782,12 +784,15 @@ class TestModeratorViews(TestCase):
     def test_moderator_view_GET_valid_moderator(self):
         """Test that the moderator view displays correctly if
         the user has moderator permissions and is staff."""
-        current_user = self.UserGroupAndStaff
+        current_user = self.Moderator
         self.client.force_login(current_user)
         url = reverse('moderator')
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/moderator.html')
+        self.assertInHTML(
+            "You do not have permission to view pending Gitlab account requests at this time.",
+            '<p>You do not have permission to view pending Gitlab account requests at this time.</p>')
     
     def test_note_update_view_GET_valid_moderator(self):
         """Test that the note update view displays correctly
@@ -831,7 +836,7 @@ class TestModeratorViews(TestCase):
         self.posted_issue = posted_issue
         self.pending_note = pending_note
 
-        self.client.force_login(self.UserGroupAndStaff)
+        self.client.force_login(self.Moderator)
         url = reverse('pending-note', args=[
             self.new_user,
             self.project.slug, 
@@ -840,7 +845,7 @@ class TestModeratorViews(TestCase):
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/note_pending.html')
-    
+
     def test_note_update_view_POST_valid_moderator(self):
          # Setup project
         new_project = Project(gitlab_id=747)
@@ -879,7 +884,7 @@ class TestModeratorViews(TestCase):
         self.pending_issue = pending_issue
         self.posted_issue = posted_issue
         self.pending_note = pending_note
-        self.client.force_login(self.UserGroupAndStaff)
+        self.client.force_login(self.Moderator)
         url = reverse('mod-update-note', args=[
             self.pending_note.pk])
         form_data = {
@@ -913,7 +918,7 @@ class TestModeratorViews(TestCase):
         self.new_user = new_user
         self.project = new_project
         self.pending_issue = pending_issue
-        self.client.force_login(self.UserGroupAndStaff)
+        self.client.force_login(self.Moderator)
         url = reverse('mod-update-issue', args=[
             self.pending_issue.pk])
         form_data = {
