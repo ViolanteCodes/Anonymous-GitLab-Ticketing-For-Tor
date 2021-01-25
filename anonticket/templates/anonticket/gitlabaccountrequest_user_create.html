@@ -32,15 +32,20 @@
 </div>
 <!-- Logged In Status Block -->
 <div class="row">
-  <div class="col-12">
-    <p class="p-3">
-      Your current status is: 
-      {% if results.user_identifier %}
-      Logged in
-      {% else %}
-      Not logged in
-      {% endif %}
-    </p>
+  <div class="mb-4 form-control p-3 ml-4">
+    {% if results.user_identifier %}
+      <h4 class="pl-3 pr-3">You are logged in as: <span class="text-primary">{{results.user_identifier}}</span></h4>
+      <p class="pl-3 pr-3 mt-3">Your Gitlab request WILL be saved and linked to your User Identifier, and you WILL
+        be able to check the status of your request on your user landing page.</p>
+      </p>
+      <p class="pl-3 pr-3">If you do NOT want your User Identifier linked with your Gitlab Account Request, please 
+      <a href="{% url 'create-gitlab-no-user' %}">click here to logout and reload this form.</a>
+      </p>
+    {% else %}
+      <h4 class="text-primary pl-3 pr-3">You are not logged in at this time.</h4>
+      <p class="pl-3 pr-3">***** Your Gitlab Account Request will NOT be linked to your User identifier, and you will
+        NOT be able to check its status on a user landing page.</p>
+    {% endif %}
   </div>
 </div>
 <div class="row">
