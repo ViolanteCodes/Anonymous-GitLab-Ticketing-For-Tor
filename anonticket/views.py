@@ -63,7 +63,6 @@ def get_linked_notes(UserIdentifier):
 
 def check_user(user_identifier):
     """Check that a user_identifier meets validation requirements."""
-    check_user = False
     id_to_test = user_identifier.split('-')
     if len(id_to_test) != settings.DICE_ROLLS:
         return False
@@ -85,7 +84,7 @@ def check_user(user_identifier):
 # ----------------------------------------------------------------------
 
 def validate_user(view_func):
-    """A decorator that checks if a user_identifier matches validation requirements."""
+    """A decorator that calls check_user validator."""
     @functools.wraps(view_func)
     # def validate_user_identifier(request, user_identifier, *args, **kwargs):
     #     user_string = user_identifier
@@ -261,32 +260,35 @@ class GitlabAccountRequestCreateView(
         ]
     template_name_suffix = '_user_create'
 
-
-
     def form_valid(self, form):
         """Populate user_identifier FK from URL if present."""
-        # If user_identifier in the URL path, set user_identifier.
-        if self.kwargs['user_identifier']:
+        # If user_identifier in the URL path, set variable user_identifier.
+        if 'user_identifier' in self.kwargs:
             user_identifier = self.kwargs['user_identifier']
-            validate_user
-            # Then try to grab the linked_user from the database.
-            try:
-                linked_user = UserIdentifier.objects.get(user_identifier=user_identifier)
-                form.instance.linked_user = linked_user
-            # Unless user doesn't exist - then create.
-            except:
-                new_user = UserIdentifier(user_identifier=user_identifier)
-                new_user.save()
-                form.instance.linked_user = new_user
+            # make sure it's a valid user_identifier
+            if check_user(user_identifier) == False:
+                return redirect('user-login-error', user_identifier=user_identifier)
+            else:
+                # Then try to grab the linked_user from the database.
+                try:
+                    linked_user = UserIdentifier.objects.get(user_identifier=user_identifier)
+                    form.instance.linked_user = linked_user
+                # Unless user doesn't exist - then create.
+                except:
+                    new_user = UserIdentifier(user_identifier=user_identifier)
+                    new_user.save()
+                    form.instance.linked_user = new_user
         # Either way, return the valid form.
+        else:
+            pass
         return super(GitlabAccountRequestCreateView, self).form_valid(form)
     
-    def get_success_url(self):
-        """Return the URL to redirect to after processing a valid form."""
-        working_object = self.object
-        user_identifier_to_pass = working_object.linked_user.user_identifier
-        working_url = reverse('issue-created', args=[user_identifier_to_pass])
-        return working_url
+    # def get_success_url(self):
+    #     """Return the URL to redirect to after processing a valid form."""
+    #     working_object = self.object
+    #     user_identifier_to_pass = working_object.linked_user.user_identifier
+    #     working_url = reverse('issue-created', args=[user_identifier_to_pass])
+    #     return working_url
 
 # -------------------------PROJECT VIEWS----------------------------------
 # Views related to creating/looking up issues.
