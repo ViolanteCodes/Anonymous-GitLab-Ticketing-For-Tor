@@ -61,6 +61,24 @@ def get_linked_notes(UserIdentifier):
     linked_notes = Note.objects.filter(linked_user=UserIdentifier)
     return linked_notes
 
+def check_user(user_identifier):
+    """Check that a user_identifier meets validation requirements."""
+    check_user = False
+    id_to_test = user_identifier.split('-')
+    if len(id_to_test) != settings.DICE_ROLLS:
+        return False
+    # Check that all words in code-phrase are unique
+    set_id_to_test = set(id_to_test)
+    if len(set_id_to_test) != len(id_to_test):
+        return False
+    # Grab the word_list from the path specified in settings.py
+    wordlist_as_list = get_wordlist()
+    # Check that all words are in the dictionary.
+    check_all_words = all(item in wordlist_as_list for item in id_to_test)
+    if check_all_words == False:
+        return False
+    else:
+        return True
 # --------------------DECORATORS AND MIXINS-----------------------------
 # Django decorators wrap functions (such as views) in other functions. 
 # Mixins perform a similar function for class based views.
@@ -69,22 +87,30 @@ def get_linked_notes(UserIdentifier):
 def validate_user(view_func):
     """A decorator that checks if a user_identifier matches validation requirements."""
     @functools.wraps(view_func)
+    # def validate_user_identifier(request, user_identifier, *args, **kwargs):
+    #     user_string = user_identifier
+    #     id_to_test = user_string.split('-')
+    # # Check that code-phrase length is equal to settings.DICE_ROLLS
+    #     if len(id_to_test) != settings.DICE_ROLLS:
+    #         return redirect('user-login-error', user_identifier=user_string)
+    # # Check that all words in code-phrase are unique
+    #     set_id_to_test = set(id_to_test)
+    #     if len(set_id_to_test) != len(id_to_test):
+    #         return redirect('user-login-error', user_identifier=user_string)
+    # # Grab the word_list from the path specified in settings.py
+    #     wordlist_as_list = get_wordlist()
+    # # Check that all words are in the dictionary.
+    #     check_all_words  = all(item in wordlist_as_list for item in id_to_test)
+    #     if check_all_words == False:
+    #         return redirect('user-login-error', user_identifier=user_string)
+    #     else:
+    #         response = view_func(request, user_identifier, *args, **kwargs)
+    #     return response
+    # return validate_user_identifier
     def validate_user_identifier(request, user_identifier, *args, **kwargs):
-        user_string = user_identifier
-        id_to_test = user_string.split('-')
-    # Check that code-phrase length is equal to settings.DICE_ROLLS
-        if len(id_to_test) != settings.DICE_ROLLS:
-            return redirect('user-login-error', user_identifier=user_string)
-    # Check that all words in code-phrase are unique
-        set_id_to_test = set(id_to_test)
-        if len(set_id_to_test) != len(id_to_test):
-            return redirect('user-login-error', user_identifier=user_string)
-    # Grab the word_list from the path specified in settings.py
-        wordlist_as_list = get_wordlist()
-    # Check that all words are in the dictionary.
-        check_all_words  = all(item in wordlist_as_list for item in id_to_test)
-        if check_all_words == False:
-            return redirect('user-login-error', user_identifier=user_string)
+        get_user_identifier = check_user(user_identifier)
+        if get_user_identifier == False:
+            return redirect('user-login-error', user_identifier=user_identifier)
         else:
             response = view_func(request, user_identifier, *args, **kwargs)
         return response
@@ -96,7 +122,7 @@ class PassUserIdentifierMixin:
     with results.user_identifier (same as FBV)."""
     def get_context_data(self, **kwargs):          
         context = super().get_context_data(**kwargs)
-        if 'user_identifer' in self.kwargs:
+        if 'user_identifier' in self.kwargs:
             context['results'] = {'user_identifier':self.kwargs['user_identifier']}                     
         return context
 
@@ -235,15 +261,32 @@ class GitlabAccountRequestCreateView(
         ]
     template_name_suffix = '_user_create'
 
-    # def get_context_data(self, **kwargs):
-    #     """Modified to pass 'user_identifier' kwargs"""
-    #     context = super().get_context_data(**kwargs)
-    #     if 'user_identifier' in self.kwargs:
-    #         user_identifier = self.kwargs['user_identifier']
-    #         context['results'] = {
-    #             'user_identifier' : user_identifier
-    #             }                     
-    #     return context
+
+
+    def form_valid(self, form):
+        """Populate user_identifier FK from URL if present."""
+        # If user_identifier in the URL path, set user_identifier.
+        if self.kwargs['user_identifier']:
+            user_identifier = self.kwargs['user_identifier']
+            validate_user
+            # Then try to grab the linked_user from the database.
+            try:
+                linked_user = UserIdentifier.objects.get(user_identifier=user_identifier)
+                form.instance.linked_user = linked_user
+            # Unless user doesn't exist - then create.
+            except:
+                new_user = UserIdentifier(user_identifier=user_identifier)
+                new_user.save()
+                form.instance.linked_user = new_user
+        # Either way, return the valid form.
+        return super(GitlabAccountRequestCreateView, self).form_valid(form)
+    
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        working_object = self.object
+        user_identifier_to_pass = working_object.linked_user.user_identifier
+        working_url = reverse('issue-created', args=[user_identifier_to_pass])
+        return working_url
 
 # -------------------------PROJECT VIEWS----------------------------------
 # Views related to creating/looking up issues.
