@@ -61,30 +61,55 @@ def get_linked_notes(UserIdentifier):
     linked_notes = Note.objects.filter(linked_user=UserIdentifier)
     return linked_notes
 
+def check_user(user_identifier):
+    """Check that a user_identifier meets validation requirements."""
+    id_to_test = user_identifier.split('-')
+    if len(id_to_test) != settings.DICE_ROLLS:
+        return False
+    # Check that all words in code-phrase are unique
+    set_id_to_test = set(id_to_test)
+    if len(set_id_to_test) != len(id_to_test):
+        return False
+    # Grab the word_list from the path specified in settings.py
+    wordlist_as_list = get_wordlist()
+    # Check that all words are in the dictionary.
+    check_all_words = all(item in wordlist_as_list for item in id_to_test)
+    if check_all_words == False:
+        return False
+    else:
+        return True
 # --------------------DECORATORS AND MIXINS-----------------------------
 # Django decorators wrap functions (such as views) in other functions. 
 # Mixins perform a similar function for class based views.
 # ----------------------------------------------------------------------
 
 def validate_user(view_func):
-    """A decorator that checks if a user_identifier matches validation requirements."""
+    """A decorator that calls check_user validator."""
     @functools.wraps(view_func)
+    # def validate_user_identifier(request, user_identifier, *args, **kwargs):
+    #     user_string = user_identifier
+    #     id_to_test = user_string.split('-')
+    # # Check that code-phrase length is equal to settings.DICE_ROLLS
+    #     if len(id_to_test) != settings.DICE_ROLLS:
+    #         return redirect('user-login-error', user_identifier=user_string)
+    # # Check that all words in code-phrase are unique
+    #     set_id_to_test = set(id_to_test)
+    #     if len(set_id_to_test) != len(id_to_test):
+    #         return redirect('user-login-error', user_identifier=user_string)
+    # # Grab the word_list from the path specified in settings.py
+    #     wordlist_as_list = get_wordlist()
+    # # Check that all words are in the dictionary.
+    #     check_all_words  = all(item in wordlist_as_list for item in id_to_test)
+    #     if check_all_words == False:
+    #         return redirect('user-login-error', user_identifier=user_string)
+    #     else:
+    #         response = view_func(request, user_identifier, *args, **kwargs)
+    #     return response
+    # return validate_user_identifier
     def validate_user_identifier(request, user_identifier, *args, **kwargs):
-        user_string = user_identifier
-        id_to_test = user_string.split('-')
-    # Check that code-phrase length is equal to settings.DICE_ROLLS
-        if len(id_to_test) != settings.DICE_ROLLS:
-            return redirect('user-login-error', user_identifier=user_string)
-    # Check that all words in code-phrase are unique
-        set_id_to_test = set(id_to_test)
-        if len(set_id_to_test) != len(id_to_test):
-            return redirect('user-login-error', user_identifier=user_string)
-    # Grab the word_list from the path specified in settings.py
-        wordlist_as_list = get_wordlist()
-    # Check that all words are in the dictionary.
-        check_all_words  = all(item in wordlist_as_list for item in id_to_test)
-        if check_all_words == False:
-            return redirect('user-login-error', user_identifier=user_string)
+        get_user_identifier = check_user(user_identifier)
+        if get_user_identifier == False:
+            return redirect('user-login-error', user_identifier=user_identifier)
         else:
             response = view_func(request, user_identifier, *args, **kwargs)
         return response
@@ -94,10 +119,10 @@ class PassUserIdentifierMixin:
     """Mixin that passes user_identifier from CBV kwargs to view
     context in a 'results' dictionary, which allows it to be called in template
     with results.user_identifier (same as FBV)."""
-
     def get_context_data(self, **kwargs):          
         context = super().get_context_data(**kwargs)
-        context['results'] = {'user_identifier':self.kwargs['user_identifier']}                     
+        if 'user_identifier' in self.kwargs:
+            context['results'] = {'user_identifier':self.kwargs['user_identifier']}                     
         return context
 
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
@@ -128,8 +153,9 @@ def gitlab_get_notes_list(project, issue):
 # encounter them (e.g., generate a codename, then login with codename.)
 # ----------------------------------------------------------------------
 #
-# --------------------IDENTIFIER AND LOGIN VIEWS------------------------
-# Initial views related to landing, user_identifier.
+# -------------IDENTIFIER, LOGIN, ACCOUNT REQUEST VIEWS-----------------
+# Initial views related to landing, user_identifier, and gitlab account
+# requests for users.
 # ----------------------------------------------------------------------
 
 class CreateIdentifierView(TemplateView):
@@ -223,6 +249,47 @@ class UserLoginErrorView(TemplateView):
     """A generic landing page if a username doesn't pass validation tests."""
     template_name = 'anonticket/user_login_error.html'
 
+class GitlabAccountRequestCreateView(
+    PassUserIdentifierMixin, CreateView):
+    """A view for users to create gitlab account requests."""
+    model = GitlabAccountRequest
+    fields = [
+        'username', 
+        'email', 
+        'reason',
+        ]
+    template_name_suffix = '_user_create'
+
+    def form_valid(self, form):
+        """Populate user_identifier FK from URL if present."""
+        # If user_identifier in the URL path, set variable user_identifier.
+        if 'user_identifier' in self.kwargs:
+            user_identifier = self.kwargs['user_identifier']
+            # make sure it's a valid user_identifier
+            if check_user(user_identifier) == False:
+                return redirect('user-login-error', user_identifier=user_identifier)
+            else:
+                # Then try to grab the linked_user from the database.
+                try:
+                    linked_user = UserIdentifier.objects.get(user_identifier=user_identifier)
+                    form.instance.linked_user = linked_user
+                # Unless this user has already created a GL account request
+                except:
+                    new_user = UserIdentifier(user_identifier=user_identifier)
+                    new_user.save()
+                    form.instance.linked_user = new_user
+        # Either way, return the valid form.
+        return super(GitlabAccountRequestCreateView, self).form_valid(form)
+    
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        working_object = self.object
+        if working_object.linked_user:
+            working_url = reverse('issue-created', args=[working_object.linked_user])
+        else:
+            working_url = reverse('created-no-user')
+        return working_url
+
 # -------------------------PROJECT VIEWS----------------------------------
 # Views related to creating/looking up issues.
 # ----------------------------------------------------------------------
@@ -294,6 +361,11 @@ def create_issue_view(request, user_identifier, *args):
 @method_decorator(validate_user, name='dispatch')
 class IssueSuccessView(PassUserIdentifierMixin, TemplateView):
     """View that tells the user their issue was successfully created."""
+    template_name = 'anonticket/create_issue_success.html'
+
+class ObjectCreatedNoUserView(TemplateView):
+    """View that tells the user their issue was successfully created. Use
+    when creation request was anonymous."""
     template_name = 'anonticket/create_issue_success.html'
 
 @method_decorator(validate_user, name='dispatch')

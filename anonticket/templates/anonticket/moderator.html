@@ -260,8 +260,12 @@
               <p class="strong short-height">
                 <span class="badge badge-primary">Mod Note:</span>
                 <span class="small ml-1"><strong>{{form.instance.mod_comment}}</strong></span class="small"></p>
-             {% endif %}
-              {{form.instance.reason}}
+              {% endif %}
+                {{form.instance.reason}}
+                {% if form.instance.linked_user %}
+                <p class="short-height small mt-3 text-primary">
+                  ***Linked User: {{form.instance.linked_user}}</p>
+                {% endif %}
             </td>
             <td style="width: 12%">
               <div class="mt-0">

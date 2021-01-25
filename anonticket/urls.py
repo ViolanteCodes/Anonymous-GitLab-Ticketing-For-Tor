@@ -6,7 +6,9 @@ from django.conf import settings
 from anonticket.views import (
     CreateIdentifierView, 
     IssueSuccessView,
+    ObjectCreatedNoUserView,
     UserLoginErrorView,
+    GitlabAccountRequestCreateView,
     ProjectListView,
     ProjectDetailView,
     PendingIssueDetailView,
@@ -29,6 +31,14 @@ urlpatterns = [
     path(
         'user/login/', 
         views.login_view, name='login'),
+    path(
+        'user/create-gitlab-account/', 
+        views.GitlabAccountRequestCreateView.as_view(), 
+        name='create-gitlab-no-user'),
+    path(
+        'user/<str:user_identifier>/create-gitlab-account/', 
+        views.GitlabAccountRequestCreateView.as_view(), 
+        name='create-gitlab-with-user'),
     path(
         'user/<str:user_identifier>/login_error/', 
         views.UserLoginErrorView.as_view(), name='user-login-error'),
@@ -56,7 +66,10 @@ urlpatterns = [
         views.ProjectListView.as_view(), name='project-list'),
     path(
         'user/<str:user_identifier>/create/success/', 
-        views.IssueSuccessView.as_view(), name='issue-created'),        
+        views.IssueSuccessView.as_view(), name='issue-created'),
+    path(
+        'user/create/success/', 
+        views.ObjectCreatedNoUserView.as_view(), name='created-no-user'),         
     path(
         'user/<str:user_identifier>/create_issue/', 
         views.create_issue_view, name='create-issue'),

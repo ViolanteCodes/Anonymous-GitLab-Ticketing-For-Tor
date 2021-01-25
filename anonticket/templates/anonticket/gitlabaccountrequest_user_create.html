@@ -1,0 +1,89 @@
+{% extends 'shared/layout.html' %}
+{% load static %}
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Create a New Gitlab Account Request
+{% endblock %}
+
+{% block content %}
+<!-- Introductory block -->
+<div class="row">
+  <div class="col-12">
+    <p class="p-3">
+      You can use this form to request a Gitlab account on Tor Project's 
+      Gitlab instance. If you are logged in with a User Identifier when
+      you create your request, the request <mark>will be linked to your 
+      User Identifier</mark>, and you will be able to check the status on your
+      landing page.
+    </p>
+    <p class="p-3">
+      If you are NOT logged in with a User Identifier when you create 
+      your request, the request will <mark>not be linked </mark> to a User Identifier.
+      As such, it will be more private, but you will not be able to 
+      check it from your landing page.
+    </p>
+  </div>
+</div>
+<!-- Logged In Status Block -->
+<div class="row">
+  <div class="mb-4 form-control p-3 ml-4">
+    {% if results.user_identifier %}
+      <h4 class="pl-3 pr-3">You are logged in as: <span class="text-primary">{{results.user_identifier}}</span></h4>
+      <p class="pl-3 pr-3 mt-3">Your Gitlab request WILL be saved and linked to your User Identifier, and you WILL
+        be able to check the status of your request on your user landing page.</p>
+      </p>
+      <p class="pl-3 pr-3">If you do NOT want your User Identifier linked with your Gitlab Account Request, please 
+      <a href="{% url 'create-gitlab-no-user' %}">click here to logout and reload this form.</a>
+      </p>
+    {% else %}
+      <h4 class="text-primary pl-3 pr-3">You are not logged in at this time.</h4>
+      <p class="pl-3 pr-3">***** Your Gitlab Account Request will NOT be linked to your User identifier, and you will
+        NOT be able to check its status on a user landing page.</p>
+    {% endif %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <form class="bg-light p-4 form-control ml-3 mr-3" method="POST">
+      {% csrf_token %}
+      <!--Loop over form fields, allowing for custom styling. Help-text 
+      and custom labels/descriptions are taken from forms.py-->
+      {% for field in form %}
+        <div class="fieldWrapper form-group">
+          {% if field.errors %}
+            <strong>{{ field.errors }}</strong>
+          {% endif %}
+          <div class="row">
+            <div class="col-12">
+              <div class="mb-0">{{ field.label_tag }}</div>
+            </div>
+          </div>
+
+          {% if field.help_text %}
+          <div class="row">
+            <div class="col-12">
+              <div class="help small p-0 text-muted mb-2">
+                {{ field.help_text|safe }}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="row">
+            <div class="col-12">
+              <div class="flex-form mb-3">{{ field }}</div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+      <button type="submit" value="Update" class="btn btn-lg btn-primary mr-2">Create Account Request</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

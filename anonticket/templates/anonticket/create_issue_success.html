@@ -13,7 +13,7 @@
 {% endblock %}
 <!-- Subheader block sets the subheader -->
 {% block subheader %} 
-  Your issue or note has been saved and is pending moderator approval.
+  Your issue, note, or request has been saved and is pending moderator approval.
 {% endblock %}
 <!-- Extra links block for pages that have a user_identifier piped to them.-->
 {% block extra_links %}
@@ -21,12 +21,22 @@
 {% endblock %}
 <!-- block content block is where page contents go -->
 {% block content %}
+{% if results.user_identifier %}
 <div class="row">
   <div class="col-12">
-  {% url 'user-landing' results.user_identifier as go_back_url %}
+    {% url 'user-landing' results.user_identifier as go_back_url %}
   <p>
     <a href="{{go_back_url}}">Back to my landing page</a>
   </p>
   </div>
 </div>
+{% else %}
+<div class="row">
+  <div class="col-12">
+    <p>
+      <a href="{% url 'home' %}">Return to Home Page</a>
+    </p>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
