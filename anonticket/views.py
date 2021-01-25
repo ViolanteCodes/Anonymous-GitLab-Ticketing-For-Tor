@@ -94,7 +94,6 @@ class PassUserIdentifierMixin:
     """Mixin that passes user_identifier from CBV kwargs to view
     context in a 'results' dictionary, which allows it to be called in template
     with results.user_identifier (same as FBV)."""
-
     def get_context_data(self, **kwargs):          
         context = super().get_context_data(**kwargs)
         if 'user_identifer' in self.kwargs:
