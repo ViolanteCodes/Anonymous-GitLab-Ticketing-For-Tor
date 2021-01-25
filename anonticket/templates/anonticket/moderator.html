@@ -15,8 +15,7 @@
   </p>
   <p>
     You also can change the details of individual notes/issues by clicking 
-    the <span class="btn-link">Change Note Text</span> or 
-    <span class="btn-link">Change Issue Text</span> links; 
+    the <span class="btn-link">Change Details</span> links; 
     note that 
     you will lose pending status changes if you perform this action 
     before the form posts.
@@ -89,10 +88,10 @@
                   {% endif %}
                   {{form.instance.description}}
                 </td>
-                <td style="width: 10%">
+                <td style="width: 12%">
                   <div class="mt-0">
                     <a href="{% url 'mod-update-issue' form.instance.pk %}"
-                    class="btn-link mr-2">Change Issue Text</a>
+                    class="btn-link mr-2">Change Details</a>
                   </div>
                   <div class="mt-0">
                     <a href="{% url 'mod-update-issue' form.instance.pk %}"
@@ -178,10 +177,10 @@
              {% endif %}
               {{form.instance.body}}
             </td>
-            <td style="width: 10%">
+            <td style="width: 12%">
               <div class="mt-0">
                 <a href="{% url 'mod-update-note' form.instance.pk %}"
-                class="btn-link mr-2">Change Note Text</a>
+                class="btn-link mr-2">Change Details</a>
               </div>
               <div class="mt-0">
                 <a href="{% url 'mod-update-note' form.instance.pk %}"
@@ -264,7 +263,7 @@
              {% endif %}
               {{form.instance.reason}}
             </td>
-            <td style="width: 10%">
+            <td style="width: 12%">
               <div class="mt-0">
                 <a href="{% url 'mod-update-gitlab-account-request' form.instance.pk %}"
                 class="btn-link mr-2">Edit Request</a>
@@ -296,8 +295,9 @@
 <!-- Make the button for saving changes -->
 <div class="row">
   <div class="col-12">
-    <button type="submit" class="btn btn-lg btn-primary mr-2 mt-2">Save All Changes</button>
-    </form>
+    <button type="submit" class="btn btn-lg btn-primary mr-2 mt-2">Save All Changes</button> 
+    <a href="/tor_admin/logout" class="btn btn-lg btn-primary ml-2 mt-2">Logout</a>
+        </form>
   </div>
 </div>
 {% endblock %}
