@@ -97,7 +97,8 @@ class PassUserIdentifierMixin:
 
     def get_context_data(self, **kwargs):          
         context = super().get_context_data(**kwargs)
-        context['results'] = {'user_identifier':self.kwargs['user_identifier']}                     
+        if 'user_identifer' in self.kwargs:
+            context['results'] = {'user_identifier':self.kwargs['user_identifier']}                     
         return context
 
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
@@ -224,7 +225,8 @@ class UserLoginErrorView(TemplateView):
     """A generic landing page if a username doesn't pass validation tests."""
     template_name = 'anonticket/user_login_error.html'
 
-class GitlabAccountRequestCreateView(CreateView):
+class GitlabAccountRequestCreateView(
+    PassUserIdentifierMixin, CreateView):
     """A view for users to create gitlab account requests."""
     model = GitlabAccountRequest
     fields = [
@@ -232,16 +234,17 @@ class GitlabAccountRequestCreateView(CreateView):
         'email', 
         'reason',
         ]
-    template_name_suffix = 'user_create'
+    template_name_suffix = '_user_create'
 
-    def get_context_data(self, **kwargs):
-        """Modified to pass 'user_identifier' kwargs"""
-        context = super(
-            GitlabAccountRequestCreateView, self
-            ).get_context_data(**kwargs)
-        if 'user_identifier' in self.kwargs:
-            context['user_identifier'] = self.kwargs['user_identifier']
-            return context
+    # def get_context_data(self, **kwargs):
+    #     """Modified to pass 'user_identifier' kwargs"""
+    #     context = super().get_context_data(**kwargs)
+    #     if 'user_identifier' in self.kwargs:
+    #         user_identifier = self.kwargs['user_identifier']
+    #         context['results'] = {
+    #             'user_identifier' : user_identifier
+    #             }                     
+    #     return context
 
 # -------------------------PROJECT VIEWS----------------------------------
 # Views related to creating/looking up issues.

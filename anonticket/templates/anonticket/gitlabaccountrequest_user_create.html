@@ -1,12 +1,14 @@
 {% extends 'shared/layout.html' %}
 {% load static %}
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
 {% block h3 %}
   Anon Ticket
 {% endblock %}
 {% block subheader %} 
-  Update an existing note
-{% endblock %}
-{% block extra_links %}
+  Create a New Gitlab Account Request
 {% endblock %}
 
 {% block content %}
@@ -14,15 +16,23 @@
   <div class="col-12">
     <p class="p-3">
       You can use this form to request a Gitlab account on Tor Project's 
-      Gitlab instance.
-      <a href="https://docs.gitlab.com/ee/user/markdown.html" 
-      target="_blank">Gitlab Flavored Markdown (GFM)</a> is supported
-      on this form.
+      Gitlab instance. If you are logged in with a User Identifier when
+      you create your request, the request <mark>will be linked to your 
+      User Identifier</mark>, and you will be able to check the status on your
+      landing page.
     </p>
     <p class="p-3">
-      If you've changed your mind, you can cancel and go back to
-      the <a href="{% url 'moderator' %}">moderator panel</a>.
+      If you are NOT logged in with a User Identifier when you create 
+      your request, the request will <mark>not</mark> be linked to a User Identifier.
+      As such, it will be more private, but you will not be able to 
+      check it from your landing page.
     </p>
+    {% if results %}
+    {{results.user_identifier}}
+    {% endif %}
+    {% if user_identifier %}
+    {{view.user_identifier}}
+    {% endif %}
   </div>
 </div>
 <div class="row">
@@ -57,7 +67,7 @@
           </div>
         </div>
       {% endfor %}
-      <button type="submit" value="Update" class="btn btn-lg btn-primary mr-2">Update Account Request</button>
+      <button type="submit" value="Update" class="btn btn-lg btn-primary mr-2">Create Account Request</button>
     </form>
   </div>
 </div>

@@ -7,6 +7,7 @@ from anonticket.views import (
     CreateIdentifierView, 
     IssueSuccessView,
     UserLoginErrorView,
+    GitlabAccountRequestCreateView,
     ProjectListView,
     ProjectDetailView,
     PendingIssueDetailView,
@@ -29,6 +30,14 @@ urlpatterns = [
     path(
         'user/login/', 
         views.login_view, name='login'),
+    path(
+        'user/create-gitlab-account/', 
+        views.GitlabAccountRequestCreateView.as_view(), 
+        name='create-gitlab-no-user'),
+    path(
+        'user/<str:user_identifier>/create-gitlab-account/', 
+        views.GitlabAccountRequestCreateView.as_view(), 
+        name='create-gitlab-with-user'),
     path(
         'user/<str:user_identifier>/login_error/', 
         views.UserLoginErrorView.as_view(), name='user-login-error'),
