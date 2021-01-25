@@ -6,6 +6,7 @@ from django.conf import settings
 from anonticket.views import (
     CreateIdentifierView, 
     IssueSuccessView,
+    ObjectCreatedNoUserView,
     UserLoginErrorView,
     GitlabAccountRequestCreateView,
     ProjectListView,
@@ -65,7 +66,10 @@ urlpatterns = [
         views.ProjectListView.as_view(), name='project-list'),
     path(
         'user/<str:user_identifier>/create/success/', 
-        views.IssueSuccessView.as_view(), name='issue-created'),        
+        views.IssueSuccessView.as_view(), name='issue-created'),
+    path(
+        'user/create/success/', 
+        views.ObjectCreatedNoUserView.as_view(), name='created-no-user'),         
     path(
         'user/<str:user_identifier>/create_issue/', 
         views.create_issue_view, name='create-issue'),
