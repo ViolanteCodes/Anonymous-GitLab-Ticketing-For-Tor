@@ -32,6 +32,8 @@ class LoginForm(forms.Form):
         code_phrase = join_key.join(word_list)
         return code_phrase
 
+# Forms relating to User Objects:
+
 class Anonymous_Ticket_Base_Search_Form(forms.Form):
     """A base search form with all the methods necessary to search for
     projects, issues, and tickets."""
@@ -140,7 +142,6 @@ class Anonymous_Ticket_Base_Search_Form(forms.Form):
 
 class Anonymous_Ticket_Project_Search_Form(Anonymous_Ticket_Base_Search_Form):
     """A form to let users search for an issue or notes matching a project string."""
-    
     choose_project = forms.ModelChoiceField(
         queryset=Project.objects.all(), 
         label="Choose a project.",
@@ -172,7 +173,7 @@ class CreateIssueForm(ModelForm):
             target="_blank">
             GitLab Flavored Markdown (GFM)</a> on this form.""")
         }
-
+  
 # The following forms and formsets are used to created the 'moderator' view
 
 class PendingIssueForm(forms.ModelForm):
