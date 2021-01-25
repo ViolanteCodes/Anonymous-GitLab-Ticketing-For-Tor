@@ -128,6 +128,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # SECURITY WARNING: GitLab credentials.
 GITLAB_URL = config('GITLAB_URL', default='')
 GITLAB_SECRET_TOKEN = config('GITLAB_SECRET_TOKEN', default='')
+GITLAB_ACCOUNTS_SECRET_TOKEN = config('GITLAB_ACCOUNTS_SECRET_TOKEN', default='')
+
 
 # Wordlist Settings for generating wordlist
 

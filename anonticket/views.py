@@ -2,13 +2,12 @@ import gitlab
 import functools
 from django.conf import settings
 from anonticket.models import (
-    UserIdentifier, GitLabGroup, Project, Issue, Note)
+    UserIdentifier, GitLabGroup, Project, Issue, Note, GitlabAccountRequest)
 from .forms import (
     Anonymous_Ticket_Project_Search_Form, 
     LoginForm,
     CreateIssueForm,
-    PendingNoteFormSet,
-    PendingIssueFormSet)
+    )
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -16,7 +15,6 @@ from django.contrib.auth.decorators import user_passes_test
 from django.views.generic import (
     TemplateView, DetailView, ListView, CreateView, FormView, UpdateView)
 from django.contrib.admin.views.decorators import staff_member_required
-
 
 # ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
 # Functions that need to be accessed from within multiple views go here,
@@ -397,30 +395,28 @@ class PendingNoteDetailView(PassUserIdentifierMixin, DetailView):
 
 def is_moderator(user):
     """Check if the user is either in the Moderators group or a superuser."""
-    check_passed = False
-    check_moderator = user.groups.filter(name="Moderators").exists()
-    check_super = user.is_superuser
-    if check_moderator == True:
-        check_passed = True
-    elif check_super == True:
-        check_passed = True
-    return check_passed
+    if user.groups.filter(name="Moderators").exists() == True:
+        return True
+    elif user.is_superuser:
+        return True
+    else:
+        return False
 
 def is_account_approver(user):
     """Check if the user is in the Account Approvers group or superuser."""
-    check_passed = False
-    check_account_approver = user.groups.filter(name="Account Approvers").exists()
-    check_super = user.is_superuser
-    if check_account_approver == True:
-        check_passed = True
-    elif check_super == True:
-        check_passed = True
-    return check_passed
+    if user.groups.filter(name="Account Approvers").exists() == True:
+        return True
+    elif user.is_superuser:
+        return True
+    else:
+        return False
 
 def is_mod_or_approver(user):
     """A function to check that a logged-in user is either a moderator,
     an account approver, or a super_user."""
-    if is_moderator(user) or is_account_approver(user):
+    if is_moderator(user) == True:
+        return True
+    elif is_account_approver(user) == True:
         return True
     else:
         return False
@@ -437,14 +433,20 @@ login_redirect_url = "/tor_admin/login/?next=/moderator/"
 @staff_member_required
 def moderator_view(request):
     """View that allows moderators and account approvers to approve pending items."""
+    from anonticket.forms import (
+        PendingNoteFormSet, 
+        PendingIssueFormSet, 
+        PendingGitlabAccountRequestFormSet,
+        )
     user = request.user
     messages = {}
     if request.method == 'POST':
-        # if POST, verify that the user is in the moderators group. If not, 
-        # just redirect back to moderators.
+        # if POST, verify that the user is in the moderators group.
         if is_moderator(user) == True:
-            note_formset = PendingNoteFormSet(prefix="note_formset", data=request.POST)
-            issue_formset = PendingIssueFormSet(prefix="issue_formset", data=request.POST)
+            note_formset = PendingNoteFormSet(
+                prefix="note_formset", data=request.POST)
+            issue_formset = PendingIssueFormSet(
+                prefix="issue_formset", data=request.POST)
             if issue_formset.is_valid():
                 issue_formset.save()
             if note_formset.is_valid():
@@ -452,6 +454,15 @@ def moderator_view(request):
             else:
                 print(issue_formset.errors)
                 print(note_formset.errors)
+        # or that the user is in the account approvers group.
+        if is_account_approver(user) == True:
+            gitlab_formset = PendingGitlabAccountRequestFormSet(
+                prefix="gitlab_formset", data=request.POST)
+            if gitlab_formset.is_valid():
+                gitlab_formset.save()
+            else:
+                print(gitlab_formset.errors)
+        # Regardless of result, return redirect to 'moderator' 
         return redirect('/moderator/')
     else:
         # if request method is not POST, pull formsets and render them in the template.
@@ -461,11 +472,23 @@ def moderator_view(request):
         else:
             note_formset = {}
             issue_formset = {}
-            messages = {
-                'note_message': 'You do not have permission to view pending notes at this time.',
-                'issue_message': 'You do not have permission to view pending issues at this time.'
-            }
-    return render(request, "anonticket/moderator.html", {"note_formset": note_formset, "issue_formset":issue_formset, "messages": messages})
+            messages['note_message'] = """You do not have permission to 
+            view pending notes at this time."""
+            messages['issue_message'] = """You do not have permission to 
+            view pending issues at this time."""
+        if is_account_approver(user) == True:
+            gitlab_formset = PendingGitlabAccountRequestFormSet(
+                prefix="gitlab_formset")
+        else:
+            gitlab_formset = {}
+            messages['gitlab_message'] = """You do not 
+            have permission to view pending Gitlab account requests at this time."""
+    return render(request, "anonticket/moderator.html", {
+        "note_formset": note_formset, 
+        "issue_formset":issue_formset,
+        "gitlab_formset": gitlab_formset, 
+        "messages": messages
+        })
 
 @method_decorator(user_passes_test(
     is_moderator, login_url=login_redirect_url), name='dispatch')
@@ -488,6 +511,20 @@ class ModeratorIssueUpdateView(UpdateView):
     """View that allows a moderator to update an issue."""
     model = Issue
     fields= ['linked_project', 'description', 'mod_comment', 'reviewer_status']
+    template_name_suffix = '_update_form'
+
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        url = reverse('moderator')
+        return url
+
+@method_decorator(user_passes_test(
+    is_account_approver, login_url=login_redirect_url), name='dispatch')
+@method_decorator(staff_member_required, name='dispatch')
+class ModeratorGitlabAccountRequestUpdateView(UpdateView):
+    """View that allows a moderator to update an issue."""
+    model = GitlabAccountRequest
+    fields= ['username', 'email', 'reason', 'mod_comment','reviewer_status']
     template_name_suffix = '_update_form'
 
     def get_success_url(self):

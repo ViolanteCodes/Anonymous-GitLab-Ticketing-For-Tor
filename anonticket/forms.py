@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 import gitlab
 import random
-from .models import UserIdentifier, GitLabGroup, Project, Issue, Note
+from .models import UserIdentifier, GitLabGroup, Project, Issue, Note, GitlabAccountRequest
 
 # Initialize GitLab Object
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
@@ -173,7 +173,7 @@ class CreateIssueForm(ModelForm):
             GitLab Flavored Markdown (GFM)</a> on this form.""")
         }
 
-#Formsets for Pending Admin View:
+# The following forms and formsets are used to created the 'moderator' view
 
 class PendingIssueForm(forms.ModelForm):
     """A special version of the Issue Form to be used with PendingIssueFormset."""
@@ -194,7 +194,6 @@ class BasePendingIssueFormSet(BaseModelFormSet):
         super().__init__(*args, **kwargs)
         self.queryset=Issue.objects.filter(reviewer_status='P')
 
-
 class PendingNoteForm(forms.ModelForm):
     """A special version of the Note Form to be used with PendingNoteFormSet."""
     class Meta:
@@ -204,6 +203,7 @@ class PendingNoteForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
        super(PendingNoteForm, self).__init__(*args, **kwargs)
+    # Don't actually need this right now, but leave this for later.
     #    self.fields['linked_project'].disabled = True
 
 class BasePendingNoteFormSet(BaseModelFormSet):
@@ -212,7 +212,23 @@ class BasePendingNoteFormSet(BaseModelFormSet):
         super().__init__(*args, **kwargs)
         self.queryset=Note.objects.filter(reviewer_status='P')
 
-# Formset Variables to be fed to view.
+class PendingGitlabAccountRequestForm(forms.ModelForm):
+    """A special version of the Note Form to be used with PendingNoteFormSet."""
+    class Meta:
+        model = GitlabAccountRequest
+        fields = (
+            'reviewer_status',)
+
+    def __init__(self, *args, **kwargs):
+       super(PendingGitlabAccountRequestForm, self).__init__(*args, **kwargs)
+
+class BasePendingGitlabAccountRequestFormset(BaseModelFormSet):
+    """Subclass of Base Formset that sets queryset."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.queryset=GitlabAccountRequest.objects.filter(reviewer_status='P')
+
+# Formset Variables to be fed to Pending Admin View.
 PendingNoteFormSet = modelformset_factory(
     Note, 
     form=PendingNoteForm, 
@@ -223,6 +239,12 @@ PendingIssueFormSet = modelformset_factory(
     Issue,
     form=PendingIssueForm,
     formset=BasePendingIssueFormSet, 
+    extra=0)
+
+PendingGitlabAccountRequestFormSet = modelformset_factory(
+    GitlabAccountRequest,
+    form=PendingGitlabAccountRequestForm,
+    formset=BasePendingGitlabAccountRequestFormset, 
     extra=0)
 
 
