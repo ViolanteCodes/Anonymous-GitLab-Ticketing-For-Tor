@@ -128,8 +128,9 @@ def gitlab_get_notes_list(project, issue):
 # encounter them (e.g., generate a codename, then login with codename.)
 # ----------------------------------------------------------------------
 #
-# --------------------IDENTIFIER AND LOGIN VIEWS------------------------
-# Initial views related to landing, user_identifier.
+# -------------IDENTIFIER, LOGIN, ACCOUNT REQUEST VIEWS-----------------
+# Initial views related to landing, user_identifier, and gitlab account
+# requests for users.
 # ----------------------------------------------------------------------
 
 class CreateIdentifierView(TemplateView):
@@ -222,6 +223,25 @@ def user_landing_view(request, user_identifier):
 class UserLoginErrorView(TemplateView):
     """A generic landing page if a username doesn't pass validation tests."""
     template_name = 'anonticket/user_login_error.html'
+
+class GitlabAccountRequestCreateView(CreateView):
+    """A view for users to create gitlab account requests."""
+    model = GitlabAccountRequest
+    fields = [
+        'username', 
+        'email', 
+        'reason',
+        ]
+    template_name_suffix = 'anonticket/user_create.html'
+
+    def get_context_data(self, **kwargs):
+        """Modified to pass 'user_identifier' kwargs"""
+        context = super(
+            GitlabAccountRequestCreateView, self
+            ).get_context_data(**kwargs)
+        if 'user_identifier' in self.kwargs:
+            context['user_identifier'] = self.kwargs['user_identifier']
+            return context
 
 # -------------------------PROJECT VIEWS----------------------------------
 # Views related to creating/looking up issues.
