@@ -173,7 +173,7 @@ class CreateIssueForm(ModelForm):
             target="_blank">
             GitLab Flavored Markdown (GFM)</a> on this form.""")
         }
-  
+
 # The following forms and formsets are used to created the 'moderator' view
 
 class PendingIssueForm(forms.ModelForm):
