@@ -12,6 +12,7 @@
 {% endblock %}
 
 {% block content %}
+<!-- Introductory block -->
 <div class="row">
   <div class="col-12">
     <p class="p-3">
@@ -23,16 +24,23 @@
     </p>
     <p class="p-3">
       If you are NOT logged in with a User Identifier when you create 
-      your request, the request will <mark>not</mark> be linked to a User Identifier.
+      your request, the request will <mark>not be linked </mark> to a User Identifier.
       As such, it will be more private, but you will not be able to 
       check it from your landing page.
     </p>
-    {% if results %}
-    {{results.user_identifier}}
-    {% endif %}
-    {% if user_identifier %}
-    {{view.user_identifier}}
-    {% endif %}
+  </div>
+</div>
+<!-- Logged In Status Block -->
+<div class="row">
+  <div class="col-12">
+    <p class="p-3">
+      Your current status is: 
+      {% if results.user_identifier %}
+      Logged in
+      {% else %}
+      Not logged in
+      {% endif %}
+    </p>
   </div>
 </div>
 <div class="row">
@@ -43,7 +51,9 @@
       and custom labels/descriptions are taken from forms.py-->
       {% for field in form %}
         <div class="fieldWrapper form-group">
-          {{ field.errors }}
+          {% if field.errors %}
+            <strong>{{ field.errors }}</strong>
+          {% endif %}
           <div class="row">
             <div class="col-12">
               <div class="mb-0">{{ field.label_tag }}</div>
