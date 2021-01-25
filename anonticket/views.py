@@ -273,22 +273,22 @@ class GitlabAccountRequestCreateView(
                 try:
                     linked_user = UserIdentifier.objects.get(user_identifier=user_identifier)
                     form.instance.linked_user = linked_user
-                # Unless user doesn't exist - then create.
+                # Unless this user has already created a GL account request
                 except:
                     new_user = UserIdentifier(user_identifier=user_identifier)
                     new_user.save()
                     form.instance.linked_user = new_user
         # Either way, return the valid form.
-        else:
-            pass
         return super(GitlabAccountRequestCreateView, self).form_valid(form)
     
-    # def get_success_url(self):
-    #     """Return the URL to redirect to after processing a valid form."""
-    #     working_object = self.object
-    #     user_identifier_to_pass = working_object.linked_user.user_identifier
-    #     working_url = reverse('issue-created', args=[user_identifier_to_pass])
-    #     return working_url
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        working_object = self.object
+        if working_object.linked_user:
+            working_url = reverse('issue-created', args=[working_object.linked_user])
+        else:
+            working_url = reverse('created-no-user')
+        return working_url
 
 # -------------------------PROJECT VIEWS----------------------------------
 # Views related to creating/looking up issues.
@@ -361,6 +361,11 @@ def create_issue_view(request, user_identifier, *args):
 @method_decorator(validate_user, name='dispatch')
 class IssueSuccessView(PassUserIdentifierMixin, TemplateView):
     """View that tells the user their issue was successfully created."""
+    template_name = 'anonticket/create_issue_success.html'
+
+class ObjectCreatedNoUserView(TemplateView):
+    """View that tells the user their issue was successfully created. Use
+    when creation request was anonymous."""
     template_name = 'anonticket/create_issue_success.html'
 
 @method_decorator(validate_user, name='dispatch')
