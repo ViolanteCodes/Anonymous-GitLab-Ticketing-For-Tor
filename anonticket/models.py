@@ -287,8 +287,11 @@ class GitlabAccountRequest(models.Model):
     )
     approved_to_GitLab = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True, blank=False)
-    linked_user = models.ForeignKey(
-        UserIdentifier, null=True, blank=True, on_delete=models.SET_NULL)
+    linked_user = models.OneToOneField(
+        UserIdentifier, 
+        null=True, 
+        blank=True, 
+        on_delete=models.SET_NULL)
     mod_comment = models.TextField(
         blank=True, 
         verbose_name='Moderator Comment', 
