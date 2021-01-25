@@ -232,7 +232,7 @@ class GitlabAccountRequestCreateView(CreateView):
         'email', 
         'reason',
         ]
-    template_name_suffix = 'user_create.html'
+    template_name_suffix = 'user_create'
 
     def get_context_data(self, **kwargs):
         """Modified to pass 'user_identifier' kwargs"""
