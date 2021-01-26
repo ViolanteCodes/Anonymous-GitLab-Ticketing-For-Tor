@@ -1,0 +1,144 @@
+{% extends 'shared/layout.html' %}
+{% load static %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Search for an issue on GitLab.
+{% endblock %}
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<!-- Introductory Information -->
+<div class="row">
+  <div class="col-12">
+    <p class="p-3 mb-0">
+      This form uses the GitLab API to search the projects in the dropdown 
+      below for issues matching a search string. You can see all of Tor's 
+      public projects and issues, on the 
+      <a href="https://gitlab.torproject.org/tpo">
+        TorProject GitLab site</a>.
+    </p>
+    <p class="p-3">
+      You can create new comments on an issue's detail page. If your comment
+      is still pending mod approval, it will be marked with asterisks (***)
+      on
+      {% url 'user-landing' results.user_identifier as landing_url %}
+      <a href="{{landing_url}}">your landing page</a>.
+    </p>
+  </div>
+</div>
+
+<!-- Results Rendering -->
+{% if results.status %}
+<div class="row">
+  <div class="col-12 ml-3 mb-1 form-control">
+    {% if results.matching_project %}
+      {% with project=results.matching_project %}
+      <ul class="list-unstyled mb-2">
+        <li class="ml-2">
+          <h6 class="d-inline">Project Details</h6>: {{project.name}} 
+        </li>
+        <li class="ml-2">
+          <h6 class="d-inline">Project Description:</h6> {{project.description}}
+        </li>
+        <li class="ml-2">
+          <h6 class="d-inline">Note</h6>: (If you didn't find what you were looking for, you can see 
+          <a href="{{project.web_url}}">this project's page on TorProject's
+          GitLab account</a> to take advantage of GitLab's search functions.)
+        </li>
+      </ul>
+      {% endwith %}
+    {% endif %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <h3 class="mt-4">Result of this lookup was: {{results.status|upper}}</h3>
+    <p>{{results.message}}</p> 
+  </div>
+</div>
+  {% if results.matching_issues %}
+  <div class="row">
+    <div class="col-12 p-1">
+      <table class="table ml-4 mr-4 mt-3 mb-3">
+        <thead>
+          <th>
+            Issue Title/Detail Link
+          </th>
+          <th>
+            Issue Description
+          </th>
+          <th>
+            Gitlab
+          </th>
+        </thead>
+          {% for issue in results.matching_issues %}
+          <tr>
+            <td>
+                <a href="{{issue.detail_url}}">
+                {{issue.title}}</a>
+            </td>
+            <td>
+                {{issue.description|truncatewords:20}}
+            </td>
+            <td>
+                <a href="{{issue.web_url}}">Gitlab</a>
+            </td>
+          {% endfor %}
+      </table>
+    </div>
+  </div>
+  {% endif %}
+<div class="row">
+  <div class="col-12">
+    <p class="mt-3">
+      To try again, enter a new search string below.
+    </p>
+  </div>
+</div>
+{% endif %}
+
+<!-- Form Rendering -->
+<div class="row">
+  <div class="col-12">
+    <form class="bg-light p-4 form-control ml-3 mr-3" method="get">
+      <!--Loop over form fields, allowing for custom styling. Help-text 
+      and custom labels/descriptions are taken from forms.py-->
+      {% for field in form %}
+        <div class="fieldWrapper form-group">
+          {{ field.errors }}
+      
+        <div class="row">
+          <div class="col-12">
+            <div class="mb-0">{{ field.label_tag }}</div>
+          </div>
+        </div>
+
+        {% if field.help_text %}
+        <div class="row">
+          <div class="col-12">
+            <div class="help small p-0 text-muted mb-2">
+              {{ field.help_text|safe }}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="row">
+          <div class="col-12">
+            <div class="flex-form mb-3">{{ field }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-lg btn-primary mr-2">SEARCH</button>
+    </form>
+  </div>
+</div>
+<!-- End Form Rendering -->
+
+{% endblock %}

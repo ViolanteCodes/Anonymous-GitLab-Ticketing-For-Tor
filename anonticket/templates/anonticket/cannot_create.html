@@ -1,0 +1,45 @@
+<!-- Extend the layout template -->
+<!-- Can leave any of these as default -->
+{% extends 'shared/layout.html' %}
+<!-- Load static method for templates -->
+{% load static %}
+<!-- title block sets the main title on the page (in browser bar)-->
+{% block title %}
+  Anon Ticket
+{% endblock %}
+<!-- h3 block sets the main title -->
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+<!-- Subheader block sets the subheader -->
+{% block subheader %} 
+  Your item could not be created for the following reason:
+{% endblock %}
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
+<!-- block content block is where page contents go -->
+{% block content %}
+{% if results.user_identifier %}
+<div class="row">
+  <div class="col-12">
+    Your user user_identifier, {{results.user_identifier}}, already
+    has a pending Gitlab request. You can see its status on your 
+    landing page.
+    {% url 'user-landing' results.user_identifier as go_back_url %}
+  <p>
+    <a href="{{go_back_url}}">Back to my landing page</a>
+  </p>
+  </div>
+</div>
+{% else %}
+<div class="row">
+  <div class="col-12">
+    <p>
+      <a href="{% url 'home' %}">Return to Home Page</a>
+    </p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

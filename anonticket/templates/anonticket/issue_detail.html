@@ -1,0 +1,94 @@
+{% extends 'shared/layout.html' %}
+{% load static %}
+<!-- Load custom filters from shared app, including ISO 8901 Date-Time Converter -->
+{% load custom_filters %}
+<!-- Load markdownify -->
+{% load markdownify %}
+<!-- Start Page Render -->
+<!-- Extra links block for pages that have a user_identifier piped to them.-->
+{% block extra_links %}
+  {% include 'shared/extend_sidebar.html' %}
+{% endblock %}
+
+{% block h3 %}
+  {% if results.issue %}
+  </h3>
+  <div class="row justify-content-between">
+      <p class="col-auto mb-0 small pb-0 pt-0">{{results.project.name_with_namespace}} ({{results.project.id}}) > issues > #{{results.issue.iid}}</p>
+      <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right">Created {{results.issue.created_at|pretty_datetime}} by @{{results.issue.author.username}}</p>
+  </div>
+  <hr class="mb-0 mt-0">
+  <div class="row justify-content-between">
+    <div class="col-auto"><p class="mb-0 small pb-0 pt-0">Milestone: {{results.issue.milestone.title}}.</p></div>
+    <div class="col-auto">
+      <p class="text-muted small mb-0 pb-0 pt-0 text-right">    
+        {% for label in results.issue.labels %}
+        <span class="badge-pill badge-primary ml-1">{{label}}</mark></span>
+        {% endfor %}</p>
+    </div>
+  </div>
+  <div class="row  mt-5">
+    <div class="col-12">
+      <h4><span class="badge badge-primary mr-2">{{results.issue.state|capfirst|slice:"-2"}}</span>{{results.issue.title|capfirst}}</h4>
+    </div>
+  <div class="col-12 small mt-0 mb-3 text-right">
+
+  </div>
+</div>
+  {% else %}
+    Issue Not Found
+  {% endif %}
+{% endblock %}
+{% block subheader %} 
+  <p class="small short-height">{{results.issue.description|capfirst|markdownify}}</p>
+{% endblock %}
+
+{% block content %}
+<!-- Issue Summary Block -->
+{% if results.issue %}
+  <div class="row">
+    <div class="col-12">
+      <h4 class="card-title">Issue Summary</h4>
+      <ul>
+        <li><span class="text-muted">Currently Assigned To:</span> @{{results.issue.assignee.username}}.
+        <span class="text-muted ml-1">Due Date:</span> {{results.issue.due_date|pretty_datetime}}.
+        <span class="text-muted ml-1">Last Updated:</span> {{results.issue.updated_at|pretty_datetime}}</li>
+      </ul>
+    </div>
+  </div>
+{% endif %}
+<!-- Generate a Back to Landing URL Link -->
+{% url 'user-landing' results.user_identifier as go_back_url %}
+<div>
+  <p>
+    You can <a href="{{go_back_url}}">go back to your landing page</a> or
+    <!-- New_note_link is generated in views.py. -->
+    <a href="{{results.new_note_link}}">create a new note</a> for this issue.
+  </p>
+</div>
+<!-- Notes Block -->
+{% if results.notes %}
+<div class="row">
+  <div class="col-12 p-2">
+    <h4 class="card-title">Project Notes</h4>
+  </div>
+</div>
+  <div class="p2 bg-light">
+    {% for note in results.notes %}
+    <div class="row">
+      <div class="col-12 p-2">
+        <div class="card mb-2">
+          <div class="card-body">
+            <p class="card-text text-muted">{{note.noteable_type|title}} 
+              note by @{{note.author.username}}, 
+              Created: {{note.created_at|pretty_datetime}}, 
+              Last Updated: {{note.updated_at|pretty_datetime}}</p>
+            <p class="card-text">{{note.body|markdownify}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,7 @@
+Delete this line and rename this file to just ".env"
+SECRET_KEY=SecretKeyHere
+GITLAB_SECRET_TOKEN=TokenHere
+GITLAB_ACCOUNTS_SECRET_TOKEN=TokenHere
+AUTO_ACCEPT_LIST=""
+GITLAB_URL=https://gitlab.torproject.org/
+DEBUG=True
