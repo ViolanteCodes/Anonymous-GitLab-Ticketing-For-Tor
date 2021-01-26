@@ -1,15 +1,15 @@
 {% extends 'shared/layout.html' %}
 {% load static %}
 {% block h3 %}
-  Anon Ticket
+  Anon-Ticket
 {% endblock %}
 {% block subheader %} 
-  Items Awaiting Staff Moderation
+  Moderator Portal
   <p>
-    The following items below are pending and awaiting staff moderation.
-    You can approve and/or reject multiple items at once by
-    changing status fields in the right-hand column
-    to "approved" or "rejected" and  then clicking on the 
+    The below items are awaiting staff moderation.
+    You can approve/reject multiple items at once by
+    changing the status in the right-hand column
+    to "approved" or "rejected" and then clicking on the 
     <span class="btn btn-primary p-1 mr-1 ml-1">Save All Changes</span>
     button at the bottom.
   </p>
@@ -211,7 +211,7 @@
 <!-- Render GLAccountRequest Table -->
 <div class="row">
   <div class="col-12 mt-5">
-    <h2>Pending Gitlab Account Requests</h2>
+    <h2>Pending Gitlab Account Requests (***Coming Soon***)</h2>
       <!-- If there are pending notes, render them here. -->
       {% if gitlab_formset %}
       {{ gitlab_formset.management_form }}
