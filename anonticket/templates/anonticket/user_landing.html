@@ -46,14 +46,15 @@
     <p class='mt-4 mb-0'>
       <ul>
         <li>{% url 'project-list' results.user_identifier as project_list_url %}
-          <a href="{{project_list_url}}">See a list all projects</a> using this portal. Each project links 
-        to a detail page with a list of issues.</li>
+          <a href="{{project_list_url}}">See a list all projects</a> that
+          currently take ticket reports via Anon-Ticket. Each project 
+          listed links to a detail page with a list of current issues.</li>
         <li>{% url 'issue-search' results.user_identifier as search_url %}
         <a href="{{search_url}}">Search for an issue</a> inside of a given project.</li>
         <li>{% url 'create-issue' results.user_identifier as create_url %}
         <a href="{{create_url}}">Create an issue</a> inside of a given project.</li>
-        <li>You can also create a note on an issue by searching for the issue first or 
-          selecting it from the project page using one of the above methods.
+        <li>To create a note on an existing issue, use one of the methods above 
+          to navigate to an issue's detail page, and then click "Create Note."
         </li>
       </ul>
     </p>
@@ -126,7 +127,7 @@
 {% else %}
 <div class="row">
   <div class="col-12 mt-0">
-    <p>You have not created any issues.</p>
+    <p class="text-primary">You have not created any issues.</p>
   </div>
 </div>
 {% endif %}
@@ -137,7 +138,7 @@
     <h4 class="mt-4">You have created the following notes:</h4>
     <p class="small short-height">(To create a new note, <a href="{{search_url}}">
       search for the issue</a> you want to comment on, or look at the 
-      <a href="{{project_list_url}}">project's detail view</a> to find an issue. 
+      <a href="{{project_list_url}}">project's detail view</a> to find it.) 
   </div>
 </div>
 <!-- If results.linked_notes, render the notes table. -->
@@ -211,7 +212,7 @@
 {% else %}
 <div class="row">
   <div class="col-12 mt-0">
-    <p>You have not created any notes.</p>
+    <p class="text-primary">You have not created any notes.</p>
   </div>
 </div>
 {% endif %}

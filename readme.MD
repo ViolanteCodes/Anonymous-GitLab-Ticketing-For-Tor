@@ -24,25 +24,17 @@ Django applications or projects generally contain a main project folder
 'turned on' and 'turned off' by their inclusion in the main project folder's
 settings.py file.
 
-This Django application contains a specific app, 'anonticket', which 
-is an anonymous ticket handling system to allow anonymous submission of an 
-issue to TorProject's GitLab lobby via creation of User Identifier 
-code-phrases based on dice rolls from a dictionary of english words.
-
-This project has been structured in such a way to allow later expansion for other,
-related functions and is currently divided into three main folders:
+This project has been structured in such a way to maximize the potential
+for later development and expansion. It is currently divided into three 
+main folders:
 
 1. ***/TicketLobby***: This is main project folder, in which the settings.py file 
 and other base Django files are found.
 
-2. ***/AnonTicket***: This is the folder for the anonymous ticket submission app
-itself.
+2. ***/AnonTicket***: This is the folder for the AnonTicket app.
 
-3. ***/Shared***: This is a pseudo-app, primarily for static files and templates 
-likely to be expanded or utilized in other parts of the project. By moving the 
-base templates and static files into their own app, overall development 
-and deployment are easier. (Note: This is not the recommend approach if 
-you are designing a Django project with a LOT of apps.)
+3. ***/Shared***: This is a pseudo-app, primarily for static files and 
+templates likely to be expanded or utilized in other parts of the project.
 
 ### Adding Projects
 

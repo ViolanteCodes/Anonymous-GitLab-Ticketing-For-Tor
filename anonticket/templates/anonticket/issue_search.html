@@ -1,7 +1,7 @@
 {% extends 'shared/layout.html' %}
 {% load static %}
 {% block h3 %}
-  Anon Ticket
+  Anon-Ticket
 {% endblock %}
 {% block subheader %} 
   Search for an issue on GitLab.
@@ -18,14 +18,13 @@
     <p class="p-3 mb-0">
       This form uses the GitLab API to search the projects in the dropdown 
       below for issues matching a search string. You can see all of Tor's 
-      public projects and issues, on the 
+      public projects and issues on the 
       <a href="https://gitlab.torproject.org/tpo">
         TorProject GitLab site</a>.
     </p>
     <p class="p-3">
-      You can create new comments on an issue's detail page. If your comment
-      is still pending mod approval, it will be marked with asterisks (***)
-      on
+      You can also create new notes on an issue's detail page. If your note
+      is waiting for moderator approval, it will be marked as pending on
       {% url 'user-landing' results.user_identifier as landing_url %}
       <a href="{{landing_url}}">your landing page</a>.
     </p>
