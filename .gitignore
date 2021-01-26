@@ -12,7 +12,7 @@ __pycache__
 # .env should be added to gitnore (uncomment out below) before launching.
 # .env files are currently used by python-decouple for security.
 # # Env
-# .env
+.env
 myvenv/
 venv/
 
