@@ -15,9 +15,9 @@
 <div class="row">
   <div class="col-12">
     <p class="p-3">
-      This form will allow you to create an issue/ticket and assign it to 
-      a specific project. Please note that not all TorProject's GitLab 
-      projects are currently using this anonymous portal--so if you 
+      This form will allow you to create an issue/ticket for 
+      a specific project. Please note that not all of TorProject's GitLab 
+      repos are currently using this anonymous portal--so if you 
       don't find the project in the dropdown below, you will not be
       able to create a ticket for it using this system.
     </p>
@@ -26,12 +26,10 @@
       a moderator. You can check the status of your issue at any time
       on 
       {% url 'user-landing' results.user_identifier as landing_url %}
-      <a href="{{landing_url}}">your landing page,</a>
-      where it will be marked with asterisks
-      (***) if it is still pending.
+      <a href="{{landing_url}}">your landing page</a>.
     </p>
     <p class="p-3">
-      Before creating a ticket, please try 
+      Before creating a new issue report, please try 
       {% url 'issue-search' results.user_identifier as issue_url %}
       <a href="{{issue_url}}">searching the for the issue</a> 
       first, to avoid duplication.
