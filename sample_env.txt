@@ -5,3 +5,4 @@ GITLAB_ACCOUNTS_SECRET_TOKEN=TokenHere
 AUTO_ACCEPT_LIST=""
 GITLAB_URL=https://gitlab.torproject.org/
 DEBUG=True
+ALLOWED_HOSTS=.localhost, 127.0.0.1, .anonticket.onionize.space,
