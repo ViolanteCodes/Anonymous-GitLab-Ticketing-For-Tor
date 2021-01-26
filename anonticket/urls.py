@@ -9,6 +9,7 @@ from anonticket.views import (
     ObjectCreatedNoUserView,
     UserLoginErrorView,
     GitlabAccountRequestCreateView,
+    CannotCreateObjectView,
     ProjectListView,
     ProjectDetailView,
     PendingIssueDetailView,
@@ -35,6 +36,10 @@ urlpatterns = [
         'user/create-gitlab-account/', 
         views.GitlabAccountRequestCreateView.as_view(), 
         name='create-gitlab-no-user'),
+    path(
+        'user/<str:user_identifier>/create-failed/', 
+        views.CannotCreateObjectView.as_view(), 
+        name='cannot-create-with-user'),
     path(
         'user/<str:user_identifier>/create-gitlab-account/', 
         views.GitlabAccountRequestCreateView.as_view(), 
