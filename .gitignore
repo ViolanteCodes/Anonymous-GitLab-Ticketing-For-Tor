@@ -35,6 +35,6 @@ coverage.xml
 *.cover
 
 # Database Ignore
-*.gitnore
-.gitnore
+*.sqlite3
+db.sqlite3
 
