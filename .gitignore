@@ -34,6 +34,7 @@ htmlcov/
 coverage.xml
 *.cover
 
-# Personal Ignore
-
+# Database Ignore
+*.sqlite3
+db.sqlite3
 
