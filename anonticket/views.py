@@ -290,6 +290,9 @@ class GitlabAccountRequestCreateView(
             working_url = reverse('created-no-user')
         return working_url
 
+class CannotCreateObjectView(PassUserIdentifierMixin, TemplateView):
+    """"""
+    template_name = 'anonticket/cannot_create.html'
 # -------------------------PROJECT VIEWS----------------------------------
 # Views related to creating/looking up issues.
 # ----------------------------------------------------------------------
