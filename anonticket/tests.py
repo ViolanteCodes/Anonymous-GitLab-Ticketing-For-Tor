@@ -2,7 +2,7 @@ from django.conf import settings
 from django.test import SimpleTestCase, Client, tag
 from test_plus.test import TestCase, CBVTestCase
 from django.urls import reverse, resolve
-from anonticket.models import UserIdentifier, Project, Issue
+from anonticket.models import UserIdentifier, Project, Issue, GitlabAccountRequest
 from django.contrib.auth.models import User, Group, Permission
 # from django.views.generic import TemplateView, DetailView, CreateView, UpdateView
 from anonticket.views import *
@@ -474,6 +474,76 @@ class TestNotesViews(TestCase):
         expected_url = reverse('issue-created', args=[new_user])
         response = self.client.post(url, form_data)
         self.assertRedirects(response, expected_url)
+
+@tag('gitlab')
+class TestGitlabAccountRequestViews(TestCase):
+    """Test the views associated with user-created Gitlab
+    account requests."""
+
+    def setUp(self):
+        """Set up a project, user identifier, and issue in the test database."""
+        # Setup project
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        gitlab_url_no_user = reverse('create-gitlab-no-user')
+        gitlab_url_current_user = reverse(
+            'create-gitlab-with-user', args=[new_user.user_identifier])
+        self.client=Client()
+        self.working_user = new_user
+        self.gitlab_url_no_user = gitlab_url_no_user
+        self.gitlab_url_current_user = gitlab_url_current_user
+
+    def test_gitlab_account_create_GET_no_user(self):
+        """Test that the GitlabAccountRequestCreateView GET works correctly
+        with no user_string in URL path."""
+        response = self.client.get(self.gitlab_url_no_user)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            'anonticket/gitlabaccountrequest_user_create.html')
+        self.assertInHTML(
+            needle="""<h4 class="text-primary pl-3 pr-3">You are not logged in at this time.</h4>""",
+            haystack="""<div class="mb-4 form-control p-3 ml-4"> 
+            <h4 class="text-primary pl-3 pr-3">You are not logged in 
+            at this time.</h4></div>""")
+
+    def test_gitlab_account_create_POST_no_user(self):
+        """Test that the GitlabAccountRequestCreateView POST works correctly
+        with no user_string in URL path."""
+        pass
+
+    def test_gitlab_account_create_GET_new_user(self):
+        """Test that the GitlabAccountRequestCreateView GET works correctly
+        with a user that does NOT have a current database entry."""
+        pass
+
+    def test_gitlab_account_create_GET_current_user(self):
+        """Test that the GitlabAccountRequestCreateView GET works correctly
+        with a user that does have a current database entry."""
+        pass
+
+    def test_gitlab_account_create_POST_new_user(self):
+        """Test that the GitlabAccountRequestCreateView POST works correctly
+        with a user that does NOT have a current database entry."""
+        pass
+
+    def test_gitlab_account_create_POST_current_user_no_requests(self):
+        """Test that the GitlabAccountRequestCreateView GET works correctly
+        with a user that does have a current database entry but no
+        current GitlabAccountRequests."""
+        pass
+
+    def test_gitlab_account_create_POST_current_user_rejected_request(self):
+        """Test that the GitlabAccountRequestCreateView GET works correctly
+        with a user that DOES have a current database entry AND has 
+        a GitlabAccountRequest, but no PENDING request."""
+        pass
+
+    def test_gitlab_account_create_POST_current_user_pending_request(self):
+        """Test that the GitlabAccountRequestCreateView GET works correctly
+        with a user that DOES have a current database entry AND has 
+        a GitlabAccountRequest AND has a PENDING request."""
+        pass
 
 @tag('other_with_db')
 class TestViewsOtherWithDatabase(TestCase):
