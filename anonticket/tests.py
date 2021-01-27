@@ -490,11 +490,17 @@ class TestGitlabAccountRequestViews(TestCase):
         gitlab_url_current_user = reverse(
             'create-gitlab-with-user', args=[new_user.user_identifier])
         success_url_no_user = reverse('created-no-user')
+        new_user_string = 'nastily-arming-canon-calcium-footsie-jaundice'
+        gitlab_url_new_user = reverse(
+            'create-gitlab-with-user', args=[new_user_string]
+        )
         self.client=Client()
         self.working_user = new_user
         self.gitlab_url_no_user = gitlab_url_no_user
         self.gitlab_url_current_user = gitlab_url_current_user
+        self.gitlab_url_new_user = gitlab_url_new_user
         self.success_url_no_user = success_url_no_user
+        self.new_user_string = new_user_string
 
     def test_gitlab_account_create_GET_no_user(self):
         """Test that the GitlabAccountRequestCreateView GET works correctly
@@ -530,9 +536,9 @@ class TestGitlabAccountRequestViews(TestCase):
     def test_gitlab_account_create_GET_new_user(self):
         """Test that the GitlabAccountRequestCreateView GET works correctly
         with a user that does NOT have a current database entry."""
-        new_user_string = 'nastily-arming-canon-calcium-footsie-jaundice'
+
         new_url = reverse(
-            'create-gitlab-with-user', args=[new_user_string])
+            'create-gitlab-with-user', args=[self.new_user_string])
         response = self.client.get(new_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(
@@ -567,13 +573,45 @@ class TestGitlabAccountRequestViews(TestCase):
     def test_gitlab_account_create_POST_new_user(self):
         """Test that the GitlabAccountRequestCreateView POST works correctly
         with a user that does NOT have a current database entry."""
-        pass
+        form_data = {
+            'username': 'test_username_number_two',
+            'email' : 'test@test.com',
+            'reason' : "I can't wait to collaborate with TOR!",
+        }
+        success_url_new_user = reverse(
+            'issue-created', args=[self.new_user_string])
+        response = self.client.post(
+            self.gitlab_url_new_user, form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, success_url_new_user, 302)
+        self.assertTemplateUsed('anonticket/create_issue_success.html')
+        new_gl_request = GitlabAccountRequest.objects.get(
+            username='test_username_number_two')
+        self.assertEqual(new_gl_request.email, 'test@test.com')
+        self.assertEqual(
+            new_gl_request.reason, "I can't wait to collaborate with TOR!")
 
     def test_gitlab_account_create_POST_current_user_no_requests(self):
         """Test that the GitlabAccountRequestCreateView GET works correctly
         with a user that does have a current database entry but no
         current GitlabAccountRequests."""
-        pass
+        form_data = {
+            'username': 'test_username_number_three',
+            'email' : 'test@test.com',
+            'reason' : "I can't wait to collaborate with TOR!",
+        }
+        success_url_current_user = reverse(
+            'issue-created', args=[self.working_user.user_identifier])
+        response = self.client.post(
+            self.gitlab_url_current_user, form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, success_url_current_user, 302)
+        self.assertTemplateUsed('anonticket/create_issue_success.html')
+        new_gl_request = GitlabAccountRequest.objects.get(
+            username="test_username_number_three")
+        self.assertEqual(new_gl_request.email, 'test@test.com')
+        self.assertEqual(
+            new_gl_request.reason, "I can't wait to collaborate with TOR!")
 
     def test_gitlab_account_create_POST_current_user_rejected_request(self):
         """Test that the GitlabAccountRequestCreateView GET works correctly
