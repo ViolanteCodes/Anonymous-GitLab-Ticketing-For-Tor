@@ -284,7 +284,6 @@ class GitlabAccountRequestCreateView(
                  # if the User Identifier exists, but does not have a pending GL request, make one.
                 else:
                     form.instance.linked_user = url_user
-                    return redirect ('issue-created', user_identifier=user_identifier)
             # If the user_identifier doesn't exist, create it and save the request.
             except ObjectDoesNotExist:
                 new_user = UserIdentifier(user_identifier=user_identifier)
