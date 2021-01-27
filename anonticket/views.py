@@ -10,6 +10,7 @@ from .forms import (
     )
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import user_passes_test
 from django.views.generic import (
@@ -261,23 +262,34 @@ class GitlabAccountRequestCreateView(
     template_name_suffix = '_user_create'
 
     def form_valid(self, form):
-        """Populate user_identifier FK from URL if present."""
+        """Populate user_identifier FK from URL if present, without allowing duplicate
+        pending requests."""
         # If user_identifier in the URL path, set variable user_identifier.
         if 'user_identifier' in self.kwargs:
             user_identifier = self.kwargs['user_identifier']
             # make sure it's a valid user_identifier
             if check_user(user_identifier) == False:
                 return redirect('user-login-error', user_identifier=user_identifier)
-            else:
-                # Then try to grab the linked_user from the database.
-                try:
-                    linked_user = UserIdentifier.objects.get(user_identifier=user_identifier)
-                    form.instance.linked_user = linked_user
-                # Unless this user has already created a GL account request
-                except:
-                    new_user = UserIdentifier(user_identifier=user_identifier)
-                    new_user.save()
-                    form.instance.linked_user = new_user
+             # Then try to grab the user_identifier from URL from database.
+            try: 
+                url_user = UserIdentifier.objects.get(user_identifier=user_identifier)
+                # if the User Identifier exists, see if has made any account requests
+                gl_requests = GitlabAccountRequest.objects.filter(linked_user=url_user)
+                if len(gl_requests) != 0:
+                    for request in gl_requests:
+                        if request.reviewer_status == 'P':
+                            return redirect('cannot-create-with-user', user_identifier=user_identifier)
+                        # If you get this far, save the form with the new account request.
+                        form.instance.linked_user = url_user
+                 # if the User Identifier exists, but does not have a pending GL request, make one.
+                else:
+                    form.instance.linked_user = url_user
+                    return redirect ('issue-created', user_identifier=user_identifier)
+            # If the user_identifier doesn't exist, create it and save the request.
+            except ObjectDoesNotExist:
+                new_user = UserIdentifier(user_identifier=user_identifier)
+                new_user.save()
+                form.instance.linked_user = new_user
         # Either way, return the valid form.
         return super(GitlabAccountRequestCreateView, self).form_valid(form)
     
