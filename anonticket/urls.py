@@ -33,7 +33,7 @@ urlpatterns = [
         'user/login/', 
         views.login_view, name='login'),
     path(
-        'user/create-gitlab-account/', 
+        'user/gitlab-account/create', 
         views.GitlabAccountRequestCreateView.as_view(), 
         name='create-gitlab-no-user'),
     path(
@@ -41,7 +41,7 @@ urlpatterns = [
         views.CannotCreateObjectView.as_view(), 
         name='cannot-create-with-user'),
     path(
-        'user/<str:user_identifier>/create-gitlab-account/', 
+        'user/<str:user_identifier>/gitlab-account/create/', 
         views.GitlabAccountRequestCreateView.as_view(), 
         name='create-gitlab-with-user'),
     path(
