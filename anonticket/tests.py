@@ -617,13 +617,79 @@ class TestGitlabAccountRequestViews(TestCase):
         """Test that the GitlabAccountRequestCreateView GET works correctly
         with a user that DOES have a current database entry AND has 
         a GitlabAccountRequest, but no PENDING request."""
-        pass
+        rejected_request = GitlabAccountRequest.objects.create(
+            username='test_username_number_four',
+            linked_user=self.working_user, 
+            reviewer_status='R',
+            email='test@test.com',
+            reason="""I can't wait to collaborate with TOR!"""  
+        )
+        form_data = {
+            'username': 'test_username_number_five',
+            'email' : 'test@test.com',
+            'reason' : "I can't wait to collaborate with TOR!",
+        }
+        success_url_current_user = reverse(
+            'issue-created', args=[self.working_user.user_identifier])
+        response = self.client.post(
+            self.gitlab_url_current_user, form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, success_url_current_user, 302)
+        self.assertTemplateUsed('anonticket/create_issue_success.html')
+        new_gl_request = GitlabAccountRequest.objects.get(
+            username="test_username_number_five")
+        self.assertEqual(new_gl_request.email, 'test@test.com')
+        self.assertEqual(
+            new_gl_request.reason, "I can't wait to collaborate with TOR!")
 
     def test_gitlab_account_create_POST_current_user_pending_request(self):
         """Test that the GitlabAccountRequestCreateView GET works correctly
         with a user that DOES have a current database entry AND has 
         a GitlabAccountRequest AND has a PENDING request."""
-        pass
+        pending_request = GitlabAccountRequest.objects.create(
+            username='test_username_number_six',
+            linked_user=self.working_user, 
+            reviewer_status='P',
+            email='test@test.com',
+            reason="""I can't wait to collaborate with TOR!"""  
+        )
+        form_data = {
+            'username': 'test_username_number_seven',
+            'email' : 'test@test.com',
+            'reason' : "I can't wait to collaborate with TOR!",
+        }
+        failure_url_current_user = reverse(
+            'cannot-create-with-user', args=[self.working_user.user_identifier])
+        response = self.client.post(
+            self.gitlab_url_current_user, form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, failure_url_current_user, 302)
+        self.assertTemplateUsed('anonticket/cannot_create.html')
+        # assert object wasn't created
+        try_to_get_new_request = GitlabAccountRequest.objects.filter(
+            username='test_username_number_seven')
+        self.assertEqual(len(try_to_get_new_request), 0)
+
+    def test_gitlab_account_create_POST_invalid_user(self):
+        """Test that CreateGitlabAccountRequestView does not allow for
+        creation of db objects with a bad user."""
+
+        bad_username_string = 'word-word-word-word-word-word'
+        form_data = {
+            'username': 'test_username_number_eight',
+            'email' : 'test@test.com',
+            'reason' : "I can't wait to collaborate with TOR!",
+        }
+        create_url = reverse('create-gitlab-with-user', args=[bad_username_string])
+        login_error_url = reverse('user-login-error', args=[bad_username_string])
+        response = self.client.post(create_url, form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, login_error_url, 302)
+        self.assertTemplateUsed('anonticket/user_login_error.html')
+        # assert object wasn't created
+        try_to_get_new_request = GitlabAccountRequest.objects.filter(
+            username='test_username_number_eight')
+        self.assertEqual(len(try_to_get_new_request), 0)
 
 @tag('other_with_db')
 class TestViewsOtherWithDatabase(TestCase):
