@@ -48,6 +48,29 @@
   </div>
 </div>
 
+<!-- Create the Issues List Block For -->
+<div class="row">
+  <div class="col-12">
+    <p>Open Issues:</p>
+      <ul class="no-list-style">
+        {% if issues_list %}
+          {% for issue in issues_list %}
+            {% if issue.state == "opened" %}
+            <li>
+            {% url 'issue-detail-view' results.user_identifier object.slug issue.iid as detail_url %}
+              <a href="{{detail_url}}">{{issue.title}}</a>
+            </li>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <li>
+            No open issues at this time.
+          </li>
+      {% endif %}
+      </ul>
+  </div>
+</div>
+
 <!-- Create the Issues List Block -->
 <div class="row">
   <div class="col-12">
