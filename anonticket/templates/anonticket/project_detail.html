@@ -59,20 +59,27 @@
           <tr>
             <td>
               {% url 'issue-detail-view' results.user_identifier object.slug issue.iid as detail_url %}
-                <a href="{{detail_url}}"><strong>{{issue.title}}</strong></a><br>
+              <a href="{{detail_url}}"><strong>{{issue.title}}</strong></a><br>
+              # {{issue.iid}} | Opened {{issue.created_at|pretty_datetime}} by {{issue.author.username}}.
+              {% if issue.milestone %}
+                <span class="badge">Milestone: {{issue.milestone.title}}</span>
+              {% endif %}
+              {% if issue.labels %}
+                {% for label in issue.labels %}
+                  <span class="badge-pill badge-primary ml-1 small">{{label}}</span>
+                {% endfor %}
+              {% endif %}
             </td>
-            <td>
+            <td class="text-right small" style="width:25%">
               {% if issue.assignee.name %}
-                Assigned to {{issue.assignee.name}}
+                Assigned to {{issue.assignee.name}}.
               {% else %}
                 Not yet assigned.
               {% endif %}
-              {{issue.user_notes_count}}
-            </td>
-          </tr>
-          <tr>
-            <td>
-              issue number</a>
+              <span class="ml-3">
+                (<a href="{{detail_url}}"> {{issue.user_notes_count}} Notes</a>)
+              </span><br>
+              Last updated {{issue.updated_at|pretty_datetime}}
             </td>
           </tr>
           {% endif %}
