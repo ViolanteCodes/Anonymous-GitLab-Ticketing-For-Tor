@@ -16,7 +16,7 @@
 </h3>
 <div class="row justify-content-between">
     <p class="col-auto mb-0 small pb-0 pt-0">{{object.name_with_namespace}} ({{object.gitlab_id}})</p>
-    <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right"><a href="{{object.url}}">View this project on Gitlab</a>.</p>
+    <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right"><a href="{{object.url}}">View this project on Gitlab</a></p>
 </div>
 <hr class="mt-0">
 <!-- Make a true header -->
@@ -48,12 +48,12 @@
   </div>
 </div>
 
-<!-- Create the Issues List Block For -->
+<!-- Create the Issues List Block For Open Issues-->
 <div class="row">
   <div class="col-12">
     <p>Open Issues:</p>
     {% if issues_list %}
-      <table class="table table-sm table-bordered">
+      <table class="table table-sm">
         {% for issue in issues_list %}
           {% if issue.state == "opened" %}
           <tr>
@@ -61,7 +61,7 @@
               {% url 'issue-detail-view' results.user_identifier object.slug issue.iid as detail_url %}
               <a href="{{detail_url}}"><strong>{{issue.title}}</strong></a><br>
               # {{issue.iid}} | Opened {{issue.created_at|pretty_datetime}} by {{issue.author.username}}.
-              {% if issue.milestone %}
+              {% if issue.milestone.title %}
                 <span class="badge">Milestone: {{issue.milestone.title}}</span>
               {% endif %}
               {% if issue.labels %}
@@ -76,10 +76,10 @@
               {% else %}
                 Not yet assigned.
               {% endif %}
-              <span class="ml-3">
-                (<a href="{{detail_url}}"> {{issue.user_notes_count}} Notes</a>)
+              <span class="ml-2">
+                (<a href="{{detail_url}}">{{issue.user_notes_count}} Notes</a>)
               </span><br>
-              Last updated {{issue.updated_at|pretty_datetime}}
+              Updated {{issue.updated_at|pretty_datetime}}
             </td>
           </tr>
           {% endif %}
