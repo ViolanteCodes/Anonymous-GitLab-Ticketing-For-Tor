@@ -62,6 +62,12 @@
                 <a href="{{detail_url}}"><strong>{{issue.title}}</strong></a><br>
             </td>
             <td>
+              {% if issue.assignee.name %}
+                Assigned to {{issue.assignee.name}}
+              {% else %}
+                Not yet assigned.
+              {% endif %}
+              {{issue.user_notes_count}}
             </td>
           </tr>
           <tr>
