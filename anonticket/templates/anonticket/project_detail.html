@@ -49,7 +49,7 @@
 </div>
 
 <!-- Create the Issues List Block For Open Issues-->
-<div class="row">
+<div class="row mb-3">
   <div class="col-12">
     <p>Open Issues:</p>
     {% if issues_list %}
@@ -91,26 +91,43 @@
   </div>
 </div>
 
-<!-- Create the Issues List Block -->
-<div class="row">
+<!-- Create the Issues List Block for closed issues-->
+<div class="row mt-5">
   <div class="col-12">
     <p>Closed Issues:</p>
-      <ul class="no-list-style">
-        {% if issues_list %}
-          {% for issue in issues_list %}
-            {% if issue.state == "closed" %}
-            <li>
-            {% url 'issue-detail-view' results.user_identifier object.slug issue.iid as detail_url %}
-              <a href="{{detail_url}}">{{issue.title}}</a>
-            </li>
-            {% endif %}
-          {% endfor %}
-        {% else %}
-          <li>
-            No issues at this time.
-          </li>
-      {% endif %}
-      </ul>
+    {% if issues_list %}
+      <table class="table table-sm">
+        {% for issue in issues_list %}
+          {% if issue.state == "closed" %}
+          <tr>
+            <td>
+              {% url 'issue-detail-view' results.user_identifier object.slug issue.iid as detail_url %}
+              <a href="{{detail_url}}"><strong>{{issue.title}}</strong></a><br>
+              # {{issue.iid}} | Opened {{issue.created_at|pretty_datetime}} by {{issue.author.username}}.
+              {% if issue.milestone.title %}
+                <span class="badge">Milestone: {{issue.milestone.title}}</span>
+              {% endif %}
+              {% if issue.labels %}
+                {% for label in issue.labels %}
+                  <span class="badge-pill badge-primary ml-1 small">{{label}}</span>
+                {% endfor %}
+              {% endif %}
+            </td>
+            <td class="text-right small" style="width:25%">
+              CLOSED
+              <span class="ml-2">
+                (<a href="{{detail_url}}">{{issue.user_notes_count}} Notes</a>)
+              </span><br>
+              Updated {{issue.updated_at|pretty_datetime}}
+            </td>
+          </tr>
+          {% endif %}
+        {% endfor %}
+      </table>
+    {% else %}
+      <p> No open issues at this time. </p>      
+    {% endif %}
   </div>
 </div>
+
 {% endblock %}
