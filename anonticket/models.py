@@ -42,7 +42,6 @@ class Project(models.Model):
     be updated.""")
     name = models.CharField(max_length=200, null=True, blank=True)
     name_with_namespace = models.CharField(max_length=200, null=True, blank=True)
-    short_name_with_namespace = models.CharField(max_length=200, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     slug = models.SlugField(max_length=50, null=True, blank=True)
     url = models.URLField(null=True, blank=True)
@@ -61,34 +60,12 @@ class Project(models.Model):
             self.url = working_project.web_url
         # if the project does not have a gitlab_group foreignkey, first
         # check to see if a GitLabGroup object with the gitlab id exists.
-            if not self.gitlab_group:
-                gitlab_group_id = working_project.namespace['id']
-                try:
-                    fetch_group = GitLabGroup.objects.get(gitlab_id=gitlab_group_id)
-                    self.gitlab_group = fetch_group
-        # if a matching GitLabGroup cannot be fetched, pull the group info from
-        # gitlab and create one.
-                except:
-                    from_gitlab = gl.groups.get(gitlab_group_id)
-                    new_group = GitLabGroup.objects.create(
-                        name=from_gitlab.name,
-                        gitlab_id=gitlab_group_id,
-                        description=from_gitlab.description,
-                        url=from_gitlab.web_url
-                    )
-                    self.gitlab_group = new_group
         except:
             pass
 
     def save(self, *args, **kwargs):
         """Update the save method to fetch fresh info from gitlab when projects are saved."""
         self.fetch_from_gitlab()
-        group_name = self.gitlab_group.name
-        if not self.short_name_with_namespace:
-            try:
-                self.short_name_with_namespace = f"{group_name} > {self.name}"
-            except:
-                pass
         super(Project, self).save(*args, **kwargs)
 
     def __str__(self):
