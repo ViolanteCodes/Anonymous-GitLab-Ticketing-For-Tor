@@ -399,19 +399,21 @@ def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
     gitlab_id = database_project.gitlab_id
     working_project = gitlab_get_project(project=gitlab_id)
     results['project'] = working_project.attributes
-    project_url = reverse('project-detail', args=[user_identifier, project_slug])
-    results['go_back_url'] = project_url
-    results['project']['slug'] = project_slug
+    go_back_url = reverse('project-detail', args=[user_identifier, project_slug])
+    results['go_back_url'] = go_back_url
     working_issue = gitlab_get_issue(project=gitlab_id, issue=gitlab_iid)
     results['issue'] = working_issue.attributes
     # Get the notes list, and then for every note in the list, grab that
     # note's attributes, which includes the body text, etc.
     results['notes'] = []
     notes_list = gitlab_get_notes_list(project=gitlab_id, issue=gitlab_iid)
-    for note in notes_list:
-        note_dict = note.attributes
-        results['notes'].append(note_dict)
-    results['notes'].reverse()
+    if notes_list:
+        for note in notes_list:
+            note_dict = note.attributes
+            results['notes'].append(note_dict)
+        results['notes'].reverse()
+    else:
+        results['notes'] = 'No notes have been created for this issue yet.'
     # Generate notes link.
     new_note_link = reverse('create-note', args=[user_identifier, project_slug, gitlab_iid])
     results['new_note_link'] = new_note_link
