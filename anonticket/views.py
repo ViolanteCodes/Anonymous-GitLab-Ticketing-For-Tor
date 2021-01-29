@@ -87,26 +87,6 @@ def check_user(user_identifier):
 def validate_user(view_func):
     """A decorator that calls check_user validator."""
     @functools.wraps(view_func)
-    # def validate_user_identifier(request, user_identifier, *args, **kwargs):
-    #     user_string = user_identifier
-    #     id_to_test = user_string.split('-')
-    # # Check that code-phrase length is equal to settings.DICE_ROLLS
-    #     if len(id_to_test) != settings.DICE_ROLLS:
-    #         return redirect('user-login-error', user_identifier=user_string)
-    # # Check that all words in code-phrase are unique
-    #     set_id_to_test = set(id_to_test)
-    #     if len(set_id_to_test) != len(id_to_test):
-    #         return redirect('user-login-error', user_identifier=user_string)
-    # # Grab the word_list from the path specified in settings.py
-    #     wordlist_as_list = get_wordlist()
-    # # Check that all words are in the dictionary.
-    #     check_all_words  = all(item in wordlist_as_list for item in id_to_test)
-    #     if check_all_words == False:
-    #         return redirect('user-login-error', user_identifier=user_string)
-    #     else:
-    #         response = view_func(request, user_identifier, *args, **kwargs)
-    #     return response
-    # return validate_user_identifier
     def validate_user_identifier(request, user_identifier, *args, **kwargs):
         get_user_identifier = check_user(user_identifier)
         if get_user_identifier == False:
@@ -332,8 +312,26 @@ class ProjectDetailView(DetailView):
         gitlab_project = gitlab_get_project(working_id)
         context['gitlab_project'] = gitlab_project.attributes
         issues_list = gitlab_project.issues.list()
-        context['issues_list'] = issues_list                   
+        context['issues_list'] = issues_list
+        context['open_issues_flag'] = self.check_if_open_issues(issues_list)
+        context['closed_issues_flag'] = self.check_if_closed_issues(issues_list)
         return context
+
+    def check_if_open_issues(self, issues_list):
+        open_issues = False
+        for issue in issues_list:
+            if issue.state == 'opened':
+                open_issues = True
+                return open_issues
+        return open_issues
+    
+    def check_if_closed_issues(self, issues_list):
+        closed_issues = False
+        for issue in issues_list:
+            if issue.state == 'closed':
+                closed_issues = True
+                return closed_issues
+        return closed_issues
     
 # -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.
@@ -401,6 +399,8 @@ def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
     gitlab_id = database_project.gitlab_id
     working_project = gitlab_get_project(project=gitlab_id)
     results['project'] = working_project.attributes
+    go_back_url = reverse('project-detail', args=[user_identifier, project_slug])
+    results['go_back_url'] = go_back_url
     working_issue = gitlab_get_issue(project=gitlab_id, issue=gitlab_iid)
     results['issue'] = working_issue.attributes
     # Get the notes list, and then for every note in the list, grab that
@@ -412,7 +412,9 @@ def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
         results['notes'].append(note_dict)
     results['notes'].reverse()
     # Generate notes link.
-    new_note_link = reverse('create-note', args=[user_identifier, project_slug, gitlab_iid])
+    new_note_link = reverse('create-note', args=[
+        user_identifier, project_slug, gitlab_iid
+        ])
     results['new_note_link'] = new_note_link
     return render(request, 'anonticket/issue_detail.html', {'results': results})
 

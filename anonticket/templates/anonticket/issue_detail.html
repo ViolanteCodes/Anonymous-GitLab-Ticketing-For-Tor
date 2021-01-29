@@ -14,23 +14,40 @@
   {% if results.issue %}
   </h3>
   <div class="row justify-content-between">
-      <p class="col-auto mb-0 small pb-0 pt-0">{{results.project.name_with_namespace}} ({{results.project.id}}) > issues > #{{results.issue.iid}}</p>
-      <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right">Created {{results.issue.created_at|pretty_datetime}} by @{{results.issue.author.username}}</p>
+    <p class="col-auto mb-0 small pb-0 pt-0">
+      <a href="{{results.go_back_url}}">
+        {{results.project.name_with_namespace}}
+      </a> 
+      ({{results.project.id}}) / issues / #{{results.issue.iid}}
+    </p>
+    <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right">
+      Created {{results.issue.created_at|pretty_datetime}} by @{{results.issue.author.username}}
+    </p>
   </div>
   <hr class="mb-0 mt-0">
   <div class="row justify-content-between">
-    <div class="col-auto"><p class="mb-0 small pb-0 pt-0">
+    <div class="col-auto">
+      <p class="mb-0 small pb-0 pt-0">
       {% if results.issue.milestone.title %}
       Milestone: {{results.issue.milestone.title}}.
       {% else %}
       Milestone: <span class="text-muted">(None Assigned.)</span>
       {% endif %}
-    </p></div>
+      </p>
+    </div>
+  <!-- Generate Links Badges and Labels Pill-Badges -->
     <div class="col-auto">
-      <p class="text-muted small mb-0 pb-0 pt-0 text-right">    
+      <p class="text-muted small mb-0 pb-0 pt-0 text-right">
         {% for label in results.issue.labels %}
-        <span class="badge-pill badge-primary ml-1">{{label}}</mark></span>
-        {% endfor %}</p>
+        <span class="badge-pill badge-primary mr-1 mt-1">{{label}}</mark></span>
+        {% endfor %}
+        <!-- Back to Project Badge -->
+        <a class="btn btn-sm btn-outline-primary ml-4 px-1 py-0" href="{{results.go_back_url}}">Back To Project</a>
+        <!-- Generate See on Gitlab button   -->
+        <a class="btn btn-sm btn-outline-primary ml-2 px-1 py-0" href="{{results.issue.web_url}}" target="__blank">See on Gitlab</a>
+        <!-- Create Note Badge -->
+        <a class="btn btn-sm btn-primary bg success ml-2 px-1 py-0" href="{{results.new_note_link}}">New Note</a> 
+      </p>
     </div>
   </div>
   <div class="row  mt-5">
@@ -56,9 +73,10 @@
 {% endblock %}
 
 {% block content %}
+
 <!-- Issue Summary Block -->
 {% if results.issue %}
-  <div class="row">
+  <div class="row mt-3">
     <div class="col-12">
       <h4 class="card-title">Issue Summary</h4>
       <ul>
@@ -78,29 +96,46 @@
     <a href="{{results.new_note_link}}">create a new note</a> for this issue.
   </p>
 </div>
+
 <!-- Notes Block -->
-{% if results.notes %}
-<div class="row">
+<!-- Note Header Block -->
+<div class="row mt-5">
   <div class="col-12 p-2">
     <h4 class="card-title">Project Notes</h4>
   </div>
 </div>
-  <div class="p2 bg-light">
-    {% for note in results.notes %}
-    <div class="row">
-      <div class="col-12 p-2">
-        <div class="card mb-2">
-          <div class="card-body">
-            <p class="card-text text-muted">{{note.noteable_type|title}} 
-              note by @{{note.author.username}}, 
-              Created: {{note.created_at|pretty_datetime}}, 
-              Last Updated: {{note.updated_at|pretty_datetime}}</p>
-            <p class="card-text">{{note.body|markdownify}}</p>
-          </div>
+
+<!-- If notes, iterate through them and display cards. -->
+<div class="p2 bg-light">
+  {% if results.notes %}
+  {% for note in results.notes %}
+  <div class="row">
+    <div class="col-12 p-2">
+      <div class="card mb-2">
+        <div class="card-body">
+          <p class="card-text text-muted">{{note.noteable_type|title}} 
+            note by @{{note.author.username}}, 
+            Created: {{note.created_at|pretty_datetime}}, 
+            Last Updated: {{note.updated_at|pretty_datetime}}</p>
+          <p class="card-text">{{note.body|markdownify}}</p>
         </div>
       </div>
     </div>
-    {% endfor %}
   </div>
-{% endif %}
+  {% endfor %}
+  {% else %}
+  <!-- If no notes, generate a "No notes block". -->
+  <div class="row">
+    <div class="col-12 p-2">
+      <div class="card mb-2">
+        <div class="card-body">
+          <p class="card-text text-muted">
+            There are no notes for this issue at this time.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
 {% endblock %}

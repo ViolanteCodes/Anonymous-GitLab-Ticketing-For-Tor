@@ -15,16 +15,20 @@
 <!-- Close out the h3 block from extended template to make smaller text on top first. -->
 </h3>
 <div class="row justify-content-between">
-    <p class="col-auto mb-0 small pb-0 pt-0">{{object.name_with_namespace}} ({{object.gitlab_id}})</p>
-    <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right"><a href="{{object.url}}">View this project on Gitlab</a></p>
+    <p class="col-auto mb-0 small pb-0 pt-0">{{object.name_with_namespace}} (Project # {{object.gitlab_id}})</p>
+    <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right">
+      <a href="{{object.url}}" class="btn btn-sm btn-outline-primary mb-1 ml-4 px-1 py-0" target="__blank">
+        View this project on Gitlab
+      </a>
+    </p>
 </div>
-<hr class="mt-0">
-<!-- Make a true header -->
-<h4>{{object.name}}</h4>
-<!--Mimic commit/branch/tags/files/storage data.-->
-<p class="small">
-  {{object.description}}
-</p>
+  <hr class="mt-0">
+  <!-- Make a true header -->
+  <h4>{{object.name}}</h4>
+  <!--Mimic commit/branch/tags/files/storage data.-->
+  <p class="small">
+    {{object.description}}
+  </p>
 {% else %}
     Project Not Found
 {% endif %}
@@ -34,7 +38,7 @@
 {% endblock %}
 
 {% block content %}
-<!-- Generate a user-actiosn block -->
+<!-- Create the user-actions block -->
 <div class="row">
   <div class="col-12">
     <p>
@@ -49,11 +53,16 @@
 </div>
 
 <!-- Create the Issues List Block For Open Issues-->
-<div class="row mb-3">
-  <div class="col-12">
-    <p>Open Issues:</p>
+<div class="row">
+  <div class="col-12 mt-5">
+    <h4 class="text-primary"> Open Issues
+      <!-- Create New Issue badge link -->
+      <a href="{{create_url}}" class="badge btn btn-outline-primary ml-2">
+        Create New
+      </a>
+    </h4> 
     {% if issues_list %}
-      <table class="table table-sm">
+      <table class="table table-sm mt-3">
         {% for issue in issues_list %}
           {% if issue.state == "opened" %}
           <tr>
@@ -85,8 +94,9 @@
           {% endif %}
         {% endfor %}
       </table>
-    {% else %}
-      <p> No open issues at this time. </p>      
+    {% endif %}
+    {% if open_issues_flag == False %}
+      <p class="ml-3 text-muted"> No open issues at this time. </p>      
     {% endif %}
   </div>
 </div>
@@ -94,9 +104,9 @@
 <!-- Create the Issues List Block for closed issues-->
 <div class="row mt-5">
   <div class="col-12">
-    <p>Closed Issues:</p>
+    <h4 class="text-primary">Closed Issues:</h4>
     {% if issues_list %}
-      <table class="table table-sm">
+      <table class="table table-sm mt-3">
         {% for issue in issues_list %}
           {% if issue.state == "closed" %}
           <tr>
@@ -124,8 +134,9 @@
           {% endif %}
         {% endfor %}
       </table>
-    {% else %}
-      <p> No open issues at this time. </p>      
+    {% endif %}
+    {% if closed_issues_flag == False %}
+    <p class="ml-3 text-muted"> No closed issues at this time. </p>      
     {% endif %}
   </div>
 </div>
