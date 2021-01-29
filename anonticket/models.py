@@ -15,20 +15,6 @@ class UserIdentifier(models.Model):
     def __str__(self):
         return self.user_identifier
 
-class GitLabGroup(models.Model):
-    """Representation of a Gitlab Group in the database. This does not
-    need to be supplied by the admin; it will automatically be created if
-    a project is put into the database."""
-    name = models.CharField(max_length=200, null=True, blank=True, help_text=
-    """IMPORTANT: GLGROUPS are AUTOMATICALLY CREATED when a project requiring
-    the group has been added--so you shouldn't have to do anything here!""")
-    gitlab_id = models.IntegerField(null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    url = models.URLField(null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
 class Project(models.Model):
     """Representation of a project in the database. To add a GL project 
     to the database, only the gitlab id number needs to be supplied in the
