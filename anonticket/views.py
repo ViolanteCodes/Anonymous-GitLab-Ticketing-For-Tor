@@ -412,7 +412,9 @@ def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
         results['notes'].append(note_dict)
     results['notes'].reverse()
     # Generate notes link.
-    new_note_link = reverse('create-note', args=[user_identifier, project_slug, gitlab_iid])
+    new_note_link = reverse('create-note', args=[
+        user_identifier, project_slug, gitlab_iid
+        ])
     results['new_note_link'] = new_note_link
     return render(request, 'anonticket/issue_detail.html', {'results': results})
 
