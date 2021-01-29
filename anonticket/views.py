@@ -322,6 +322,7 @@ class ProjectDetailView(DetailView):
         for issue in issues_list:
             if issue.state == 'opened':
                 open_issues = True
+                return open_issues
         return open_issues
     
     def check_if_closed_issues(self, issues_list):
@@ -329,6 +330,7 @@ class ProjectDetailView(DetailView):
         for issue in issues_list:
             if issue.state == 'closed':
                 closed_issues = True
+                return closed_issues
         return closed_issues
     
 # -------------------------ISSUE VIEWS----------------------------------
