@@ -26,11 +26,17 @@
       Milestone: <span class="text-muted">(None Assigned.)</span>
       {% endif %}
     </p></div>
+  <!-- Generate Links Badges and Labels Pill-Badges -->
     <div class="col-auto">
-      <p class="text-muted small mb-0 pb-0 pt-0 text-right">    
+      <p class="text-muted small mb-0 pb-0 pt-0 text-right">
         {% for label in results.issue.labels %}
-        <span class="badge-pill badge-primary ml-1">{{label}}</mark></span>
-        {% endfor %}</p>
+        <span class="badge-pill badge-primary mr-1">{{label}}</mark></span>
+        {% endfor %}
+        <!-- Generate Link to Project -->
+        {% url 'project-detail' results.user_identifier results.issue.linked_project.slug as project_url %}
+        <a class="btn btn-sm btn-outline-primary ml-4 px-1 py-0" href="{{project_url}}">Back To Project</a>
+        <!-- Generate See on Gitlab button   -->
+      </p>
     </div>
   </div>
   <div class="row  mt-5">
