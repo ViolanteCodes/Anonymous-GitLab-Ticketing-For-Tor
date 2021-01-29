@@ -38,7 +38,7 @@
 {% endblock %}
 
 {% block content %}
-<!-- Generate a user-actiosn block -->
+<!-- Create the user-actions block -->
 <div class="row">
   <div class="col-12">
     <p>
@@ -55,7 +55,12 @@
 <!-- Create the Issues List Block For Open Issues-->
 <div class="row">
   <div class="col-12 mt-5">
-    <h4 class="text-primary">Open Issues</h4>
+    <h4 class="text-primary"> Open Issues
+      <!-- Create New Issue badge link -->
+      <a href="{{create_url}}" class="badge btn btn-outline-primary ml-2">
+        Create New
+      </a>
+    </h4> 
     {% if issues_list %}
       <table class="table table-sm mt-3">
         {% for issue in issues_list %}
