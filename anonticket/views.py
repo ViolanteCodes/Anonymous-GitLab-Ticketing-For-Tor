@@ -87,26 +87,6 @@ def check_user(user_identifier):
 def validate_user(view_func):
     """A decorator that calls check_user validator."""
     @functools.wraps(view_func)
-    # def validate_user_identifier(request, user_identifier, *args, **kwargs):
-    #     user_string = user_identifier
-    #     id_to_test = user_string.split('-')
-    # # Check that code-phrase length is equal to settings.DICE_ROLLS
-    #     if len(id_to_test) != settings.DICE_ROLLS:
-    #         return redirect('user-login-error', user_identifier=user_string)
-    # # Check that all words in code-phrase are unique
-    #     set_id_to_test = set(id_to_test)
-    #     if len(set_id_to_test) != len(id_to_test):
-    #         return redirect('user-login-error', user_identifier=user_string)
-    # # Grab the word_list from the path specified in settings.py
-    #     wordlist_as_list = get_wordlist()
-    # # Check that all words are in the dictionary.
-    #     check_all_words  = all(item in wordlist_as_list for item in id_to_test)
-    #     if check_all_words == False:
-    #         return redirect('user-login-error', user_identifier=user_string)
-    #     else:
-    #         response = view_func(request, user_identifier, *args, **kwargs)
-    #     return response
-    # return validate_user_identifier
     def validate_user_identifier(request, user_identifier, *args, **kwargs):
         get_user_identifier = check_user(user_identifier)
         if get_user_identifier == False:
