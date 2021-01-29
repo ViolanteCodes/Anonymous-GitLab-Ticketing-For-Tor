@@ -41,7 +41,7 @@
                 <td>
                     {% url 'project-detail' results.user_identifier project.slug as project_detail_url %}
                     <a href="{{project_detail_url}}">
-                    {{project.gitlab_group.name}} / {{project.name}}</a>
+                    {{project.name_with_namespace}}</a>
                 </td>
                 <td>
                     {{project.description|truncatewords:15}}
