@@ -2,9 +2,8 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import UserIdentifier, GitLabGroup, Project, Issue, Note, GitlabAccountRequest
+from .models import UserIdentifier, Project, Issue, Note, GitlabAccountRequest
 admin.site.register(UserIdentifier)
-admin.site.register(GitLabGroup)
 admin.site.register(Project)
 admin.site.register(GitlabAccountRequest)
 

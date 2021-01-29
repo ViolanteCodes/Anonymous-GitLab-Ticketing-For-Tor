@@ -41,10 +41,13 @@
                 <td>
                     {% url 'project-detail' results.user_identifier project.slug as project_detail_url %}
                     <a href="{{project_detail_url}}">
-                    {{project.gitlab_group.name}} / {{project.name}}</a>
+                    {{project.name_with_namespace}}</a>
                 </td>
-                <td>
+                <td>{% if project.description %}
                     {{project.description|truncatewords:15}}
+                    {% else %}
+                    <span class="text-muted">(No description provided.)</span>
+                    {% endif %}
                 </td>
                 <td>
                     <a href="{{project.url}}">Link on Gitlab</a>
