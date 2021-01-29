@@ -312,8 +312,24 @@ class ProjectDetailView(DetailView):
         gitlab_project = gitlab_get_project(working_id)
         context['gitlab_project'] = gitlab_project.attributes
         issues_list = gitlab_project.issues.list()
-        context['issues_list'] = issues_list                   
+        context['issues_list'] = issues_list
+        context['open_issues_flag'] = self.check_if_open_issues(issues_list)
+        context['closed_issues_flag'] = self.check_if_closed_issues(issues_list)
         return context
+
+    def check_if_open_issues(self, issues_list):
+        open_issues = False
+        for issue in issues_list:
+            if issue.state == 'opened':
+                open_issues = True
+        return open_issues
+    
+    def check_if_closed_issues(self, issues_list):
+        closed_issues = False
+        for issue in issues_list:
+            if issue.state == 'closed':
+                closed_issues = True
+        return closed_issues
     
 # -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.
