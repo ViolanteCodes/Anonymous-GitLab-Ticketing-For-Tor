@@ -399,7 +399,7 @@ def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
     gitlab_id = database_project.gitlab_id
     working_project = gitlab_get_project(project=gitlab_id)
     results['project'] = working_project.attributes
-    results['project']['slug'] = database_project.slug
+    results['project']['slug'] = project_slug
     working_issue = gitlab_get_issue(project=gitlab_id, issue=gitlab_iid)
     results['issue'] = working_issue.attributes
     # Get the notes list, and then for every note in the list, grab that
