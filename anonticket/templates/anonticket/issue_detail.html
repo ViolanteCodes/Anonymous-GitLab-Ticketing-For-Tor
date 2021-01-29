@@ -14,7 +14,12 @@
   {% if results.issue %}
   </h3>
   <div class="row justify-content-between">
-      <p class="col-auto mb-0 small pb-0 pt-0">{{results.project.name_with_namespace}} ({{results.project.id}}) > issues > #{{results.issue.iid}}</p>
+      <p class="col-auto mb-0 small pb-0 pt-0">
+        <a href="{{results.go_back_url}}">
+          {{results.project.name_with_namespace}}
+        </a> 
+        ({{results.project.id}}) / issues / #{{results.issue.iid}}
+      </p>
       <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right">Created {{results.issue.created_at|pretty_datetime}} by @{{results.issue.author.username}}</p>
   </div>
   <hr class="mb-0 mt-0">
@@ -32,9 +37,8 @@
         {% for label in results.issue.labels %}
         <span class="badge-pill badge-primary mr-1 mt-1">{{label}}</mark></span>
         {% endfor %}
-        <!-- Generate Link to Project -->
-        {% url 'project-detail' results.user_identifier results.project.slug as project_url %}
-        <a class="btn btn-sm btn-outline-primary ml-4 px-1 py-0" href="{{project_url}}">Back To Project</a>
+        <!-- Back to Project Badge -->
+        <a class="btn btn-sm btn-outline-primary ml-4 px-1 py-0" href="{{results.go_back_url}}">Back To Project</a>
         <!-- Generate See on Gitlab button   -->
         <a class="btn btn-sm btn-outline-primary ml-2 px-1 py-0" href="{{results.issue.web_url}}" target="__blank">See on Gitlab</a> 
       </p>
