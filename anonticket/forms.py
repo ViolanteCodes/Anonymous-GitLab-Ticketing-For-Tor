@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 import gitlab
 import random
-from .models import UserIdentifier, GitLabGroup, Project, Issue, Note, GitlabAccountRequest
+from .models import UserIdentifier, Project, Issue, Note, GitlabAccountRequest
 
 # Initialize GitLab Object
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
