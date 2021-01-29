@@ -46,7 +46,6 @@ class Project(models.Model):
     description = models.TextField(null=True, blank=True)
     slug = models.SlugField(max_length=50, null=True, blank=True)
     url = models.URLField(null=True, blank=True)
-    gitlab_group = models.ForeignKey(GitLabGroup, on_delete=models.CASCADE, null=True, blank=True)
 
     def fetch_from_gitlab(self):
         """Given the gitlab_id, fetch the relevant information from Gitlab."""
