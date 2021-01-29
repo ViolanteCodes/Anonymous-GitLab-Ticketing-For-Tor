@@ -33,9 +33,10 @@
         <span class="badge-pill badge-primary mr-1">{{label}}</mark></span>
         {% endfor %}
         <!-- Generate Link to Project -->
-        {% url 'project-detail' results.user_identifier results.issue.linked_project.slug as project_url %}
+        {% url 'project-detail' results.user_identifier results.project.slug as project_url %}
         <a class="btn btn-sm btn-outline-primary ml-4 px-1 py-0" href="{{project_url}}">Back To Project</a>
         <!-- Generate See on Gitlab button   -->
+        <a class="btn btn-sm btn-outline-primary ml-2 px-1 py-0" href="{{results.issue.web_url}}">See on Gitlab</a> 
       </p>
     </div>
   </div>
