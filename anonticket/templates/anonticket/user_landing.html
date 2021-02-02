@@ -92,7 +92,7 @@
         {% if issue.gitlab_iid %}
         <tr>
           <td>
-            {{issue.linked_project.short_name_with_namespace}}
+            {{issue.linked_project.name_with_namespace}}
           </td>
           <td>
             <!-- Generate issue-detail-view url -->
@@ -106,7 +106,7 @@
         {% else %}
         <tr>
           <td>
-            {{issue.linked_project.short_name_with_namespace}}
+            {{issue.linked_project.name_with_namespace}}
           </td>
           <td>
             <!-- Generated Pending Issue Detail View URL -->
