@@ -320,20 +320,47 @@ class ProjectDetailView(DetailView):
         # grab the first page of the open issues list - note that first
         # page is 1, not 0.
         open_issues_list = gl_project.issues.list(page=page_number, state='opened')
-        context['issues_list'] = open_issues_list
+        context['open_issues']={}
+        context['open_issues']['issues_list'] = open_issues_list
         #determine if there is another page
         next_page = page_number + 1
-        check_next_list = gl_project.issues.list(page=next_page, state='opened')
-        if len(check_next_list) > 0:
-            context['open_next'] = next_page
-            context['open_next_url'] = reverse(
-                'project-detail', args=[
-                    user_identifier, project_slug, next_page
-                ]
-            )
+        check_open = self.get_pagination(
+            user_identifier, project_slug, gl_project, page_number, issue_state='opened')
+        for key, value in check_open.items():
+            context['open_issues'][key] = value
         return context
 
-        # def get_next_page(list, )
+    def get_pagination(self, user_identifier, project_slug, gl_project, current_page, issue_state):
+        # if the current page is not 1, we can assume previous page
+        if current_page > 1:
+            prev_page = current_page - 1
+            prev_url = reverse(
+            'project-detail', args=[
+                user_identifier, project_slug, prev_page
+            ])
+        else:
+            prev_page = None
+            prev_url = None
+        next_page = current_page + 1
+        check_next_list = gl_project.issues.list(page=next_page, state=issue_state)
+        if len(check_next_list) > 0:
+            next_url = reverse(
+            'project-detail', args=[
+                user_identifier, project_slug, next_page
+            ])
+        else:
+            next_page = None
+            next_url = None
+        result_dict = {
+            'prev_page': prev_page,
+            'prev_url': prev_url,
+            'next_page': next_page,
+            'next_url': next_url,
+        }
+        return result_dict
+                
+
+
    
 # -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.
