@@ -299,40 +299,42 @@ class ProjectDetailView(DetailView):
     and fetches the project and issues from gitlab."""
     model = Project
 
-    def get_context_data(self, **kwargs):          
+    def get_context_data(self, **kwargs):
+        # Grab kwargs          
         context = super().get_context_data(**kwargs)
-        context['results'] = {'user_identifier':self.kwargs['user_identifier']}
-        # Fetch the working project from the database first - if cannot
-        # be fetched, will throw a 404.                     
+        # set user_identifier for results dict.
+        user_identifier = self.kwargs['user_identifier']
+        context['results'] = {'user_identifier': user_identifier}
+        # Fetch the working project from the database or 404                    
         project_slug = self.kwargs['slug']
-        working_project = Project.objects.get(
+        db_project = Project.objects.get(
             slug=project_slug
         )
-        working_id = working_project.gitlab_id
-        gitlab_project = gitlab_get_project(working_id)
-        context['gitlab_project'] = gitlab_project.attributes
-        issues_list = gitlab_project.issues.list()
-        context['issues_list'] = issues_list
-        context['open_issues_flag'] = self.check_if_open_issues(issues_list)
-        context['closed_issues_flag'] = self.check_if_closed_issues(issues_list)
+        # Get the page_number to paginate the GL API call.
+        page_number = self.kwargs['page_number']
+        # Grab the gitlab ID from database and create the project.
+        gitlab_id = db_project.gitlab_id
+        gl_project = gitlab_get_project(gitlab_id)
+        # Save the project attributes to context dict.
+        context['gitlab_project'] = gl_project.attributes
+        # grab the first page of the open issues list - note that first
+        # page is 1, not 0.
+        open_issues_list = gl_project.issues.list(page=page_number, state='opened')
+        context['issues_list'] = open_issues_list
+        #determine if there is another page
+        next_page = page_number + 1
+        check_next_list = gl_project.issues.list(page=next_page, state='opened')
+        if len(check_next_list) > 0:
+            context['open_next'] = next_page
+            context['open_next_url'] = reverse(
+                'project-detail', args=[
+                    user_identifier, project_slug, next_page
+                ]
+            )
         return context
 
-    def check_if_open_issues(self, issues_list):
-        open_issues = False
-        for issue in issues_list:
-            if issue.state == 'opened':
-                open_issues = True
-                return open_issues
-        return open_issues
-    
-    def check_if_closed_issues(self, issues_list):
-        closed_issues = False
-        for issue in issues_list:
-            if issue.state == 'closed':
-                closed_issues = True
-                return closed_issues
-        return closed_issues
-    
+        # def get_next_page(list, )
+   
 # -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.
 # ----------------------------------------------------------------------
