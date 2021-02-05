@@ -114,13 +114,13 @@ gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOK
 def gitlab_get_project(project):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
-    working_project = gl.projects.get(project, lazy=True)
+    working_project = gl.projects.get(project)
     return working_project
 
 def gitlab_get_issue(project, issue):
     """Takes two integers and grabs corresponding gitlab issue."""
     working_project = gitlab_get_project(project)
-    working_issue = working_project.issues.get(issue, lazy=True)
+    working_issue = working_project.issues.get(issue)
     return working_issue
 
 def gitlab_get_notes_list(project, issue):
@@ -340,9 +340,16 @@ class ProjectDetailView(DetailView):
         self, user_identifier, project_slug, gl_project, current_page, issue_state
         ):
         result_dict = {}
-        # grab issues list and pass into result_dict (note, 1st page is 1 not 0)
+        result_dict['issues']={}
+        #grab issues for current page from gitlab
         issues_list = gl_project.issues.list(page=current_page, state=issue_state)
-        result_dict['issues'] = issues_list
+        # generate detail_links that will return to current page.
+        for issue in issues_list:
+            detail_url = reverse('issue-detail-view-go-back', args=[
+                user_identifier, project_slug, issue.iid, current_page
+            ])
+            # and add them to issues in result dict in key/value pairs.
+            result_dict['issues'][issue] = detail_url
         # call generator get total_pages and total_issues.
         call_generator = gl_project.issues.list(as_list=False, state=issue_state)
         total_pages = call_generator.total_pages
@@ -550,7 +557,7 @@ class PendingIssueDetailView(PassUserIdentifierMixin, DetailView):
     template_name = 'anonticket/issue_pending.html'
 
 @validate_user
-def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
+def issue_detail_view(request, user_identifier, project_slug, gitlab_iid, go_back_number=1):
     """Detailed view of an issue that has been approved and posted to GL."""
     results = {}
     #Fetch project from database via slug in URL - if cannot be fetched,
@@ -562,7 +569,7 @@ def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
     gitlab_id = database_project.gitlab_id
     working_project = gitlab_get_project(project=gitlab_id)
     results['project'] = working_project.attributes
-    go_back_url = reverse('project-detail', args=[user_identifier, project_slug, 1])
+    go_back_url = reverse('project-detail', args=[user_identifier, project_slug, go_back_number])
     results['go_back_url'] = go_back_url
     working_issue = gitlab_get_issue(project=gitlab_id, issue=gitlab_iid)
     results['issue'] = working_issue.attributes

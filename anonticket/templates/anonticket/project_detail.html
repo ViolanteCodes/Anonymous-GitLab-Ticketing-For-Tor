@@ -63,10 +63,9 @@
     </h4> 
     {% if open_issues.issues %}
       <table class="table table-sm mt-3">
-        {% for issue in open_issues.issues %}
+        {% for issue, detail_url in open_issues.issues.items %}
           <tr>
             <td>
-              {% url 'issue-detail-view' results.user_identifier object.slug issue.iid page_number as detail_url %}
               <a href="{{detail_url}}"><strong>{{issue.title}}</strong></a><br>
               # {{issue.iid}} | Opened {{issue.created_at|pretty_datetime}} by {{issue.author.username}}.
               {% if issue.milestone.title %}

@@ -55,6 +55,9 @@ urlpatterns = [
         'user/<str:user_identifier>/projects/<slug:project>/issues/<int:issue_iid>/notes/<int:pk>/', 
         views.PendingNoteDetailView.as_view(), name='pending-note'),
     path(
+        'user/<str:user_identifier>/projects/<slug:project_slug>/issues/<int:gitlab_iid>/details/<int:go_back_number>/', 
+        views.issue_detail_view, name='issue-detail-view-go-back'),
+    path(
         'user/<str:user_identifier>/projects/<slug:project_slug>/issues/<int:gitlab_iid>/details/', 
         views.issue_detail_view, name='issue-detail-view'),
     path(
