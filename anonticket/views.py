@@ -312,6 +312,7 @@ class ProjectDetailView(DetailView):
         )
         # Get the page_number to paginate the GL API call.
         page_number = self.kwargs['page_number']
+        context['page_number'] = page_number
         # Grab the gitlab ID from database and create the project.
         gitlab_id = db_project.gitlab_id
         gl_project = gitlab_get_project(gitlab_id)
@@ -339,33 +340,46 @@ class ProjectDetailView(DetailView):
             context['closed_issues'][key] = value
         return context
 
-    def get_pagination(self, user_identifier, project_slug, gl_project, current_page, issue_state):
+    def get_pagination(
+        self, user_identifier, project_slug, gl_project, current_page, issue_state
+        ):
         # if the current page is not 1, we can assume previous page
-        if current_page > 1:
+        result_dict = {}
+        if current_page > 2:
+            first_page = 1
+            first_url = reverse(
+            'project-detail', args=[
+                user_identifier, project_slug, 1])
+            result_dict['first_page'] = first_page
+            result_dict['first_url'] = first_url           
             prev_page = current_page - 1
             prev_url = reverse(
             'project-detail', args=[
                 user_identifier, project_slug, prev_page
             ])
-        else:
-            prev_page = None
-            prev_url = None
-        next_page = current_page + 1
-        check_next_list = gl_project.issues.list(page=next_page, state=issue_state)
-        if len(check_next_list) > 0:
+            result_dict['prev_page'] = prev_page
+            result_dict['prev_url'] = prev_url
+        call_generator = gl_project.issues.list(as_list=False, state=issue_state)
+        total_pages = call_generator.total_pages
+        total_issues = call_generator.total
+        result_dict['total_pages'] = total_pages
+        result_dict['total_issues'] = total_issues
+        if total_pages > current_page:
+            next_page = current_page + 1
             next_url = reverse(
             'project-detail', args=[
                 user_identifier, project_slug, next_page
             ])
-        else:
-            next_page = None
-            next_url = None
-        result_dict = {
-            'prev_page': prev_page,
-            'prev_url': prev_url,
-            'next_page': next_page,
-            'next_url': next_url,
-        }
+            result_dict['next_page'] = next_page
+            result_dict['next_url'] = next_url
+            if total_pages > next_page:
+                last_url = reverse(
+                'project-detail', args=[
+                    user_identifier, project_slug, total_pages
+                ])
+                result_dict['last_page'] = total_pages
+                result_dict['last_url'] = last_url
+
         return result_dict
                 
 
