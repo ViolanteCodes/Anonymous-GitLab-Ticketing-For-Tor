@@ -55,7 +55,10 @@
 <!-- Create the Issues List Block For Open Issues-->
 <div class="row">
   <div class="col-12 mt-5">
-    <h4 class="text-primary"> Open Issues
+    <h4 class="text-primary"> Open Issues 
+      {% if open_issues.total_issues %}
+        <span class="badge badge-primary">{{open_issues.total_issues}} Total</span>
+      {% endif %}
       <!-- Create New Issue badge link -->
       <a href="{{create_url}}" class="badge btn btn-outline-primary ml-2">
         Create New
@@ -173,7 +176,11 @@
 <!-- Create the Issues List Block for closed issues-->
 <div class="row mt-5">
   <div class="col-12">
-    <h4 class="text-primary">Closed Issues:</h4>
+    <h4 class="text-primary">Closed Issues:
+    {% if closed_issues.total_issues %}
+    <span class="badge badge-primary">{{closed_issues.total_issues}} Total</span>
+    {% endif %}
+    </h4>
     {% if closed_issues.issues %}
       <table class="table table-sm mt-3">
         {% for issue, detail_url in closed_issues.issues.items %}
