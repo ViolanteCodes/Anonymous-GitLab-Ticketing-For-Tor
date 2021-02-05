@@ -319,7 +319,7 @@ class ProjectDetailView(DetailView):
         # Save the project attributes to context dict.
         context['gitlab_project'] = gl_project.attributes
         context['open_issues']={}
-        check_open = self.get_paginated_list(
+        check_open = self.get_pagination(
             user_identifier, project_slug, gl_project, page_number, issue_state='opened')
         for key, value in check_open.items():
             context['open_issues'][key] = value
@@ -336,7 +336,7 @@ class ProjectDetailView(DetailView):
         #     context['closed_issues'][key] = value
         return context
 
-    def get_paginated_list(
+    def get_pagination(
         self, user_identifier, project_slug, gl_project, current_page, issue_state
         ):
         result_dict = {}
@@ -361,34 +361,14 @@ class ProjectDetailView(DetailView):
             result_dict['next_url'] = self.make_next_link(
                 current_page, user_identifier, project_slug)
 
-        # if total_pages <= 10 , render all pages
-        if total_pages <= 10:
-            total_rendered = 0
-            while total_
-        if current_page > 2:
-            first_page = 1
-            first_url = reverse(
-            'project-detail', args=[
-                user_identifier, project_slug, 1])
-            result_dict['first_page'] = first_page
-            result_dict['first_url'] = first_url           
-            prev_page = current_page - 1
-           
-        if total_pages > current_page:
-            next_page = current_page + 1
-            next_url = reverse(
-            'project-detail', args=[
-                user_identifier, project_slug, next_page
-            ])
-            result_dict['next_page'] = next_page
-            result_dict['next_url'] = next_url
-            if total_pages > next_page:
-                last_url = reverse(
-                'project-detail', args=[
-                    user_identifier, project_slug, total_pages
-                ])
-                result_dict['last_page'] = total_pages
-                result_dict['last_url'] = last_url
+        # make all prev_links
+        result_dict['prev_pages'] = self.make_all_prev_links(
+            current_page, user_identifier, project_slug)
+
+        # make all post_links
+        result_dict['post_pages'] = self.make_all_post_links(
+            current_page, total_pages, user_identifier, project_slug)
+        )
         return result_dict
 
     def make_prev_link(self, current_page, user_identifier, project_slug):
@@ -409,7 +389,38 @@ class ProjectDetailView(DetailView):
                 user_identifier, project_slug, next_page
             ]
         )
-        return next_url            
+        return next_url
+
+    def make_all_prev_links(self, current_page, user_identifier, project_slug):
+        """Create links and page numbers for pages before current page."""
+        results = {}
+        starting_page = 0
+        while starting_page < current_page:
+            starting_page += 1
+            page_number = starting_page
+            page_url = reverse(
+                'project-detail', args=[
+                    user_identifier, project_slug, page_number
+                ]
+            )
+            results[page_number] = page_url
+        return results
+
+    def make_all_post_links(
+        self, current_page, total_pages, user_identifier, project_slug):
+        """Create links and page numbers for pages after current page."""
+        results = {}
+        starting_page = current_page
+        while starting_page < total_pages:
+            starting_page += 1
+            page_number = starting_page
+            page_url = reverse(
+                'project-detail', args=[
+                    user_identifier, project_slug, page_number
+                ]
+            )
+            results[page_number] = page_url
+        return results
 
 
    
