@@ -39,7 +39,7 @@
             {% for project in project_list %}
             <tr>
                 <td>
-                    {% url 'project-detail' results.user_identifier project.slug as project_detail_url %}
+                    {% url 'project-detail' results.user_identifier project.slug 1 as project_detail_url %}
                     <a href="{{project_detail_url}}">
                     {{project.name_with_namespace}}</a>
                 </td>
