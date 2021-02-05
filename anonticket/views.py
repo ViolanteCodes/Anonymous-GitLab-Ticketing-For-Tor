@@ -411,7 +411,7 @@ class ProjectDetailView(DetailView):
 
         else:
             # calculate how many pages will be rendered after current
-            post_pages = current_page + 4
+            post_pages = current_page + 3
             # calculate how many links will be rendered before current
             prev_page_start = current_page - 4
             # make all prev_links
