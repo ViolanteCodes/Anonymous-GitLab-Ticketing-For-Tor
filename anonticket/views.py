@@ -114,13 +114,13 @@ gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOK
 def gitlab_get_project(project):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
-    working_project = gl.projects.get(project)
+    working_project = gl.projects.get(project, lazy=True)
     return working_project
 
 def gitlab_get_issue(project, issue):
     """Takes two integers and grabs corresponding gitlab issue."""
     working_project = gitlab_get_project(project)
-    working_issue = working_project.issues.get(issue)
+    working_issue = working_project.issues.get(issue, lazy=True)
     return working_issue
 
 def gitlab_get_notes_list(project, issue):
@@ -401,7 +401,7 @@ class ProjectDetailView(DetailView):
             # make a first link
             result_dict['first_url'] = self.make_first_link(
                 user_identifier, project_slug)
-                
+
         else:
             # calculate how many pages will be rendered after current
             post_pages = current_page + 5
@@ -414,7 +414,7 @@ class ProjectDetailView(DetailView):
             result_dict['post_pages'] = self.make_all_post_links(
                 current_page, post_pages, user_identifier, project_slug)
             # make a first link
-            result_dict['first_page'] = self.make_first_link(
+            result_dict['first_url'] = self.make_first_link(
                 user_identifier, project_slug)
             # make a last link
             result_dict['last_page'] = self.make_last_link(
