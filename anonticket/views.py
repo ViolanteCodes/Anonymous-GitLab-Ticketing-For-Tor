@@ -562,7 +562,7 @@ def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
     gitlab_id = database_project.gitlab_id
     working_project = gitlab_get_project(project=gitlab_id)
     results['project'] = working_project.attributes
-    go_back_url = reverse('project-detail', args=[user_identifier, project_slug])
+    go_back_url = reverse('project-detail', args=[user_identifier, project_slug, 1])
     results['go_back_url'] = go_back_url
     working_issue = gitlab_get_issue(project=gitlab_id, issue=gitlab_iid)
     results['issue'] = working_issue.attributes

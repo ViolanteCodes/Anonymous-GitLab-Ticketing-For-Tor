@@ -85,7 +85,7 @@ class TestUrls(SimpleTestCase):
     def test_project_detail_view_url_is_resolved(self):
         """Test the 'project-detail' URL."""
         url = reverse('project-detail', args= [
-            self.new_user, self.project_slug
+            self.new_user, self.project_slug, 1
         ])
         self.assertEqual(resolve(url).func.view_class, ProjectDetailView)
 
@@ -273,7 +273,7 @@ class TestProjectViews(TestCase):
         self.client=Client()
         self.project_list_view_url = reverse('project-list', args=[new_user])
         self.project_detail_view_url = reverse('project-detail', args=[
-            new_user, new_project.slug])
+            new_user, new_project.slug, 1])
         self.new_user = new_user
     
     def test_project_list_GET(self):
