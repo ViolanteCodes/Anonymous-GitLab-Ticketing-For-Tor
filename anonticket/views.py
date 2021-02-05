@@ -323,17 +323,13 @@ class ProjectDetailView(DetailView):
             user_identifier, project_slug, gl_project, page_number, issue_state='opened')
         for key, value in check_open.items():
             context['open_issues'][key] = value
-        # grab page of closed issues: note that first page is 1, not 0.
-        # closed_issues_list = gl_project.issues.list(
-        #     page=page_number, state='closed')
-        # context['closed_issues']={}
-        # context['closed_issues']['issues_list'] = closed_issues_list
-        #determine if there is another page
-    
-        # check_closed = self.get_pagination(
-        #     user_identifier, project_slug, gl_project, page_number, issue_state='closed')
-        # for key, value in check_closed.items():
-        #     context['closed_issues'][key] = value
+        # Get closed issues
+        context['closed_issues'] = {}
+        check_closed = self.get_pagination(
+            user_identifier, project_slug, gl_project, page_number, issue_state='closed'
+        )
+        for key, value in check_closed.items():
+            context['closed_issues'][key] = value
         return context
 
     def get_pagination(
