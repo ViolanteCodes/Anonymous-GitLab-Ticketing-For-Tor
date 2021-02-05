@@ -363,7 +363,7 @@ class ProjectDetailView(DetailView):
 
         # make all prev_links
         result_dict['prev_pages'] = self.make_all_prev_links(
-            current_page, user_identifier, project_slug)
+            0, current_page, user_identifier, project_slug)
 
         # make all post_links
         result_dict['post_pages'] = self.make_all_post_links(
@@ -391,7 +391,23 @@ class ProjectDetailView(DetailView):
         )
         return next_url
 
-    def make_all_prev_links(self, current_page, user_identifier, project_slug):
+    def make_last_link(
+        self, current_page, last_page, user_identifier, project_slug):
+        """Create links and page numbers for pages after current page."""
+        results = {}
+        starting_page = current_page
+        while starting_page < last_page:
+            starting_page += 1
+            page_number = starting_page
+            page_url = reverse(
+                'project-detail', args=[
+                    user_identifier, project_slug, page_number
+                ]
+            )
+            results[page_number] = page_url
+        return results
+
+    def make_all_prev_links(self, start_page, current_page, user_identifier, project_slug):
         """Create links and page numbers for pages before current page."""
         results = {}
         starting_page = 0
@@ -407,11 +423,11 @@ class ProjectDetailView(DetailView):
         return results
 
     def make_all_post_links(
-        self, current_page, last_page, user_identifier, project_slug):
+        self, current_page, end_page, user_identifier, project_slug):
         """Create links and page numbers for pages after current page."""
         results = {}
         starting_page = current_page
-        while starting_page < last_page:
+        while starting_page < end_page:
             starting_page += 1
             page_number = starting_page
             page_url = reverse(
