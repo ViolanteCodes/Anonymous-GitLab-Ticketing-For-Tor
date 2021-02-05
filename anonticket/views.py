@@ -318,33 +318,53 @@ class ProjectDetailView(DetailView):
         gl_project = gitlab_get_project(gitlab_id)
         # Save the project attributes to context dict.
         context['gitlab_project'] = gl_project.attributes
-        # grab page of open issues: note that first page is 1, not 0.
-        open_issues_list = gl_project.issues.list(
-            page=page_number, state='opened')
         context['open_issues']={}
-        context['open_issues']['issues_list'] = open_issues_list
-        #determine if there is another page
-        check_open = self.get_pagination(
+        check_open = self.get_paginated_list(
             user_identifier, project_slug, gl_project, page_number, issue_state='opened')
         for key, value in check_open.items():
             context['open_issues'][key] = value
         # grab page of closed issues: note that first page is 1, not 0.
-        closed_issues_list = gl_project.issues.list(
-            page=page_number, state='closed')
-        context['closed_issues']={}
-        context['closed_issues']['issues_list'] = closed_issues_list
+        # closed_issues_list = gl_project.issues.list(
+        #     page=page_number, state='closed')
+        # context['closed_issues']={}
+        # context['closed_issues']['issues_list'] = closed_issues_list
         #determine if there is another page
-        check_closed = self.get_pagination(
-            user_identifier, project_slug, gl_project, page_number, issue_state='closed')
-        for key, value in check_closed.items():
-            context['closed_issues'][key] = value
+    
+        # check_closed = self.get_pagination(
+        #     user_identifier, project_slug, gl_project, page_number, issue_state='closed')
+        # for key, value in check_closed.items():
+        #     context['closed_issues'][key] = value
         return context
 
-    def get_pagination(
+    def get_paginated_list(
         self, user_identifier, project_slug, gl_project, current_page, issue_state
         ):
-        # if the current page is not 1, we can assume previous page
         result_dict = {}
+        # grab issues list and pass into result_dict (note, 1st page is 1 not 0)
+        issues_list = gl_project.issues.list(page=current_page, state=issue_state)
+        result_dict['issues'] = issues_list
+        # call generator get total_pages and total_issues.
+        call_generator = gl_project.issues.list(as_list=False, state=issue_state)
+        total_pages = call_generator.total_pages
+        total_issues = call_generator.total
+        result_dict['total_pages'] = total_pages
+        result_dict['total_issues'] = total_issues
+
+        # if current_page > 1, create a "prev" link for button
+        if current_page > 1:
+            result_dict['prev_url'] = self.make_prev_link(
+                current_page, user_identifier, project_slug
+            )
+
+        # if total_pages > current_page, create "next" link for button
+        if total_pages > current_page:
+            result_dict['next_url'] = self.make_next_link(
+                current_page, user_identifier, project_slug)
+
+        # if total_pages <= 10 , render all pages
+        if total_pages <= 10:
+            total_rendered = 0
+            while total_
         if current_page > 2:
             first_page = 1
             first_url = reverse(
@@ -353,17 +373,7 @@ class ProjectDetailView(DetailView):
             result_dict['first_page'] = first_page
             result_dict['first_url'] = first_url           
             prev_page = current_page - 1
-            prev_url = reverse(
-            'project-detail', args=[
-                user_identifier, project_slug, prev_page
-            ])
-            result_dict['prev_page'] = prev_page
-            result_dict['prev_url'] = prev_url
-        call_generator = gl_project.issues.list(as_list=False, state=issue_state)
-        total_pages = call_generator.total_pages
-        total_issues = call_generator.total
-        result_dict['total_pages'] = total_pages
-        result_dict['total_issues'] = total_issues
+           
         if total_pages > current_page:
             next_page = current_page + 1
             next_url = reverse(
@@ -379,9 +389,27 @@ class ProjectDetailView(DetailView):
                 ])
                 result_dict['last_page'] = total_pages
                 result_dict['last_url'] = last_url
-
         return result_dict
-                
+
+    def make_prev_link(self, current_page, user_identifier, project_slug):
+        """Creates the 'prev' button link for issue pagination."""
+        prev_page = current_page - 1
+        prev_url = reverse(
+            'project-detail', args=[
+                user_identifier, project_slug, prev_page
+            ]
+        )
+        return prev_url   
+
+    def make_next_link(self, current_page, user_identifier, project_slug):
+        """Creates the 'next' button link for issue pagination."""
+        next_page = current_page + 1
+        next_url = reverse(
+            'project-detail', args=[
+                user_identifier, project_slug, next_page
+            ]
+        )
+        return next_url            
 
 
    
