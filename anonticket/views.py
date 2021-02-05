@@ -369,6 +369,7 @@ class ProjectDetailView(DetailView):
         # make all post_links
             result_dict['post_pages'] = self.make_all_post_links(
                 current_page, total_pages, user_identifier, project_slug)
+
         # if total pages > 10, then use the current_page to determine how many
         # pages to render before and after.
         elif current_page <= 9:
@@ -382,6 +383,9 @@ class ProjectDetailView(DetailView):
             result_dict['last_page'] = self.make_last_link(
                 user_identifier, project_slug, total_pages
             )
+
+        # if current page is less thatn 5 pages from the end, calculate
+        # how many pages to show before and after.
         elif (total_pages - current_page) < 5:
             # calculate how many pages will be rendered after current
             post_pages = total_pages - current_page
@@ -397,23 +401,25 @@ class ProjectDetailView(DetailView):
             # make a first link
             result_dict['first_url'] = self.make_first_link(
                 user_identifier, project_slug)
+                
         else:
-            pass
-            # lif (total_pages - current_page) < 5:
-            # # calculate how many pages will be rendered after current
-            # post_pages = total_pages - current_page
-            # # calculate how many links need to be rendered before 
-            # # the current page
-            # prev_page_start = current_page - (9 - post_pages)
-            # # make all prev_links
-            # result_dict['prev_pages'] = self.make_all_prev_links(
-            #     prev_page_start, current_page, user_identifier, project_slug)
-            # # make all post_links
-            # result_dict['post_pages'] = self.make_all_post_links(
-            #     current_page, total_pages, user_identifier, project_slug)
-            # # make a first link
-            # result_dict['first_page'] = self.make_first_link(
-            #     user_identifier, project_slug)
+            # calculate how many pages will be rendered after current
+            post_pages = current_page + 5
+            # calculate how many links will be rendered before current
+            prev_page_start = current_page -5
+            # make all prev_links
+            result_dict['prev_pages'] = self.make_all_prev_links(
+                prev_page_start, current_page, user_identifier, project_slug)
+            # make all post_links
+            result_dict['post_pages'] = self.make_all_post_links(
+                current_page, post_pages, user_identifier, project_slug)
+            # make a first link
+            result_dict['first_page'] = self.make_first_link(
+                user_identifier, project_slug)
+            # make a last link
+            result_dict['last_page'] = self.make_last_link(
+                user_identifier, project_slug, total_pages
+            )
         return result_dict
 
     def make_prev_link(self, current_page, user_identifier, project_slug):
@@ -490,8 +496,6 @@ class ProjectDetailView(DetailView):
             results[page_number] = page_url
         return results
 
-
-   
 # -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.
 # ----------------------------------------------------------------------
