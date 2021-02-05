@@ -66,7 +66,7 @@
         {% for issue in open_issues.issues %}
           <tr>
             <td>
-              {% url 'issue-detail-view' results.user_identifier object.slug issue.iid as detail_url %}
+              {% url 'issue-detail-view' results.user_identifier object.slug issue.iid page_number as detail_url %}
               <a href="{{detail_url}}"><strong>{{issue.title}}</strong></a><br>
               # {{issue.iid}} | Opened {{issue.created_at|pretty_datetime}} by {{issue.author.username}}.
               {% if issue.milestone.title %}
