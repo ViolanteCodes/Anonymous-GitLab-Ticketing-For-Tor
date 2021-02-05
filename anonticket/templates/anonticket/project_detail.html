@@ -91,9 +91,8 @@
           </tr>
         {% endfor %}
       </table>
-    {% endif %}
-    {% if open_issues_flag == False %}
-      <p class="ml-3 text-muted"> No open issues at this time. </p>      
+    {% else %}
+      <p class="ml-3 text-muted"> No open issues matching query at this time. </p>      
     {% endif %}
   </div>
 </div>
@@ -149,7 +148,7 @@
             <span class="page-link text-muted">...</span>
           </li>
           <li class="page-item">
-            <a href="{{open_issues.last_page.url" class="page-link">
+            <a href="{{open_issues.last_page.url}}" class="page-link">
               {{open_issues.last_page.page_number}}
             </a>
           </li>
@@ -171,19 +170,15 @@
   </div>
 </div>
 
-  
-
 <!-- Create the Issues List Block for closed issues-->
 <div class="row mt-5">
   <div class="col-12">
     <h4 class="text-primary">Closed Issues:</h4>
-    {% if issues_list %}
+    {% if closed_issues.issues %}
       <table class="table table-sm mt-3">
-        {% for issue in issues_list %}
-          {% if issue.state == "closed" %}
+        {% for issue, detail_url in closed_issues.issues.items %}
           <tr>
             <td>
-              {% url 'issue-detail-view' results.user_identifier object.slug issue.iid as detail_url %}
               <a href="{{detail_url}}"><strong>{{issue.title}}</strong></a><br>
               # {{issue.iid}} | Opened {{issue.created_at|pretty_datetime}} by {{issue.author.username}}.
               {% if issue.milestone.title %}
@@ -203,14 +198,87 @@
               Updated {{issue.updated_at|pretty_datetime}}
             </td>
           </tr>
-          {% endif %}
         {% endfor %}
       </table>
-    {% endif %}
-    {% if closed_issues_flag == False %}
+    {% else %}
     <p class="ml-3 text-muted"> No closed issues at this time. </p>      
     {% endif %}
   </div>
 </div>
+
+<!-- Render the Pagination Block -->
+<div class="row px-3">
+  <div class="col-12 bg-light p-2">
+    <nav aria-label="...">
+      <ul class="pagination m-0 p-0 justify-content-center">
+        <!-- Make the previous button -->
+        {% if closed_issues.prev_url %}
+          <li class="page-item">
+            <a href="{{closed_issues.prev_url}}" class="page-link">Previous</a>
+          </li>
+        {% else %}
+          <li class="page-item-disabled">
+            <span class="page-link">Previous</span>
+          </li> 
+        {% endif %}
+        <!-- Make first link if called for -->
+        {% if closed_issues.first_url %}
+          <li class="page-item">
+            <a href="{{closed_issues.first_url}}" class="page-link">1</a>
+          </li>
+          <li class="page-item-disabled">
+            <span class="page-link text-muted">...</span></a>
+          </li>
+        {% endif %}
+        <!-- Make the previous links -->
+        {% if closed_issues.prev_pages %}
+          {% for page_number, url in closed_issues.prev_pages.items %}
+            <li class="page-item">
+              <a href="{{url}}" class="page-link">{{page_number}}</a>
+            </li>
+          {% endfor %}
+        {% endif %}
+        <!-- Make the current page indicator -->
+        <li class="page-item active">
+          <span class="page-link">
+            {{page_number}}
+          </span>
+        </li>
+        <!-- Make the next links -->
+        {% if closed_issues.post_pages %}
+          {% for page_number, url in closed_issues.post_pages.items %}
+            <li class="page-item">
+              <a href="{{url}}" class="page-link">{{page_number}}</a>
+            </li>
+          {% endfor %}
+        {% endif %}
+        <!-- Make last link if called for -->
+        {% if closed_issues.last_page %}
+          <li class="page-item-disabled">
+            <span class="page-link text-muted">...</span>
+          </li>
+          <li class="page-item">
+            <a href="{{closed_issues.last_page.url}}" class="page-link">
+              {{closed_issues.last_page.page_number}}
+            </a>
+          </li>
+        {% endif %}
+        <!-- Make the next button -->
+        {% if closed_issues.next_url %}
+          <li class="page-item">
+            <a href="{{closed_issues.next_url}}" class="page-link">
+                Next
+            </a>
+          </li>
+        {% else %}
+        <li class="page-item-disabled">
+          <span class="page-link">Next</span>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</div>
+
 
 {% endblock %}

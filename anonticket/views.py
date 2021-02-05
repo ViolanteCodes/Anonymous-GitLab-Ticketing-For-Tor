@@ -364,8 +364,22 @@ class ProjectDetailView(DetailView):
             result_dict['next_url'] = self.make_next_link(
                 current_page, user_identifier, project_slug)
         
+        # if current_page > total pages, render current page to up - 10 slots
+        if current_page > total_pages:
+            # calculate how many links need to be rendered before 
+            # the current page
+            prev_page_start = total_pages - 10
+            if prev_page_start > 0:
+                result_dict['first_url'] = self.make_first_link(
+                user_identifier, project_slug)
+            if prev_page_start < 0:
+                prev_page_start = 0
+            # make all prev_links
+            result_dict['prev_pages'] = self.make_all_prev_links(
+                prev_page_start, total_pages, user_identifier, project_slug)
+
         # if total_pages <= 10, render everything.
-        if total_pages <= 10:
+        elif total_pages <= 10:
         # make all prev_links
             result_dict['prev_pages'] = self.make_all_prev_links(
                 0, current_page, user_identifier, project_slug)
