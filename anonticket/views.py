@@ -366,13 +366,22 @@ class ProjectDetailView(DetailView):
         # make all prev_links
             result_dict['prev_pages'] = self.make_all_prev_links(
                 0, current_page, user_identifier, project_slug)
-            # make all post_links
+        # make all post_links
             result_dict['post_pages'] = self.make_all_post_links(
                 current_page, total_pages, user_identifier, project_slug)
         # if total pages > 10, then use the current_page to determine how many
         # pages to render before and after.
-        elif current_page <
-    
+        elif current_page <= 9:
+        # make all prev_links
+            result_dict['prev_pages'] = self.make_all_prev_links(
+                0, current_page, user_identifier, project_slug)
+        # make all post_links UP TO 10
+            result_dict['post_pages'] = self.make_all_post_links(
+                current_page, 10, user_identifier, project_slug)
+        # make a last link
+            result_dict['last_url'] = self.make_last_link(
+                user_identifier, project_slug, last_page
+            )
         return result_dict
 
     def make_prev_link(self, current_page, user_identifier, project_slug):
