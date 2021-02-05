@@ -61,9 +61,9 @@
         Create New
       </a>
     </h4> 
-    {% if open_issues.issues_list %}
+    {% if open_issues.issues %}
       <table class="table table-sm mt-3">
-        {% for issue in open_issues.issues_list %}
+        {% for issue in open_issues.issues %}
           <tr>
             <td>
               {% url 'issue-detail-view' results.user_identifier object.slug issue.iid as detail_url %}
@@ -99,19 +99,27 @@
   </div>
 </div>
 <div>
-Page:
-{% if open_issues.first_url %}
-<a href="{{open_issues.first_url}}">{{open_issues.first_page}} | </a>
-{% endif %}
+<!-- Make the previous button -->
 {% if open_issues.prev_url %}
-<a href="{{open_issues.prev_url}}">{{open_issues.prev_page}} | </a>
+  <a href="{{open_issues.prev_url}}">Previous | </a>
 {% endif %}
+<!-- Make the previous links -->
+{% if open_issues.prev_pages %}
+  {% for page_number, url in open_issues.prev_pages.items %}
+    <a href="{{url}}">{{page_number}} | </a>
+  {% endfor %}
+{% endif %}
+<!-- Make the current page indicator -->
 <strong>{{page_number}}</strong>
-{% if open_issues.next_url %}
-<a href="{{open_issues.next_url}}">| {{open_issues.next_page}}</a>
+<!-- Make the next links -->
+{% if open_issues.post_pages %}
+  {% for page_number, url in open_issues.post_pages.items %}
+    <a href="{{url}}">| {{page_number}}</a>
+  {% endfor %}
 {% endif %}
-{% if open_issues.last_url %}
-<a href="{{open_issues.last_url}}">| ... {{open_issues.last_page}}</a>
+<!-- Make the next button -->
+{% if open_issues.next_url %}
+  <a href="{{open_issues.next_url}}">| Next</a>
 {% endif %}
 </div>
   
