@@ -61,10 +61,9 @@
         Create New
       </a>
     </h4> 
-    {% if issues_list %}
+    {% if open_issues.issues_list %}
       <table class="table table-sm mt-3">
-        {% for issue in issues_list %}
-          {% if issue.state == "opened" %}
+        {% for issue in open_issues.issues_list %}
           <tr>
             <td>
               {% url 'issue-detail-view' results.user_identifier object.slug issue.iid as detail_url %}
@@ -91,7 +90,6 @@
               Updated {{issue.updated_at|pretty_datetime}}
             </td>
           </tr>
-          {% endif %}
         {% endfor %}
       </table>
     {% endif %}
@@ -100,7 +98,23 @@
     {% endif %}
   </div>
 </div>
-<a href="{{open_next_url}}">Next</a>
+<div>
+Page:
+{% if open_issues.first_url %}
+<a href="{{open_issues.first_url}}">{{open_issues.first_page}} | </a>
+{% endif %}
+{% if open_issues.prev_url %}
+<a href="{{open_issues.prev_url}}">{{open_issues.prev_page}} | </a>
+{% endif %}
+<strong>{{page_number}}</strong>
+{% if open_issues.next_url %}
+<a href="{{open_issues.next_url}}">| {{open_issues.next_page}}</a>
+{% endif %}
+{% if open_issues.last_url %}
+<a href="{{open_issues.last_url}}">| ... {{open_issues.last_page}}</a>
+{% endif %}
+</div>
+  
 
 <!-- Create the Issues List Block for closed issues-->
 <div class="row mt-5">
