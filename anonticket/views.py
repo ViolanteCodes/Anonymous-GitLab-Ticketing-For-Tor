@@ -368,7 +368,7 @@ class ProjectDetailView(DetailView):
         # make all post_links
         result_dict['post_pages'] = self.make_all_post_links(
             current_page, total_pages, user_identifier, project_slug)
-        )
+    
         return result_dict
 
     def make_prev_link(self, current_page, user_identifier, project_slug):
@@ -395,7 +395,7 @@ class ProjectDetailView(DetailView):
         """Create links and page numbers for pages before current page."""
         results = {}
         starting_page = 0
-        while starting_page < current_page:
+        while starting_page < (current_page - 1):
             starting_page += 1
             page_number = starting_page
             page_url = reverse(
@@ -407,11 +407,11 @@ class ProjectDetailView(DetailView):
         return results
 
     def make_all_post_links(
-        self, current_page, total_pages, user_identifier, project_slug):
+        self, current_page, last_page, user_identifier, project_slug):
         """Create links and page numbers for pages after current page."""
         results = {}
         starting_page = current_page
-        while starting_page < total_pages:
+        while starting_page < last_page:
             starting_page += 1
             page_number = starting_page
             page_url = reverse(
