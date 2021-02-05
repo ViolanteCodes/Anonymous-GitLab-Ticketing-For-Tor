@@ -360,14 +360,18 @@ class ProjectDetailView(DetailView):
         if total_pages > current_page:
             result_dict['next_url'] = self.make_next_link(
                 current_page, user_identifier, project_slug)
-
+        
+        # if total_pages <= 10, render everything.
+        if total_pages <= 10:
         # make all prev_links
-        result_dict['prev_pages'] = self.make_all_prev_links(
-            0, current_page, user_identifier, project_slug)
-
-        # make all post_links
-        result_dict['post_pages'] = self.make_all_post_links(
-            current_page, total_pages, user_identifier, project_slug)
+            result_dict['prev_pages'] = self.make_all_prev_links(
+                0, current_page, user_identifier, project_slug)
+            # make all post_links
+            result_dict['post_pages'] = self.make_all_post_links(
+                current_page, total_pages, user_identifier, project_slug)
+        # if total pages > 10, then use the current_page to determine how many
+        # pages to render before and after.
+        elif current_page <
     
         return result_dict
 
@@ -390,23 +394,27 @@ class ProjectDetailView(DetailView):
             ]
         )
         return next_url
+    
+    def make_first_link(
+        self, user_identifier, project_slug):
+        """Create links for a "first" page."""
+        first_url = reverse(
+            'project-detail', args=[
+                user_identifier, project_slug, 1
+            ]
+        )
+        return first_url
 
     def make_last_link(
-        self, current_page, last_page, user_identifier, project_slug):
-        """Create links and page numbers for pages after current page."""
-        results = {}
-        starting_page = current_page
-        while starting_page < last_page:
-            starting_page += 1
-            page_number = starting_page
-            page_url = reverse(
-                'project-detail', args=[
-                    user_identifier, project_slug, page_number
-                ]
-            )
-            results[page_number] = page_url
-        return results
-
+        self, user_identifier, project_slug, last_page):
+        """Create link for a "last" page."""
+        last_url = reverse(
+            'project-detail', args=[
+                user_identifier, project_slug, last_page
+            ]
+        )
+        return last_url
+    
     def make_all_prev_links(self, start_page, current_page, user_identifier, project_slug):
         """Create links and page numbers for pages before current page."""
         results = {}
