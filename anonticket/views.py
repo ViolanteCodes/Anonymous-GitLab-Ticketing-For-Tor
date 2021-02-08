@@ -111,16 +111,16 @@ class PassUserIdentifierMixin:
 # ----------------------------------------------------------------------
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
 
-def gitlab_get_project(project):
+def gitlab_get_project(project, lazy=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
-    working_project = gl.projects.get(project)
+    working_project = gl.projects.get(project, lazy=lazy)
     return working_project
 
-def gitlab_get_issue(project, issue):
+def gitlab_get_issue(project, issue, lazy_project = False, lazy_issue = False):
     """Takes two integers and grabs corresponding gitlab issue."""
-    working_project = gitlab_get_project(project)
-    working_issue = working_project.issues.get(issue)
+    working_project = gitlab_get_project(project, lazy=lazy_project)
+    working_issue = working_project.issues.get(issue, lazy=lazy_issue)
     return working_issue
 
 def gitlab_get_notes_list(project, issue):
@@ -315,7 +315,7 @@ class ProjectDetailView(DetailView):
         context['page_number'] = page_number
         # Grab the gitlab ID from database and create the project.
         gitlab_id = db_project.gitlab_id
-        gl_project = gitlab_get_project(gitlab_id)
+        gl_project = gitlab_get_project(gitlab_id, lazy=True)
         # Save the project attributes to context dict.
         context['gitlab_project'] = gl_project.attributes
         context['open_issues']={}
@@ -338,7 +338,7 @@ class ProjectDetailView(DetailView):
         result_dict = {}
         result_dict['issues']={}
         #grab issues for current page from gitlab
-        issues_list = gl_project.issues.list(page=current_page, state=issue_state)
+        issues_list = gl_project.issues.list(page=current_page, state=issue_state, lazy=True)
         # generate detail_links that will return to current page.
         for issue in issues_list:
             detail_url = reverse('issue-detail-view-go-back', args=[
