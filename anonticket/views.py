@@ -219,7 +219,7 @@ def user_landing_view(request, user_identifier):
         # results dictionary.
         working_user = get_user_as_object(user_identifier)
         linked_issues = get_linked_issues(working_user)
-        linked_notes = get_linked_notes(working_user)
+        # Create a list of issues passed as dicts with urls generated
         results['linked_issues'] = []
         for issue in linked_issues:
             # if the issue has a gitlab_iid, generate a link to issue-detail-view
@@ -245,7 +245,32 @@ def user_landing_view(request, user_identifier):
                         'issue_url': issue_url
                     }
                 )
-            results['linked_notes'] = linked_notes        
+        linked_notes = get_linked_notes(working_user)
+        results['linked_notes'] = []
+        for note in linked_notes:
+        # if the issue has a gitlab_iid, generate a link to issue-detail-view
+            if note.gitlab_id:
+                note_url = reverse(
+                    'issue-detail-view', args = [
+                        working_user, note.linked_project.slug, note.issue_iid]
+                )
+                results['linked_notes'].append(
+                    {
+                        'attributes': note,
+                        'note_url': note_url
+                    }
+                )
+            else:
+                note_url = reverse(
+                    'pending-note', args = [
+                        working_user, note.linked_project.slug, note.issue_iid, note.pk]
+                )
+                results['linked_notes'].append(
+                    {
+                        'attributes': note,
+                        'note_url': note_url
+                    }
+                )        
     # whether user found or not found, pass 'user_identifier' to context dictionary
     results['user_identifier'] = user_identifier
     return render(request, 'anonticket/user_landing.html', {'results': results})

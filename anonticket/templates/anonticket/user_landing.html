@@ -137,6 +137,7 @@
       <a href="{{project_list_url}}">project's detail view</a> to find it.) 
   </div>
 </div>
+
 <!-- If results.linked_notes, render the notes table. -->
 {% if results.linked_notes %}
 <div class="row">
@@ -159,43 +160,39 @@
       <tbody>
         {% for note in results.linked_notes %}
         <!-- If the note has a gitlab.id, it has been approved. Render approved notes. -->
-        {% if note.gitlab_id %}
+        {% if note.attributes.gitlab_id %}
         <tr>
           <td>
-            {{note.linked_project.short_name_with_namespace}}
+            {{note.attributes.linked_project.name_with_namespace}}
           </td>
           <td>
             <!-- Generate a linke to the issue-detail-view url -->
-            {% url 'issue-detail-view' results.user_identifier note.linked_project.slug note.issue_iid as issue_url %}
-            Issue #{{note.issue_iid}}: 
-            <a href="{{issue_url}}">{{note.gitlab_issue_title}}</a>
+            Issue #{{note.attributes.issue_iid}}: 
+            <a href="{{note.note_url}}">{{note.attributes.gitlab_issue_title}}</a>
           </td>
           <td>
-            {{note.body|capfirst|truncatewords:20}}
-            <p class="mb-0 small"><a href="{{issue_url}}">(Posted to issue.)</a></p>
+            {{note.attributes.body|capfirst|truncatewords:20}}
+            <p class="mb-0 small"><a href="{{note.note_url}}">(Posted to issue.)</a></p>
           </td>
           <td>
-            {{ note.get_reviewer_status_display }}
+            {{ note.attributes.get_reviewer_status_display }}
           </td>
         </tr>
         <!-- If note has not been approved, render a slightly different row. -->
         {% else %}
         <tr>
           <td>
-            {{note.linked_project.short_name_with_namespace}}
+            {{note.attributes.linked_project.name_with_namespace}}
           </td>
           <td>
-            <!-- Generated Pending Issue Detail View URL -->
-            {% url 'issue-detail-view' results.user_identifier note.linked_project.slug note.issue_iid as issue_url %}
-            Issue # {{note.issue_iid}}: <a href="{{issue_url}}">{{note.gitlab_issue_title}}</a>
+            Issue # {{note.attributes.issue_iid}}: <a href="{{note.note_url}}">{{note.attributes.gitlab_issue_title}}</a>
           </td>
           <td>
-            {% url 'pending-note' results.user_identifier note.linked_project.slug note.issue_iid note.pk as note_url %}
-            {{ note.body|capfirst|truncatewords:20 }}
-            <p class="mb-0 small"><a href="{{note_url}}">(See Full Note Text)</a></p>
+            {{ note.attributes.body|capfirst|truncatewords:20 }}
+            <p class="mb-0 small"><a href="{{note.note_url}}">(See Full Note Text)</a></p>
           </td>
           <td>
-            {{ note.get_reviewer_status_display }}
+            {{ note.attributes.get_reviewer_status_display }}
           </td>
         </tr>
         {% endif %}
