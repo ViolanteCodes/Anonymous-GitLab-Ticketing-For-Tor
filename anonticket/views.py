@@ -111,16 +111,16 @@ class PassUserIdentifierMixin:
 # ----------------------------------------------------------------------
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
 
-def gitlab_get_project(project):
+def gitlab_get_project(project, lazy=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
-    working_project = gl.projects.get(project)
+    working_project = gl.projects.get(project, lazy=lazy)
     return working_project
 
-def gitlab_get_issue(project, issue):
+def gitlab_get_issue(project, issue, lazy_project = False, lazy_issue = False):
     """Takes two integers and grabs corresponding gitlab issue."""
-    working_project = gitlab_get_project(project)
-    working_issue = working_project.issues.get(issue)
+    working_project = gitlab_get_project(project, lazy=lazy_project)
+    working_issue = working_project.issues.get(issue, lazy=lazy_issue)
     return working_issue
 
 def gitlab_get_notes_list(project, issue):
@@ -219,9 +219,60 @@ def user_landing_view(request, user_identifier):
         # results dictionary.
         working_user = get_user_as_object(user_identifier)
         linked_issues = get_linked_issues(working_user)
+        # Create a list of issues passed as dicts with urls generated
+        results['linked_issues'] = []
+        for issue in linked_issues:
+            # if the issue has a gitlab_iid, generate a link to issue-detail-view
+            if issue.gitlab_iid:
+                issue_url = reverse(
+                    'issue-detail-view', args = [
+                        working_user, issue.linked_project.slug, issue.gitlab_iid]
+                )
+                results['linked_issues'].append(
+                    {
+                        'attributes': issue,
+                        'issue_url': issue_url
+                    }
+                )
+            else:
+                issue_url = reverse(
+                    'pending-issue-detail-view', args = [
+                        working_user, issue.linked_project.slug, issue.pk]
+                )
+                results['linked_issues'].append(
+                    {
+                        'attributes': issue,
+                        'issue_url': issue_url
+                    }
+                )
         linked_notes = get_linked_notes(working_user)
-        results['linked_issues'] = linked_issues
-        results['linked_notes'] = linked_notes        
+        results['linked_notes'] = []
+        for note in linked_notes:
+        # if the issue has a gitlab_iid, generate a link to issue-detail-view
+            if note.gitlab_id:
+                note_url = reverse(
+                    'issue-detail-view', args = [
+                        working_user, note.linked_project.slug, note.issue_iid]
+                )
+                results['linked_notes'].append(
+                    {
+                        'attributes': note,
+                        'note_url': note_url,
+                        'link_text': "(Posted To Issue.)"
+                    }
+                )
+            else:
+                note_url = reverse(
+                    'pending-note', args = [
+                        working_user, note.linked_project.slug, note.issue_iid, note.pk]
+                )
+                results['linked_notes'].append(
+                    {
+                        'attributes': note,
+                        'note_url': note_url,
+                        'link_text': "(See full note text.)"
+                    }
+                )        
     # whether user found or not found, pass 'user_identifier' to context dictionary
     results['user_identifier'] = user_identifier
     return render(request, 'anonticket/user_landing.html', {'results': results})
@@ -299,40 +350,221 @@ class ProjectDetailView(DetailView):
     and fetches the project and issues from gitlab."""
     model = Project
 
-    def get_context_data(self, **kwargs):          
+    def get_context_data(self, **kwargs):
+        # Grab variables from kwargs          
         context = super().get_context_data(**kwargs)
-        context['results'] = {'user_identifier':self.kwargs['user_identifier']}
-        # Fetch the working project from the database first - if cannot
-        # be fetched, will throw a 404.                     
+        user_identifier = self.kwargs['user_identifier']
+        page_number = self.kwargs['page_number']
         project_slug = self.kwargs['slug']
-        working_project = Project.objects.get(
+        # Fetch the project from the database                   
+        db_project = Project.objects.get(
             slug=project_slug
         )
-        working_id = working_project.gitlab_id
-        gitlab_project = gitlab_get_project(working_id)
-        context['gitlab_project'] = gitlab_project.attributes
-        issues_list = gitlab_project.issues.list()
-        context['issues_list'] = issues_list
-        context['open_issues_flag'] = self.check_if_open_issues(issues_list)
-        context['closed_issues_flag'] = self.check_if_closed_issues(issues_list)
+        # Grab the gitlab ID from db and create GL project object with
+        # a lazy API call.
+        gitlab_id = db_project.gitlab_id
+        gl_project = gitlab_get_project(gitlab_id, lazy=True)
+        # Save the project attributes to context dict.
+        context['results'] = {'user_identifier': user_identifier}
+        context['page_number'] = page_number
+        context['gitlab_project'] = gl_project.attributes
+        # Get the open issues and save to dict.
+        context['open_issues']={}
+        check_open = self.get_pagination(
+            user_identifier, project_slug, gl_project, page_number, issue_state='opened')
+        for key, value in check_open.items():
+            context['open_issues'][key] = value
+        # Get the closed issues aqnd save to dict.
+        context['closed_issues'] = {}
+        check_closed = self.get_pagination(
+            user_identifier, project_slug, gl_project, page_number, issue_state='closed'
+        )
+        for key, value in check_closed.items():
+            context['closed_issues'][key] = value
         return context
 
-    def check_if_open_issues(self, issues_list):
-        open_issues = False
+    def get_pagination(
+        self, user_identifier, project_slug, gl_project, current_page, issue_state
+        ):
+        result_dict = {}
+        result_dict['issues']={}
+        #grab issues for current page from gitlab
+        issues_list = gl_project.issues.list(page=current_page, state=issue_state, lazy=True)
+        # generate detail_links that will return to current page.
         for issue in issues_list:
-            if issue.state == 'opened':
-                open_issues = True
-                return open_issues
-        return open_issues
+            detail_url = reverse('issue-detail-view-go-back', args=[
+                user_identifier, project_slug, issue.iid, current_page
+            ])
+            # and add them to issues in result dict in key/value pairs.
+            result_dict['issues'][issue] = detail_url
+        # call generator get total_pages and total_issues.
+        call_generator = gl_project.issues.list(as_list=False, state=issue_state)
+        total_pages = call_generator.total_pages
+        total_issues = call_generator.total
+        result_dict['total_pages'] = total_pages
+        result_dict['total_issues'] = total_issues
+
+        # if current_page > 1, create a "prev" link for button
+        if current_page > 1:
+            result_dict['prev_url'] = self.make_prev_link(
+                current_page, user_identifier, project_slug
+            )
+
+        # if total_pages > current_page, create "next" link for button
+        if total_pages > current_page:
+            result_dict['next_url'] = self.make_next_link(
+                current_page, user_identifier, project_slug)
+        
+        # if current_page > total pages, render current page to up - 10 slots
+        if current_page > total_pages:
+            # calculate how many links need to be rendered before 
+            # the current page
+            prev_page_start = total_pages - 10
+            if prev_page_start > 0:
+                result_dict['first_url'] = self.make_first_link(
+                user_identifier, project_slug)
+            # Don't create links where page_start would be < 0.
+            if prev_page_start < 0:
+                prev_page_start = 0
+            # make all prev_links
+            result_dict['prev_pages'] = self.make_all_prev_links(
+                prev_page_start, total_pages, user_identifier, project_slug)
+
+        # if total_pages <= 10, render everything.
+        elif total_pages <= 10:
+        # make all prev_links
+            result_dict['prev_pages'] = self.make_all_prev_links(
+                0, current_page, user_identifier, project_slug)
+        # make all post_links
+            result_dict['post_pages'] = self.make_all_post_links(
+                current_page, total_pages, user_identifier, project_slug)
+
+        # if total pages > 10, then use the current_page to determine how many
+        # pages to render before and after.
+        elif current_page <= 9:
+            # make all prev_links
+            result_dict['prev_pages'] = self.make_all_prev_links(
+                0, current_page, user_identifier, project_slug)
+            # make all post_links UP TO 10
+            result_dict['post_pages'] = self.make_all_post_links(
+                current_page, 9, user_identifier, project_slug)
+            # make a last link
+            result_dict['last_page'] = self.make_last_link(
+                user_identifier, project_slug, total_pages
+            )
+
+        # if current page is less than 5 pages from the end, calculate
+        # how many pages to show before and after.
+        elif (total_pages - current_page) < 5:
+            # calculate how many pages will be rendered after current
+            post_pages = total_pages - current_page
+            # calculate how many links need to be rendered before 
+            # the current page
+            prev_page_start = current_page - (9 - post_pages)
+            # make all prev_links
+            result_dict['prev_pages'] = self.make_all_prev_links(
+                prev_page_start, current_page, user_identifier, project_slug)
+            # make all post_links
+            result_dict['post_pages'] = self.make_all_post_links(
+                current_page, total_pages, user_identifier, project_slug)
+            # make a first link
+            result_dict['first_url'] = self.make_first_link(
+                user_identifier, project_slug)
+
+        else:
+            # calculate how many pages will be rendered after current
+            post_pages = current_page + 3
+            # calculate how many links will be rendered before current
+            prev_page_start = current_page - 4
+            # make all prev_links
+            result_dict['prev_pages'] = self.make_all_prev_links(
+                prev_page_start, current_page, user_identifier, project_slug)
+            # make all post_links
+            result_dict['post_pages'] = self.make_all_post_links(
+                current_page, post_pages, user_identifier, project_slug)
+            # make a first link
+            result_dict['first_url'] = self.make_first_link(
+                user_identifier, project_slug)
+            # make a last link
+            result_dict['last_page'] = self.make_last_link(
+                user_identifier, project_slug, total_pages
+            )
+        return result_dict
+
+    def make_prev_link(self, current_page, user_identifier, project_slug):
+        """Creates the 'prev' button link for issue pagination."""
+        prev_page = current_page - 1
+        prev_url = reverse(
+            'project-detail', args=[
+                user_identifier, project_slug, prev_page
+            ]
+        )
+        return prev_url   
+
+    def make_next_link(self, current_page, user_identifier, project_slug):
+        """Creates the 'next' button link for issue pagination."""
+        next_page = current_page + 1
+        next_url = reverse(
+            'project-detail', args=[
+                user_identifier, project_slug, next_page
+            ]
+        )
+        return next_url
     
-    def check_if_closed_issues(self, issues_list):
-        closed_issues = False
-        for issue in issues_list:
-            if issue.state == 'closed':
-                closed_issues = True
-                return closed_issues
-        return closed_issues
+    def make_first_link(
+        self, user_identifier, project_slug):
+        """Create links for a "first" page."""
+        first_url = reverse(
+            'project-detail', args=[
+                user_identifier, project_slug, 1
+            ]
+        )
+        return first_url
+
+    def make_last_link(
+        self, user_identifier, project_slug, last_page):
+        """Create link for a "last" page."""
+        results = {}
+        last_url = reverse(
+            'project-detail', args=[
+                user_identifier, project_slug, last_page
+            ]
+        )
+        results['page_number'] = last_page
+        results['url'] = last_url
+        return results
     
+    def make_all_prev_links(self, start_page, current_page, user_identifier, project_slug):
+        """Create links and page numbers for pages before current page."""
+        results = {}
+        starting_page = start_page
+        while starting_page < (current_page - 1):
+            starting_page += 1
+            page_number = starting_page
+            page_url = reverse(
+                'project-detail', args=[
+                    user_identifier, project_slug, page_number
+                ]
+            )
+            results[page_number] = page_url
+        return results
+
+    def make_all_post_links(
+        self, current_page, end_page, user_identifier, project_slug):
+        """Create links and page numbers for pages after current page."""
+        results = {}
+        starting_page = current_page
+        while starting_page < end_page:
+            starting_page += 1
+            page_number = starting_page
+            page_url = reverse(
+                'project-detail', args=[
+                    user_identifier, project_slug, page_number
+                ]
+            )
+            results[page_number] = page_url
+        return results
+
 # -------------------------ISSUE VIEWS----------------------------------
 # Views related to creating/looking up issues.
 # ----------------------------------------------------------------------
@@ -387,7 +619,7 @@ class PendingIssueDetailView(PassUserIdentifierMixin, DetailView):
     template_name = 'anonticket/issue_pending.html'
 
 @validate_user
-def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
+def issue_detail_view(request, user_identifier, project_slug, gitlab_iid, go_back_number=1):
     """Detailed view of an issue that has been approved and posted to GL."""
     results = {}
     #Fetch project from database via slug in URL - if cannot be fetched,
@@ -399,7 +631,7 @@ def issue_detail_view(request, user_identifier, project_slug, gitlab_iid):
     gitlab_id = database_project.gitlab_id
     working_project = gitlab_get_project(project=gitlab_id)
     results['project'] = working_project.attributes
-    go_back_url = reverse('project-detail', args=[user_identifier, project_slug])
+    go_back_url = reverse('project-detail', args=[user_identifier, project_slug, go_back_number])
     results['go_back_url'] = go_back_url
     working_issue = gitlab_get_issue(project=gitlab_id, issue=gitlab_iid)
     results['issue'] = working_issue.attributes
