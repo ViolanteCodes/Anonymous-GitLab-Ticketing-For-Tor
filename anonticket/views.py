@@ -372,6 +372,7 @@ class ProjectDetailView(DetailView):
             if prev_page_start > 0:
                 result_dict['first_url'] = self.make_first_link(
                 user_identifier, project_slug)
+            # Don't create links where page_start would be < 0.
             if prev_page_start < 0:
                 prev_page_start = 0
             # make all prev_links
@@ -401,7 +402,7 @@ class ProjectDetailView(DetailView):
                 user_identifier, project_slug, total_pages
             )
 
-        # if current page is less thatn 5 pages from the end, calculate
+        # if current page is less than 5 pages from the end, calculate
         # how many pages to show before and after.
         elif (total_pages - current_page) < 5:
             # calculate how many pages will be rendered after current
