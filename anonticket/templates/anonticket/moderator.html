@@ -67,7 +67,7 @@
                 <td style="width:15%">
                   <ul class="list-unstyled">
                     <li><strong>Project:</strong></li>
-                    <li>{{form.instance.linked_project.short_name_with_namespace}}</li>
+                    <li>{{form.instance.linked_project.name_with_namespace}}</li>
                     <li><strong>Created:</strong></li>
                     </li>{{form.instance.created_at|date:"d M, Y"}}
                     -{{form.instance.created_at|time:"H:i" }}</li>
@@ -155,7 +155,7 @@
             <td style="width:15%">
               <ul class="list-unstyled">
                 <li><strong>Project:</strong></li>
-                <li>{{form.instance.linked_project.short_name_with_namespace}}</li>
+                <li>{{form.instance.linked_project.name_with_namespace}}</li>
                 <li><strong>Created:</strong></li>
                 <li>{{form.instance.created_at|date:"d M, Y" }} 
                   -{{form.instance.created_at|time:"H:i" }}</li>
