@@ -147,7 +147,7 @@
         {% for note in results.linked_notes %}
         <!-- If the note has a gitlab.id, it has been approved. Render approved notes. -->
         <tr>
-          <td>
+          <td style="width:25%">
             {{note.attributes.linked_project.name_with_namespace}}
           </td>
           <td>
