@@ -89,32 +89,28 @@
       <tbody>
         {% for issue in results.linked_issues %}
         <!-- If the issue has a gitlab.iid, it has been approved. -->
-        {% if issue.gitlab_iid %}
+        {% if issue.attributes.gitlab_iid %}
         <tr>
-          <td>
-            {{issue.linked_project.name_with_namespace}}
+          <td style="width:20%">
+            {{issue.attributes.linked_project.name_with_namespace}}
+          </td>
+          <td style="width:40%">
+            Issue #{{issue.attributes.gitlab_iid}}: <a href="{{issue.issue_url}}">{{issue.attributes.title}}</a>
           </td>
           <td>
-            <!-- Generate issue-detail-view url -->
-            {% url 'issue-detail-view' results.user_identifier issue.linked_project.slug issue.gitlab_iid as issue_url %}
-            Issue #{{issue.gitlab_iid}}: <a href="{{issue_url}}">{{issue.title}}</a>
-          </td>
-          <td>
-            {{ issue.get_reviewer_status_display }}
+            {{ issue.attributes.get_reviewer_status_display }}
           </td>
         </tr>
         {% else %}
         <tr>
           <td>
-            {{issue.linked_project.name_with_namespace}}
+            {{issue.attributes.linked_project.name_with_namespace}}
           </td>
           <td>
-            <!-- Generated Pending Issue Detail View URL -->
-            {% url 'pending-issue-detail-view' results.user_identifier issue.linked_project.slug issue.pk as issue_url %}
-            Issue # (NA): <a href="{{issue_url}}">{{issue.title}}</a>
+            Issue # (NA): <a href="{{issue.issue_url}}">{{issue.attributes.title}}</a>
           </td>
           <td>
-            {{ issue.get_reviewer_status_display }}
+            {{ issue.attributes.get_reviewer_status_display }}
           </td>
         </tr>
         {% endif %}
