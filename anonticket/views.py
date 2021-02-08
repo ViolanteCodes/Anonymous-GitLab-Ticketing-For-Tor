@@ -111,16 +111,16 @@ class PassUserIdentifierMixin:
 # ----------------------------------------------------------------------
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
 
-def gitlab_get_project(project):
+def gitlab_get_project(project, lazy=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
-    working_project = gl.projects.get(project)
+    working_project = gl.projects.get(project, lazy=lazy)
     return working_project
 
-def gitlab_get_issue(project, issue):
+def gitlab_get_issue(project, issue, lazy_project = False, lazy_issue = False):
     """Takes two integers and grabs corresponding gitlab issue."""
-    working_project = gitlab_get_project(project)
-    working_issue = working_project.issues.get(issue)
+    working_project = gitlab_get_project(project, lazy=lazy_project)
+    working_issue = working_project.issues.get(issue, lazy=lazy_issue)
     return working_issue
 
 def gitlab_get_notes_list(project, issue):
