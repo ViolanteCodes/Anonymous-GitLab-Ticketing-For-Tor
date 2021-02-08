@@ -300,30 +300,30 @@ class ProjectDetailView(DetailView):
     model = Project
 
     def get_context_data(self, **kwargs):
-        # Grab kwargs          
+        # Grab variables from kwargs          
         context = super().get_context_data(**kwargs)
-        # set user_identifier for results dict.
         user_identifier = self.kwargs['user_identifier']
-        context['results'] = {'user_identifier': user_identifier}
-        # Fetch the working project from the database or 404                    
+        page_number = self.kwargs['page_number']
         project_slug = self.kwargs['slug']
+        # Fetch the project from the database                   
         db_project = Project.objects.get(
             slug=project_slug
         )
-        # Get the page_number to paginate the GL API call.
-        page_number = self.kwargs['page_number']
-        context['page_number'] = page_number
-        # Grab the gitlab ID from database and create the project.
+        # Grab the gitlab ID from db and create GL project object with
+        # a lazy API call.
         gitlab_id = db_project.gitlab_id
         gl_project = gitlab_get_project(gitlab_id, lazy=True)
         # Save the project attributes to context dict.
+        context['results'] = {'user_identifier': user_identifier}
+        context['page_number'] = page_number
         context['gitlab_project'] = gl_project.attributes
+        # Get the open issues and save to dict.
         context['open_issues']={}
         check_open = self.get_pagination(
             user_identifier, project_slug, gl_project, page_number, issue_state='opened')
         for key, value in check_open.items():
             context['open_issues'][key] = value
-        # Get closed issues
+        # Get the closed issues aqnd save to dict.
         context['closed_issues'] = {}
         check_closed = self.get_pagination(
             user_identifier, project_slug, gl_project, page_number, issue_state='closed'
@@ -372,6 +372,7 @@ class ProjectDetailView(DetailView):
             if prev_page_start > 0:
                 result_dict['first_url'] = self.make_first_link(
                 user_identifier, project_slug)
+            # Don't create links where page_start would be < 0.
             if prev_page_start < 0:
                 prev_page_start = 0
             # make all prev_links
@@ -401,7 +402,7 @@ class ProjectDetailView(DetailView):
                 user_identifier, project_slug, total_pages
             )
 
-        # if current page is less thatn 5 pages from the end, calculate
+        # if current page is less than 5 pages from the end, calculate
         # how many pages to show before and after.
         elif (total_pages - current_page) < 5:
             # calculate how many pages will be rendered after current
