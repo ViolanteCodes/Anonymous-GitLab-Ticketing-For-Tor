@@ -89,7 +89,6 @@
       <tbody>
         {% for issue in results.linked_issues %}
         <!-- If the issue has a gitlab.iid, it has been approved. -->
-        {% if issue.attributes.gitlab_iid %}
         <tr>
           <td style="width:20%">
             {{issue.attributes.linked_project.name_with_namespace}}
@@ -101,19 +100,6 @@
             {{ issue.attributes.get_reviewer_status_display }}
           </td>
         </tr>
-        {% else %}
-        <tr>
-          <td>
-            {{issue.attributes.linked_project.name_with_namespace}}
-          </td>
-          <td>
-            Issue # (NA): <a href="{{issue.issue_url}}">{{issue.attributes.title}}</a>
-          </td>
-          <td>
-            {{ issue.attributes.get_reviewer_status_display }}
-          </td>
-        </tr>
-        {% endif %}
         {% endfor %}
       </tbody>
     </table>
