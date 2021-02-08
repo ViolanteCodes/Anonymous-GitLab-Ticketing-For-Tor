@@ -315,7 +315,7 @@ class ProjectDetailView(DetailView):
         context['page_number'] = page_number
         # Grab the gitlab ID from database and create the project.
         gitlab_id = db_project.gitlab_id
-        gl_project = gitlab_get_project(gitlab_id)
+        gl_project = gitlab_get_project(gitlab_id, lazy=True)
         # Save the project attributes to context dict.
         context['gitlab_project'] = gl_project.attributes
         context['open_issues']={}
@@ -338,7 +338,7 @@ class ProjectDetailView(DetailView):
         result_dict = {}
         result_dict['issues']={}
         #grab issues for current page from gitlab
-        issues_list = gl_project.issues.list(page=current_page, state=issue_state)
+        issues_list = gl_project.issues.list(page=current_page, state=issue_state, lazy=True)
         # generate detail_links that will return to current page.
         for issue in issues_list:
             detail_url = reverse('issue-detail-view-go-back', args=[
