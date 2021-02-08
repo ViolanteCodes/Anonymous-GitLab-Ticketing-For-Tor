@@ -257,7 +257,8 @@ def user_landing_view(request, user_identifier):
                 results['linked_notes'].append(
                     {
                         'attributes': note,
-                        'note_url': note_url
+                        'note_url': note_url,
+                        'link_text': "(Posted To Issue.)"
                     }
                 )
             else:
@@ -268,7 +269,8 @@ def user_landing_view(request, user_identifier):
                 results['linked_notes'].append(
                     {
                         'attributes': note,
-                        'note_url': note_url
+                        'note_url': note_url,
+                        'link_text': "(See full note text.)"
                     }
                 )        
     # whether user found or not found, pass 'user_identifier' to context dictionary
