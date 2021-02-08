@@ -146,7 +146,6 @@
       <tbody>
         {% for note in results.linked_notes %}
         <!-- If the note has a gitlab.id, it has been approved. Render approved notes. -->
-        {% if note.attributes.gitlab_id %}
         <tr>
           <td>
             {{note.attributes.linked_project.name_with_namespace}}
@@ -158,30 +157,12 @@
           </td>
           <td>
             {{note.attributes.body|capfirst|truncatewords:20}}
-            <p class="mb-0 small"><a href="{{note.note_url}}">(Posted to issue.)</a></p>
+            <p class="mb-0 small"><a href="{{note.note_url}}">{{note.link_text}}</a></p>
           </td>
           <td>
             {{ note.attributes.get_reviewer_status_display }}
           </td>
         </tr>
-        <!-- If note has not been approved, render a slightly different row. -->
-        {% else %}
-        <tr>
-          <td>
-            {{note.attributes.linked_project.name_with_namespace}}
-          </td>
-          <td>
-            Issue # {{note.attributes.issue_iid}}: <a href="{{note.note_url}}">{{note.attributes.gitlab_issue_title}}</a>
-          </td>
-          <td>
-            {{ note.attributes.body|capfirst|truncatewords:20 }}
-            <p class="mb-0 small"><a href="{{note.note_url}}">(See Full Note Text)</a></p>
-          </td>
-          <td>
-            {{ note.attributes.get_reviewer_status_display }}
-          </td>
-        </tr>
-        {% endif %}
         {% endfor %}
       </tbody>
     </table>
