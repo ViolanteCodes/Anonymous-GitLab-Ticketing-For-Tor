@@ -43,6 +43,7 @@
     <!-- List actions that can be taken. -->
     <h4 class="mt-0">You can take the following actions:</h4>
     <!-- Generate the action URLS on the fly within the template. -->
+    <!-- Note: Maria fix this later - should be in view. -->
     <p class='mt-4 mb-0'>
       <ul>
         <li>{% url 'project-list' results.user_identifier as project_list_url %}
@@ -88,7 +89,6 @@
       </thead>
       <tbody>
         {% for issue in results.linked_issues %}
-        <!-- If the issue has a gitlab.iid, it has been approved. -->
         <tr>
           <td style="width:20%">
             {{issue.attributes.linked_project.name_with_namespace}}
@@ -145,13 +145,11 @@
       </thead>
       <tbody>
         {% for note in results.linked_notes %}
-        <!-- If the note has a gitlab.id, it has been approved. Render approved notes. -->
         <tr>
           <td style="width:25%">
             {{note.attributes.linked_project.name_with_namespace}}
           </td>
           <td>
-            <!-- Generate a linke to the issue-detail-view url -->
             Issue #{{note.attributes.issue_iid}}: 
             <a href="{{note.note_url}}">{{note.attributes.gitlab_issue_title}}</a>
           </td>
