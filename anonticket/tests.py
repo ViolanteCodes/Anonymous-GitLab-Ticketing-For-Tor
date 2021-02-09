@@ -337,10 +337,23 @@ class TestProjectDetailViewPagination(TestCase):
         return response
     
     def run_pagination_test(self, page_number):
-        """Run those pagination tests that should be consistent across all
-        page numbers by checking against separate API calls."""
+        """A battery of pagination tests that tests ProjectDetailView
+        context response based on a page_number."""
         response = self.fast_url_get(page_number)
         self.assertTemplateUsed(response, 'anonticket/project_detail.html')
+        # Assert user + page number kwargs passed into context
+        self.assertEqual(
+            response.context['results']['user_identifier'],
+            'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.assertEqual(
+            response.context['page_number'],
+            page_number           
+        )
+        self.assertEqual(
+            response.context['gitlab_project'],
+            self.gl_project.attributes
+        )
         # Assert # of open/closed issues matches separate generator call.
         self.assertEqual(
             response.context['open_issues']['total_issues'],
@@ -367,6 +380,8 @@ class TestProjectDetailViewPagination(TestCase):
             len(response.context['closed_issues']['issues'].keys()),
             len(self.gl_project.issues.list(state='opened', page=page_number))
         )
+        # Assign response to self.response to continue testing.
+        self.response = response
 
     def test_project_detail_GET_pagination_FIRST_PAGE(self):
         """Test the response for the ProjectDetailView's 
@@ -374,6 +389,8 @@ class TestProjectDetailViewPagination(TestCase):
         page_number = 1
         self.run_pagination_test(page_number)
         # Check that items specific to template are correct.
+        # Check no previous link as on page one.
+        self.assertNotIn(self.response.context, ['prev_url'])
         self.assertInHTML(
             """
             <li class="page-item-disabled">
@@ -405,56 +422,10 @@ class TestProjectDetailViewPagination(TestCase):
     def test_project_detail_GET_pagination_CURRENT_GREATER_THAN_TOTAL(self):
         """Test ProjectDetailView pagination when page_number > total_pages"""
         page_number = 99999
-        self.last_response = self.fast_url_get(page_number)
-        self.assertTemplateUsed(self.last_response, 'anonticket/project_detail.html')
-        # Assert that "results" and issues lists are in context.
-        self.assertInContext('results')
-        self.assertInContext('open_issues')
-        self.assertInContext('closed_issues')
-        # Assert that user_identifier, page number, and gl project 
-        # attributes were successfully passed to the context.
-        self.assertEqual(
-            self.last_response.context['results']['user_identifier'],
-            'duo-atlas-hypnotism-curry-creatable-rubble'
-        )
-        self.assertEqual(
-            self.last_response.context['page_number'],
-            page_number
-            
-        )
-        self.assertEqual(
-            self.last_response.context['gitlab_project'],
-            self.gl_project.attributes
-        )
-        # Test that pagination block loads in template with a disabled 'previous'
-        # link.
-        self.assertInHTML(
-            """
-            <li class="page-item-disabled">
-            <span class="page-link">Previous</span></li>""",
-            """<ul class="pagination m-0 p-0 justify-content-center">        
-            <li class="page-item-disabled">
-                <span class="page-link">Previous</span>
-            </li></ul> """
-        )
-        # Test that pagination blocks loads in template with a 'active' current
-        # page link.
-        self.assertInHTML(
-            """
-            <li class="page-item active">
-                <span class="page-link">
-                    1
-                </span>
-            </li>""",
-            """
-            <ul class="pagination m-0 p-0 justify-content-center">
-            <li class="page-item active">
-                <span class="page-link">
-                    1
-                </span>
-            </li>
-            </ul>"""
-        )
+        self.run_pagination_test(page_number)
+        # assert there is a prev_url link in result_dict.
+        # self.assertIn(results['open_issues'], self.response.context)
+        
 
     def test_project_detail_GET_pagination_THREE_PAGES_FROM_TOTAL(self):
         """PENDING"""
