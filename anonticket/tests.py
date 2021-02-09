@@ -258,7 +258,7 @@ class TestIdentifierAndLoginViewsWithDatabase(TestCase):
 
 @tag('project')
 class TestProjectViews(TestCase):
-    """Test the project functions in views.py"""
+    """Test the project functions in views.py minus pagination."""
 
     def setUp(self):
         """Set up a project, user identifier, and issue in the test database."""
@@ -281,12 +281,188 @@ class TestProjectViews(TestCase):
         response = self.client.get(self.project_list_view_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/project_list.html')
+        # Verify template is correctly pulling project 747 from gitlab.
+        self.assertInHTML(
+            """<a href="/user/duo-atlas-hypnotism-curry-creatable-rubble/projects/anonymous-ticket-portal/page/1">
+                    The Tor Project / TPA / Anonymous Ticket Portal</a>""",
+            """<td><a href="/user/duo-atlas-hypnotism-curry-creatable-rubble/projects/anonymous-ticket-portal/page/1">
+                    The Tor Project / TPA / Anonymous Ticket Portal</a>
+                </td>"""
+        )
 
     def test_project_detail_GET(self):
         """Test the response for the ProjectDetailView"""
         response = self.client.get(self.project_detail_view_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/project_detail.html')
+
+@tag('pagination')
+class TestProjectDetailViewPagination(TestCase):
+    """Test the project functions in views.py relating to pagination."""
+
+    def setUp(self):
+        """Set up a project, user identifier, and issue in the test database."""
+        # Setup project using Tor Project, due to how many total pages of 
+        # issues it has.
+        tor_project = Project(gitlab_id=426)
+        tor_project.save()
+        self.tor_project = tor_project
+        self.gl_project = gitlab_get_project(426, lazy=True)
+        self.open_issues_metadata = self.get_issues_metadata('opened')
+        self.closed_issues_metadata = self.get_issues_metadata('closed')
+        # Get metadata for open issues, including total and pages
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.new_user = new_user
+        self.client=Client()
+    
+    def get_issues_metadata(self, state):
+        """Generates the issues generator and passes total issues and
+        pages for an issue state into a dictionary."""
+        results = {}
+        issue_generator = self.gl_project.issues.list(
+            as_list=False, state=state
+        )
+        results[f"total_{state}_issues"] = issue_generator.total
+        results[f"total_{state}_pages"] = issue_generator.total_pages
+        return results
+
+    def fast_url_get(self, page_number):
+        """Give a page number, reverse project detail and grabs the response."""
+        url = reverse('project-detail', args = [
+            self.new_user, self.tor_project.slug, page_number
+        ])
+        response = self.client.get(url)
+        return response
+    
+    def run_pagination_test(self, page_number):
+        """Run those pagination tests that should be consistent across all
+        page numbers by checking against separate API calls."""
+        response = self.fast_url_get(page_number)
+        self.assertTemplateUsed(response, 'anonticket/project_detail.html')
+        # Assert # of open/closed issues matches separate generator call.
+        self.assertEqual(
+            response.context['open_issues']['total_issues'],
+            self.open_issues_metadata['total_opened_issues'])
+        self.assertEqual(
+            response.context['closed_issues']['total_issues'],
+            self.closed_issues_metadata['total_closed_issues']
+        )
+        # Assert # of open/closed issues PAGES matches separate generator call.
+        self.assertEqual(
+            response.context['open_issues']['total_pages'],
+            self.open_issues_metadata['total_opened_pages'])
+        self.assertEqual(
+            response.context['closed_issues']['total_pages'],
+            self.closed_issues_metadata['total_closed_pages']
+        )
+        # Assert that the # of open/closed issues ON THIS PAGE matches
+        #what it should.
+        self.assertEqual(
+            len(response.context['open_issues']['issues'].keys()),
+            len(self.gl_project.issues.list(state='opened', page=page_number))
+        )
+        self.assertEqual(
+            len(response.context['closed_issues']['issues'].keys()),
+            len(self.gl_project.issues.list(state='opened', page=page_number))
+        )
+
+    def test_project_detail_GET_pagination_FIRST_PAGE(self):
+        """Test the response for the ProjectDetailView's 
+        pagination functions assuming page = 1"""
+        page_number = 1
+        self.run_pagination_test(page_number)
+        # Check that items specific to template are correct.
+        self.assertInHTML(
+            """
+            <li class="page-item-disabled">
+            <span class="page-link">Previous</span></li>""",
+            """<ul class="pagination m-0 p-0 justify-content-center">        
+            <li class="page-item-disabled">
+                <span class="page-link">Previous</span>
+            </li></ul> """
+        )
+        # Test that pagination blocks loads in template with a 'active' current
+        # page link.
+        self.assertInHTML(
+            """
+            <li class="page-item active">
+                <span class="page-link">
+                    1
+                </span>
+            </li>""",
+            """
+            <ul class="pagination m-0 p-0 justify-content-center">
+            <li class="page-item active">
+                <span class="page-link">
+                    1
+                </span>
+            </li>
+            </ul>"""
+        )
+
+    def test_project_detail_GET_pagination_CURRENT_GREATER_THAN_TOTAL(self):
+        """Test ProjectDetailView pagination when page_number > total_pages"""
+        page_number = 99999
+        self.last_response = self.fast_url_get(page_number)
+        self.assertTemplateUsed(self.last_response, 'anonticket/project_detail.html')
+        # Assert that "results" and issues lists are in context.
+        self.assertInContext('results')
+        self.assertInContext('open_issues')
+        self.assertInContext('closed_issues')
+        # Assert that user_identifier, page number, and gl project 
+        # attributes were successfully passed to the context.
+        self.assertEqual(
+            self.last_response.context['results']['user_identifier'],
+            'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.assertEqual(
+            self.last_response.context['page_number'],
+            page_number
+            
+        )
+        self.assertEqual(
+            self.last_response.context['gitlab_project'],
+            self.gl_project.attributes
+        )
+        # Test that pagination block loads in template with a disabled 'previous'
+        # link.
+        self.assertInHTML(
+            """
+            <li class="page-item-disabled">
+            <span class="page-link">Previous</span></li>""",
+            """<ul class="pagination m-0 p-0 justify-content-center">        
+            <li class="page-item-disabled">
+                <span class="page-link">Previous</span>
+            </li></ul> """
+        )
+        # Test that pagination blocks loads in template with a 'active' current
+        # page link.
+        self.assertInHTML(
+            """
+            <li class="page-item active">
+                <span class="page-link">
+                    1
+                </span>
+            </li>""",
+            """
+            <ul class="pagination m-0 p-0 justify-content-center">
+            <li class="page-item active">
+                <span class="page-link">
+                    1
+                </span>
+            </li>
+            </ul>"""
+        )
+
+    def test_project_detail_GET_pagination_THREE_PAGES_FROM_TOTAL(self):
+        """PENDING"""
+        pass
+
+    def test_project_detail_GET_pagination_PAGE_FITY(self):
+        """PENDING"""
+        pass
 
 @tag('issues')
 class TestIssuesViews(TestCase):
