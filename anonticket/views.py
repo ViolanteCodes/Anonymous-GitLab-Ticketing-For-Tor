@@ -110,6 +110,7 @@ class PassUserIdentifierMixin:
 # Easy to parse version of GitLab-Python functions.
 # ----------------------------------------------------------------------
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
+gl_public = gitlab.Gitlab(settings.GITLAB_URL)
 
 def gitlab_get_project(project, lazy=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
