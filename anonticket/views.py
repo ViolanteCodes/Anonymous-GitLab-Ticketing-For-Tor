@@ -107,6 +107,20 @@ class PassUserIdentifierMixin:
             context['results'] = {'user_identifier':self.kwargs['user_identifier']}                     
         return context
 
+# --------------------RATE-LIMITING SETTINGS----------------------------
+# Set variables here so that django-ratelimit settings can be 
+# changed across multiple views.
+# ----------------------------------------------------------------------
+
+# Set rate-limiting variables as global variables with value of None.
+
+# All items (groups/issues) currently share from same rate-limiting
+# bucket. This may be changed in the future.
+
+RATE_GROUP = 'tor-rate-group'
+LIMIT_RATE = '0/m'
+RATE_METHOD = ['POST']
+
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
 # ----------------------------------------------------------------------
@@ -671,6 +685,7 @@ def issue_search_view(request, user_identifier):
 # Views related to creating/looking up notes.
 # ----------------------------------------------------------------------
 
+@method_decorator(ratelimit(key='ip', rate='1/m', method=ratelimit.UNSAFE, block=True), name='post',)
 @method_decorator(validate_user, name='dispatch')
 class NoteCreateView(PassUserIdentifierMixin, CreateView):
     """View to create a note given a user_identifier."""

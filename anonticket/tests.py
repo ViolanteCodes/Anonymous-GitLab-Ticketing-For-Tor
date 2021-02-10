@@ -673,7 +673,7 @@ class TestIssuesViews(TestCase):
         self.assertTemplateUsed(response, 'anonticket/issue_detail.html')
 
     def test_issue_search_view_GET_valid_data(self):
-        """Test the reponse for the issue_search_view"""
+        """Test the response for the issue_search_view"""
         url = reverse('issue-search', args=[self.new_user])
         form_data = {
             'choose_project': self.project.pk,
@@ -694,7 +694,7 @@ class TestIssuesViews(TestCase):
         self.assertTemplateUsed(response, 'anonticket/issue_search.html')
 
     def test_issue_search_view_GET_no_matches(self):
-        """Test the reponse for the issue_search_view"""
+        """Test the response for the issue_search_view"""
         url = reverse('issue-search', args=[self.new_user])
         form_data = {
             'choose_project': self.project.pk,
@@ -750,6 +750,7 @@ class TestNotesViews(TestCase):
         }
         expected_url = reverse('issue-created', args=[self.new_user])
         response = self.client.post(url, form_data)
+        print(response)
         self.assertRedirects(response, expected_url)
 
     def test_note_create_view_POST_new_user(self):
