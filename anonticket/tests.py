@@ -258,7 +258,7 @@ class TestIdentifierAndLoginViewsWithDatabase(TestCase):
 
 @tag('project')
 class TestProjectViews(TestCase):
-    """Test the project functions in views.py"""
+    """Test the project functions in views.py minus pagination."""
 
     def setUp(self):
         """Set up a project, user identifier, and issue in the test database."""
@@ -281,12 +281,302 @@ class TestProjectViews(TestCase):
         response = self.client.get(self.project_list_view_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/project_list.html')
+        # Verify template is correctly pulling project 747 from gitlab.
+        self.assertInHTML(
+            """<a href="/user/duo-atlas-hypnotism-curry-creatable-rubble/projects/anonymous-ticket-portal/page/1">
+                    The Tor Project / TPA / Anonymous Ticket Portal</a>""",
+            """<td><a href="/user/duo-atlas-hypnotism-curry-creatable-rubble/projects/anonymous-ticket-portal/page/1">
+                    The Tor Project / TPA / Anonymous Ticket Portal</a>
+                </td>"""
+        )
 
     def test_project_detail_GET(self):
         """Test the response for the ProjectDetailView"""
         response = self.client.get(self.project_detail_view_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'anonticket/project_detail.html')
+
+@tag('pagination')
+class TestProjectDetailViewPagination(TestCase):
+    """Test the project functions in views.py relating to pagination."""
+
+    def setUp(self):
+        """Set up a project, user identifier, and issue in the test database."""
+        # Setup project using Tor Project, due to how many total pages of 
+        # issues it has.
+        tor_project = Project(gitlab_id=426)
+        tor_project.save()
+        self.tor_project = tor_project
+        self.gl_project = gitlab_get_project(426, lazy=True)
+        self.open_issues_metadata = self.get_issues_metadata('opened')
+        self.closed_issues_metadata = self.get_issues_metadata('closed')
+        # Get metadata for open issues, including total and pages
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.new_user = new_user
+        self.client=Client()
+    
+    def get_issues_metadata(self, state):
+        """Generates the issues generator and passes total issues and
+        pages for an issue state into a dictionary."""
+        results = {}
+        issue_generator = self.gl_project.issues.list(
+            as_list=False, state=state
+        )
+        results[f"total_{state}_issues"] = issue_generator.total
+        results[f"total_{state}_pages"] = issue_generator.total_pages
+        return results
+
+    def fast_url_get(self, page_number):
+        """Give a page number, reverse project detail and grabs the response."""
+        url = reverse('project-detail', args = [
+            self.new_user, self.tor_project.slug, page_number
+        ])
+        response = self.get(url)
+        return response
+    
+    def run_pagination_test(
+        self, 
+        page_number, 
+        open_links=[], 
+        not_open_links=[],
+        empty_open_links = [], 
+        closed_links=[], 
+        not_closed_links=[],
+        empty_closed_links = [],
+        ):
+        """A battery of pagination tests that tests ProjectDetailView
+        context response based on a page_number."""
+        response = self.fast_url_get(page_number)
+        self.assertTemplateUsed(response, 'anonticket/project_detail.html')
+        # Assert user + page number kwargs passed into context
+        self.assertEqual(
+            response.context['results']['user_identifier'],
+            'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.assertEqual(
+            response.context['page_number'],
+            page_number           
+        )
+        self.assertEqual(
+            response.context['gitlab_project'],
+            self.gl_project.attributes
+        )
+        # Assert # of open/closed issues matches separate generator call.
+        self.assertEqual(
+            response.context['open_issues']['total_issues'],
+            self.open_issues_metadata['total_opened_issues'])
+        self.assertEqual(
+            response.context['closed_issues']['total_issues'],
+            self.closed_issues_metadata['total_closed_issues']
+        )
+        # Assert # of open/closed issues PAGES matches separate generator call.
+        self.assertEqual(
+            response.context['open_issues']['total_pages'],
+            self.open_issues_metadata['total_opened_pages'])
+        self.assertEqual(
+            response.context['closed_issues']['total_pages'],
+            self.closed_issues_metadata['total_closed_pages']
+        )
+        # Assert that the # of open/closed issues ON THIS PAGE matches
+        #what it should.
+        self.assertEqual(
+            len(response.context['open_issues']['issues'].keys()),
+            len(self.gl_project.issues.list(state='opened', page=page_number))
+        )
+        self.assertEqual(
+            len(response.context['closed_issues']['issues'].keys()),
+            len(self.gl_project.issues.list(state='closed', page=page_number))
+        )
+        # Pull open_links from context and pass to a dict.
+        open_links_dict = response.context['open_issues']
+        # check that dict has what it should
+        for link in open_links:
+            self.assertIn(link, open_links_dict)
+        # and not what it shouldn't
+        for link in not_open_links:
+            self.assertNotIn(link, open_links_dict)
+        # and that prev_pages and post_pages are empty as needed
+        for link in empty_open_links:
+            self.assertEqual(
+                open_links_dict[link],
+                {}
+            )
+        # Repeat the same for closed_issues.
+        closed_links_dict = response.context['closed_issues']
+        for link in closed_links:
+            self.assertIn(link, closed_links_dict)
+        for link in not_closed_links:
+            self.assertNotIn(link, closed_links_dict)
+        for link in empty_closed_links:
+            self.assertEqual(
+                closed_links_dict[link],
+                {}
+            )
+        # Assign response to self.response to continue testing.
+        self.response = response
+
+    def test_project_detail_GET_pagination_FIRST_PAGE(self):
+        """Test the response for the ProjectDetailView's 
+        pagination functions assuming page = 1"""
+        # Set page number and sort context dict keys by whether
+        # they should appear or not.
+        page_number = 1
+        open_links = [
+            'next_url',
+            'post_pages',
+            'last_page',
+        ]
+        not_open_links = [
+            'first_url',
+            'prev_url',
+        ]
+        empty_open_links = [
+            'prev_pages'
+        ]
+        # Closed links dicts should be same as open as currently on
+        # first page.
+        closed_links = open_links
+        not_closed_links = not_open_links
+        empty_closed_links = empty_open_links
+        self.run_pagination_test(
+            page_number, 
+            open_links=open_links, 
+            not_open_links = not_open_links,
+            empty_open_links = empty_open_links,
+            closed_links= closed_links,
+            not_closed_links = not_closed_links,
+            empty_closed_links= empty_closed_links)
+        # Check that items specific to template are correct.
+        # Check no previous link as on page one.
+        self.assertInHTML(
+            """
+            <li class="page-item-disabled">
+            <span class="page-link">Previous</span></li>""",
+            """<ul class="pagination m-0 p-0 justify-content-center">        
+            <li class="page-item-disabled">
+                <span class="page-link">Previous</span>
+            </li></ul> """
+        )
+        # Test that pagination blocks loads in template with a 'active' current
+        # page link.
+        self.assertInHTML(
+            """
+            <li class="page-item active">
+                <span class="page-link">
+                    1
+                </span>
+            </li>""",
+            """
+            <ul class="pagination m-0 p-0 justify-content-center">
+            <li class="page-item active">
+                <span class="page-link">
+                    1
+                </span>
+            </li>
+            </ul>"""
+        )
+
+    def test_project_detail_GET_pagination_CURRENT_GREATER_THAN_TOTAL(self):
+        """Test ProjectDetailView pagination when page_number > total_pages"""
+        page_number = 99999
+        # Set page number and sort context dict keys by whether
+        # they should appear or not.
+        open_links = [
+            'prev_pages',
+            'first_url',
+            'prev_url',
+        ]
+        not_open_links = [
+            'next_url',
+            'last_page',
+            'post_pages',
+        ]
+        empty_open_links = [
+        ]
+        # Closed links dicts should be same as open as currently on
+        # first page.
+        closed_links = open_links
+        not_closed_links = not_open_links
+        empty_closed_links = empty_open_links
+        self.run_pagination_test(
+            page_number, 
+            open_links=open_links, 
+            not_open_links = not_open_links,
+            empty_open_links = empty_open_links,
+            closed_links= closed_links,
+            not_closed_links = not_closed_links,
+            empty_closed_links= empty_closed_links)
+      
+    def test_project_detail_GET_pagination_THREE_PAGES_FROM_TOTAL(self):
+        """Test ProjectDetailView pagination when page_number = 3 pages
+        from end for closed issues."""
+        # pull total closed pages from metadata and subtract 3
+        page_number = self.closed_issues_metadata['total_closed_pages'] - 3
+        open_links = [
+            'prev_pages',
+            'first_url',
+            'prev_url',
+        ]
+        not_open_links = [
+            'next_url',
+            'last_page',
+            'post_pages',
+        ]
+        empty_open_links = [
+        ]
+        # Closed links dicts will be different than open_links are there
+        # should be more closed issues than open.
+        closed_links = [
+            'prev_pages',
+            'first_url',
+            'next_url',
+            'post_pages',
+        ]
+        not_closed_links = [
+            'last_page',
+        ]
+        empty_closed_links = [
+        ]
+        self.run_pagination_test(
+            page_number, 
+            open_links=open_links, 
+            not_open_links = not_open_links,
+            empty_open_links = empty_open_links,
+            closed_links= closed_links,
+            not_closed_links = not_closed_links,
+            empty_closed_links= empty_closed_links,
+            )
+
+    def test_project_detail_GET_pagination_PAGE_THIRTY(self):
+        """Test ProjectDetailView pagination when page_number = 30."""
+        page_number = 30
+        open_links = [
+            'prev_pages',
+            'first_url',
+            'post_pages',
+            'prev_url',
+            'next_url',
+            'last_page',
+        ]
+        not_open_links = [
+        ]
+        empty_open_links = [
+        ]
+        # Closed links dicts should be the same as open
+        closed_links = open_links
+        not_closed_links = not_open_links
+        empty_closed_links = empty_open_links
+        self.run_pagination_test(
+            page_number, 
+            open_links=open_links, 
+            not_open_links = not_open_links,
+            empty_open_links = empty_open_links,
+            closed_links= closed_links,
+            not_closed_links = not_closed_links,
+            empty_closed_links= empty_closed_links,
+            )
 
 @tag('issues')
 class TestIssuesViews(TestCase):
