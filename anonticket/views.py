@@ -685,7 +685,7 @@ def issue_search_view(request, user_identifier):
 # Views related to creating/looking up notes.
 # ----------------------------------------------------------------------
 
-@method_decorator(ratelimit(key='ip', rate='1/m', method=ratelimit.UNSAFE, block=True), name='post',)
+@method_decorator(ratelimit(key='ip', rate='0/m', method=ratelimit.UNSAFE, block=True), name='post',)
 @method_decorator(validate_user, name='dispatch')
 class NoteCreateView(PassUserIdentifierMixin, CreateView):
     """View to create a note given a user_identifier."""
