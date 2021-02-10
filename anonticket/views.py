@@ -16,6 +16,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.views.generic import (
     TemplateView, DetailView, ListView, CreateView, FormView, UpdateView)
 from django.contrib.admin.views.decorators import staff_member_required
+from ratelimit.decorators import ratelimit
 
 # ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
 # Functions that need to be accessed from within multiple views go here,
