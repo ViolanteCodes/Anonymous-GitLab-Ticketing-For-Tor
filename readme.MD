@@ -8,7 +8,16 @@ the GitLab API (Python-Gitlab package.)<br>
 ## 1.0 Quickstart:
 Clone the repo. Rename the env_sample.txt file to just “.env”. Open it
 and delete first line that says "delete me", then set the SECRET_KEY to a string of 
-your choosing. Run the following commands:
+your choosing. 
+
+This project uses Django-Ratelimit.
+
+Set the LIMIT_RATE value to determine how many form post requests
+to allow per time unit, or choose '0/s' to block all requests or leave as 'None'
+to allow all requests. Change the value of MAIN_RATE_GROUP to a group name
+of your choosing, or you can leave blank to have views limit individually.
+
+Run the following commands:
 
 ```
 1. Make a virtual environment:
