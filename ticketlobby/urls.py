@@ -15,8 +15,22 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from ratelimit.exceptions import Ratelimited
+from django.http import HttpResponse
+from django.shortcuts import redirect
+
+def handler403(request, exception=None):
+    """Custom 403 handler for ratelimit exceptions."""
+    response_message = """This ticket has failed due to too many requests in
+    a short period of time. If you like, you can hit the "back" button to return
+    to your form. Your data should still be filled in. You can then 
+    wait and retry creating your ticket."""
+    if isinstance(exception, Ratelimited):
+        return HttpResponse(response_message, status=403)
+    return HttpResponseForbidden('Forbidden')
 
 urlpatterns = [
     path('tor_admin/', admin.site.urls),
     path('', include('anonticket.urls'))
 ]
+
