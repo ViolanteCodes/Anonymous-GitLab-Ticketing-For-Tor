@@ -115,11 +115,18 @@ class PassUserIdentifierMixin:
 # Set rate-limiting variables as global variables with value of None.
 
 # All items (groups/issues) currently share from same rate-limiting
-# bucket. This may be changed in the future.
+# bucket, which is set by RATE_GROUP. You can change this by using a 
+# different group name in the decorator or by not including a group name 
+# with requests.
 
-RATE_GROUP = 'tor-rate-group'
-LIMIT_RATE = '0/m'
-RATE_METHOD = ['POST']
+RATE_GROUP = settings.MAIN_RATE_GROUP
+
+def get_rate_limit(group, request, block_all=False):
+    """Callable function to get rate limit."""
+    if block_all == True:
+        return '0/s'
+    else:
+        return settings.LIMIT_RATE
 
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
