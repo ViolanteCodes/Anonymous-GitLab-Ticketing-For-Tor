@@ -134,6 +134,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+# Set a default templates directory to use a custom 403 template.
+
+TEMPLATE_DIR = os.path.join(BASE_DIR, 'anonticket/templates/anonticket')
+
 # Gitlab Settings for python-gitlab/gitlab API
 # SECURITY WARNING: GitLab credentials.
 GITLAB_URL = config('GITLAB_URL', default='')
