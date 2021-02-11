@@ -140,8 +140,10 @@ GITLAB_URL = config('GITLAB_URL', default='')
 GITLAB_SECRET_TOKEN = config('GITLAB_SECRET_TOKEN', default='')
 GITLAB_ACCOUNTS_SECRET_TOKEN = config('GITLAB_ACCOUNTS_SECRET_TOKEN', default='')
 
+# Configuration settings for Django Ratelimit
+MAIN_RATE_GROUP = config('MAIN_RATE_GROUP', default='')
+LIMIT_RATE = config('LIMIT_RATE', default='100/m')
 
 # Wordlist Settings for generating wordlist
-
 WORD_LIST_PATH = os.path.join(BASE_DIR, 'shared/wordlist.txt')
 DICE_ROLLS = 6
