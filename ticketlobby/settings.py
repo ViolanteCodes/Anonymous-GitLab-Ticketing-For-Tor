@@ -87,6 +87,13 @@ DATABASES = {
     }
 }
 
+# Caching - necessary for Django-Ratelimit
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -120,7 +127,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
@@ -133,8 +139,11 @@ GITLAB_URL = config('GITLAB_URL', default='')
 GITLAB_SECRET_TOKEN = config('GITLAB_SECRET_TOKEN', default='')
 GITLAB_ACCOUNTS_SECRET_TOKEN = config('GITLAB_ACCOUNTS_SECRET_TOKEN', default='')
 
+# Configuration settings for Django Ratelimit
+MAIN_RATE_GROUP = config('MAIN_RATE_GROUP', default='')
+LIMIT_RATE = config('LIMIT_RATE', default='100/m')
+BLOCK_ALL = config('BLOCK_ALL', default=False, cast=bool)
 
 # Wordlist Settings for generating wordlist
-
 WORD_LIST_PATH = os.path.join(BASE_DIR, 'shared/wordlist.txt')
 DICE_ROLLS = 6

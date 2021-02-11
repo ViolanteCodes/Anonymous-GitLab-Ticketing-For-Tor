@@ -15,8 +15,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from ratelimit.exceptions import Ratelimited
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+
+def handler403(request, exception=None):
+    """Custom 403 handler for ratelimit exceptions."""
+    if isinstance(exception, Ratelimited):
+        return render(
+            request, 
+            template_name='anonticket/rate_limited.html', 
+            status=403)
+    return HttpResponseForbidden('Forbidden')
 
 urlpatterns = [
     path('tor_admin/', admin.site.urls),
     path('', include('anonticket.urls'))
 ]
+

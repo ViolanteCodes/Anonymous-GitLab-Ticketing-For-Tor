@@ -13,14 +13,37 @@ from anonticket.forms import (
     CreateIssueForm)
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
-
-# Create your tests here.
+from django.core.cache import cache
 
 # Note: If you run tests with --tag prefix, you can test a small suite
 # of tests with one of the tags below (registered with '@tag'.)
 #   Examples:
 #   $ python manage.py test --tag url 
 #   (or with coverage) $ coverage run manage.py --tag url.)
+
+# ---------------------CUSTOM TEST FUNCTIONS----------------------------
+# URL Tests using Django SimpleTestCase (no need for database.)
+# ----------------------------------------------------------------------
+
+def get_testing_limit_rate():
+    """Returns the number of requests (numerator) from
+    settings.LIMIT_RATE and adds 1 so that rate limiting will fail.)"""
+    limit_rate = settings.LIMIT_RATE
+    limit_list = limit_rate.split('/')
+    limit_numerator = limit_list[0]
+    limit_numerator = int(limit_numerator)
+    limit_numerator += 1
+    return limit_numerator
+
+def run_rate_limit_test(self, client, url, form, form_data, follow=False):
+    """Run a rate limit test for a post view."""
+    rate_limit_numerator = get_testing_limit_rate()
+    tries = 0
+    while tries < rate_limit_numerator:
+        response = self.client.post(
+            path=url, form=form, data=form_data, follow=False)
+        tries += 1
+    return response
 
 # ---------------------------URL TESTS----------------------------------
 # URL Tests using Django SimpleTestCase (no need for database.)
@@ -673,7 +696,7 @@ class TestIssuesViews(TestCase):
         self.assertTemplateUsed(response, 'anonticket/issue_detail.html')
 
     def test_issue_search_view_GET_valid_data(self):
-        """Test the reponse for the issue_search_view"""
+        """Test the response for the issue_search_view"""
         url = reverse('issue-search', args=[self.new_user])
         form_data = {
             'choose_project': self.project.pk,
@@ -694,7 +717,7 @@ class TestIssuesViews(TestCase):
         self.assertTemplateUsed(response, 'anonticket/issue_search.html')
 
     def test_issue_search_view_GET_no_matches(self):
-        """Test the reponse for the issue_search_view"""
+        """Test the response for the issue_search_view"""
         url = reverse('issue-search', args=[self.new_user])
         form_data = {
             'choose_project': self.project.pk,
@@ -702,7 +725,48 @@ class TestIssuesViews(TestCase):
         }
         response = self.client.get(url, form_data)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'anonticket/issue_search.html')  
+        self.assertTemplateUsed(response, 'anonticket/issue_search.html')
+
+    def tearDown(self):
+        """Clear Cache"""
+        cache.clear()
+
+@tag('rate-limit-issue')
+class TestIssueRateLimit(TestCase):
+    """Test the rate-limit function for create_new_issue_view."""
+
+    def setUp(self):
+        """Set up a project, user identifier, and issue in the test database."""
+        # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        # Create a user
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.client=Client()
+        self.create_issue_url = reverse('create-issue', args=[new_user])
+        self.new_user = new_user
+        self.project = new_project
+
+    def test_create_issue_POST_new_user_RATE_LIMIT(self):
+        """Test rate limit decorators and make exceeding leads to 403."""
+        form_data = {
+            'linked_project': self.project.pk,
+            'title':'A new descriptive issue title',
+            'description': 'Yet another description of the issue.'
+        }
+        form=CreateIssueForm(form_data)
+        response = run_rate_limit_test(
+            self, self.client, self.create_issue_url, form, form_data
+            )
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateUsed('anonticket/rate_limit.html')
+    
+    def tearDown(self):
+        """Clear Cache"""
+        cache.clear()
 
 @tag('notes')
 class TestNotesViews(TestCase):
@@ -757,13 +821,63 @@ class TestNotesViews(TestCase):
         user that doesn't get exist."""
         new_user = 'autopilot-stunt-unfasten-dirtiness-wipe-blissful'
         url = reverse('create-note', args=[
-            new_user, self.project.slug, self.issue.gitlab_iid])
+            new_user, self.project.slug, self.issue.gitlab_iid]
+            )
         form_data = {
             'body': """A new note body."""
         }
         expected_url = reverse('issue-created', args=[new_user])
         response = self.client.post(url, form_data)
         self.assertRedirects(response, expected_url)
+    
+    def tearDown(self):
+        """Clear Cache"""
+        cache.clear()
+
+@tag('rate-limit-note')
+class TestNoteViewRateLimit(TestCase):
+    """Test the ratelimiting for NoteCreateView."""
+
+    def setUp(self):
+        """Set up a project, user identifier, and issue in the test database."""
+        # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        # Create a user
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        # Create a posted issue.
+        posted_issue = Issue.objects.create (  
+            title = 'A posted issue',
+            description = 'A posted issue description',
+            linked_project = new_project,
+            linked_user = new_user,
+            gitlab_iid = 1,
+            reviewer_status = 'A',
+            posted_to_GitLab = True
+        )
+        self.client=Client()
+        self.new_user = new_user
+        self.project = new_project
+        self.issue = posted_issue
+        
+    def test_note_create_view_POST_RATE_LIMIT(self):
+        """Test rate limit decorators for note crate view."""
+        url = reverse('create-note', args=[
+            self.new_user, self.project.slug, self.issue.gitlab_iid])
+        form_data = {
+            'body': """A new note body."""
+        }
+        form=CreateIssueForm(form_data)
+        response = run_rate_limit_test(self, self.client, url, form, form_data)
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateUsed('anonticket/rate_limit.html')
+
+    def tearDown(self):
+        """Clear Cache"""
+        cache.clear()
 
 @tag('gitlab')
 class TestGitlabAccountRequestViews(TestCase):

@@ -1,0 +1,30 @@
+{% extends 'shared/layout.html' %}
+{% load static %}
+{% block h3 %}
+  Anon Ticket
+{% endblock %}
+{% block subheader %} 
+  Anonymous Ticket Reporting for GitLab
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12 pr-5">
+    <p class="pr-5 alert alert-primary">Access Denied: 403 Forbidden. (Too Many Attempts)</p>
+    <p class="pr-5">
+     If you're seeing this page, it's because we've received too many attempts to create 
+     issues, notes, or other GitLab objects in a short period of time. This sometimes 
+     happens if the system is under attack or being spammed.
+    </p>
+    <p class="pr-5">
+    If you are trying to make a legitimate issue, note, or Gitlab account request,
+    <mark>please use your browser's back button</mark> to return to your form.
+    Your form should still be filled out, and you can attempt to resubmit 
+    after waiting a few minutes.
+    </p>
+    <p class="pr-5">
+       Sorry for any inconvenience caused!
+    </p>
+  </div>
+</div>
+{% endblock %}
