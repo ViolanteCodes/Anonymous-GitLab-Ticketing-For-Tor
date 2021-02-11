@@ -125,6 +125,7 @@ class PassUserIdentifierMixin:
 # IP and by key:post with Tor preferred settings applied.
 
 RATE_GROUP = settings.MAIN_RATE_GROUP
+BLOCK_ALL = settings.BLOCK_ALL
 
 def custom_ratelimit_ip(
     group=RATE_GROUP, 
@@ -132,7 +133,7 @@ def custom_ratelimit_ip(
     rate=None,  
     method=ratelimit.UNSAFE, 
     block=True, 
-    block_all = False
+    block_all = BLOCK_ALL,
     ):
     """Custom version of the @ratelimit decorator based on key='ip' and 
     callable rate function."""
@@ -173,7 +174,7 @@ def custom_ratelimit_post(
     rate=None,  
     method=ratelimit.UNSAFE, 
     block=True, 
-    block_all = False
+    block_all = BLOCK_ALL,
     ):
     """Custom version of the @ratelimit decorator with key='post' and
     callable rate function."""
