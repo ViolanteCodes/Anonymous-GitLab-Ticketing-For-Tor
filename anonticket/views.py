@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import gitlab
 import functools
 from django.conf import settings
@@ -17,8 +18,10 @@ from django.views.generic import (
     TemplateView, DetailView, ListView, CreateView, FormView, UpdateView)
 from django.contrib.admin.views.decorators import staff_member_required
 from ratelimit.decorators import ratelimit
-from ratelimit.mixins import RatelimitMixin
-from ratelimit.mixins import RatelimitMixin as RatelimitMixin2
+from functools import wraps
+from ratelimit import UNSAFE
+from ratelimit.exceptions import Ratelimited
+from ratelimit.core import is_ratelimited
 
 # ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
 # Functions that need to be accessed from within multiple views go here,
@@ -84,7 +87,8 @@ def check_user(user_identifier):
         return True
 # --------------------DECORATORS AND MIXINS-----------------------------
 # Django decorators wrap functions (such as views) in other functions. 
-# Mixins perform a similar function for class based views.
+# Mixins perform a similar function for class based views. 
+# Decorates for rate-limiting are below in RATE-LIMITING SETTINGS.
 # ----------------------------------------------------------------------
 
 def validate_user(view_func):
@@ -117,7 +121,8 @@ class PassUserIdentifierMixin:
 # All items (groups/issues) currently share from same rate-limiting
 # bucket, which is set by RATE_GROUP. You can change this by using a 
 # different group name in the decorator or by not including a group name 
-# with requests.
+# with requests. The custom decorators below allow rate-limiting by 
+# IP and by key:post with Tor preferred settings applied.
 
 RATE_GROUP = settings.MAIN_RATE_GROUP
 
@@ -129,10 +134,52 @@ def custom_ratelimit_ip(
     block=True, 
     block_all = False
     ):
-    """Custom version of the @ratelimit decorator based on key='ip'. Defaults
-    to group=RATE_GROUP, key='ip', rate = callable, method = ratelimit.UNSAFE,
-    block=True, and block_all = False. Rate is set to None but is updated
-    in the _wrapped function to use callable get_rate_limit."""
+    """Custom version of the @ratelimit decorator based on key='ip' and 
+    callable rate function."""
+
+    __all__ = ['ratelimit']
+    ratelimit.UNSAFE = UNSAFE
+
+    def get_rate_limit(group, request, block_all=False):
+        """Callable function to get rate limit to make testing easier."""
+        if block_all == True:
+            return '0/s'
+        else:
+            return settings.LIMIT_RATE
+
+    def decorator(fn):
+        @wraps(fn)
+        def _wrapped(request, *args, **kw):
+            old_limited = getattr(request, 'limited', False)
+            ratelimited = is_ratelimited(
+                request=request, 
+                group=group, 
+                fn=fn,
+                key=key, 
+                rate=get_rate_limit(
+                    group=group, request=request, block_all=block_all), 
+                method=method,
+                increment=True)
+            request.limited = ratelimited or old_limited
+            if ratelimited and block:
+                raise Ratelimited()
+            return fn(request, *args, **kw)
+        return _wrapped
+    return decorator
+
+def custom_ratelimit_post(
+    group=RATE_GROUP, 
+    key='post:', 
+    rate=None,  
+    method=ratelimit.UNSAFE, 
+    block=True, 
+    block_all = False
+    ):
+    """Custom version of the @ratelimit decorator with key='post' and
+    callable rate function."""
+
+    __all__ = ['ratelimit']
+    ratelimit.UNSAFE = UNSAFE
 
     def get_rate_limit(group, request, block_all=False):
         """Callable function to get rate limit to make testing easier."""
@@ -626,12 +673,8 @@ class ProjectDetailView(DetailView):
 # ----------------------------------------------------------------------
 
 @validate_user
-# @ratelimit(
-#     group=RATE_GROUP,
-#     key='post:', 
-#     rate=get_rate_limit(group=RATE_GROUP, request=request.POST, block_all=True), 
-#     method=ratelimit.UNSAFE, 
-#     block=True)
+@custom_ratelimit_post()
+@custom_ratelimit_ip()
 def create_issue_view(request, user_identifier, *args):
     """View that allows a user to create an issue. Pulls the user_identifier
     from the URL path and tries to pull that UserIdentifier from database, 
@@ -732,7 +775,9 @@ def issue_search_view(request, user_identifier):
 # ----------------------------------------------------------------------
 
 @method_decorator(validate_user, name='dispatch')
-class NoteCreateView(PassUserIdentifierMixin, RatelimitMixin, CreateView):
+@method_decorator(custom_ratelimit_ip(), name='post')
+@method_decorator(custom_ratelimit_post(), name='post')
+class NoteCreateView(PassUserIdentifierMixin, CreateView):
     """View to create a note given a user_identifier."""
     model=Note
     fields = ['body']
