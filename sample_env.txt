@@ -6,5 +6,6 @@ AUTO_ACCEPT_LIST=""
 GITLAB_URL=https://gitlab.torproject.org/
 MAIN_RATE_GROUP = 
 LIMIT_RATE = None
+BLOCK_ALL = False
 DEBUG=True
 ALLOWED_HOSTS=.localhost, 127.0.0.1, .anonticket.onionize.space,
