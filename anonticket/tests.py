@@ -14,13 +14,36 @@ from anonticket.forms import (
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
-# Create your tests here.
 
 # Note: If you run tests with --tag prefix, you can test a small suite
 # of tests with one of the tags below (registered with '@tag'.)
 #   Examples:
 #   $ python manage.py test --tag url 
 #   (or with coverage) $ coverage run manage.py --tag url.)
+
+# ---------------------CUSTOM TEST FUNCTIONS----------------------------
+# URL Tests using Django SimpleTestCase (no need for database.)
+# ----------------------------------------------------------------------
+
+def get_testing_limit_rate():
+    """Returns the number of requests (numerator) from
+    settings.LIMIT_RATE and adds 1 so that rate limiting will fail.)"""
+    limit_rate = settings.LIMIT_RATE
+    limit_list = limit_rate.split('/')
+    limit_numerator = limit_list[0]
+    limit_numerator = int(limit_numerator)
+    limit_numerator += 1
+    return limit_numerator
+
+def run_rate_limit_test(self, client, url, form, form_data, follow=False):
+    """Run a rate limit test for a post view."""
+    rate_limit_numerator = get_testing_limit_rate()
+    tries = 0
+    while tries < rate_limit_numerator:
+        response = self.client.post(
+            path=url, form=form, data=form_data, follow=False)
+        tries += 1
+    return response
 
 # ---------------------------URL TESTS----------------------------------
 # URL Tests using Django SimpleTestCase (no need for database.)
@@ -637,6 +660,20 @@ class TestIssuesViews(TestCase):
         expected_url = reverse('issue-created', args=[self.new_user])
         response = self.client.post(self.create_issue_url, form=form, data=form_data, follow=False)
         self.assertRedirects(response, expected_url)
+
+    def test_create_issue_POST_new_user_RATE_LIMIT(self):
+        """Test rate limit decorators and make exceeding leads to 403."""
+        create_url = reverse('create-issue', args=[
+            'autopilot-stunt-unfasten-dirtiness-wipe-blissful'
+        ])
+        form_data = {
+            'linked_project': self.project.pk,
+            'title':'A new descriptive issue title',
+            'description': 'Yet another description of the issue.'
+        }
+        form=CreateIssueForm(form_data)
+        response = run_rate_limit_test(self, self.client, create_url, form, form_data)
+        self.assertEqual(response.status_code, 403)
 
     def test_create_issue_POST_new_user(self):
         """Test the response for create_issue view with a new user."""
