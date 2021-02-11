@@ -143,7 +143,7 @@ GITLAB_ACCOUNTS_SECRET_TOKEN = config('GITLAB_ACCOUNTS_SECRET_TOKEN', default=''
 # Configuration settings for Django Ratelimit
 MAIN_RATE_GROUP = config('MAIN_RATE_GROUP', default='')
 LIMIT_RATE = config('LIMIT_RATE', default='100/m')
-BLOCK_ALL = config('BLOCK_ALL', default=False)
+BLOCK_ALL = config('BLOCK_ALL', default=False, cast=bool)
 
 # Wordlist Settings for generating wordlist
 WORD_LIST_PATH = os.path.join(BASE_DIR, 'shared/wordlist.txt')
