@@ -674,6 +674,7 @@ class TestIssuesViews(TestCase):
         form=CreateIssueForm(form_data)
         response = run_rate_limit_test(self, self.client, create_url, form, form_data)
         self.assertEqual(response.status_code, 403)
+        self.assertTemplateUsed('anonticket/rate_limit.html')
 
     def test_create_issue_POST_new_user(self):
         """Test the response for create_issue view with a new user."""
