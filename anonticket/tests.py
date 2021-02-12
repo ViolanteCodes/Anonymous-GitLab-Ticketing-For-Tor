@@ -25,23 +25,38 @@ from django.core.cache import cache
 # URL Tests using Django SimpleTestCase (no need for database.)
 # ----------------------------------------------------------------------
 
-def get_testing_limit_rate():
+def get_testing_limit_rate(fraction=''):
     """Returns the number of requests (numerator) from
     settings.LIMIT_RATE and adds 1 so that rate limiting will fail.)"""
     limit_rate = settings.LIMIT_RATE
     limit_list = limit_rate.split('/')
     limit_numerator = limit_list[0]
     limit_numerator = int(limit_numerator)
-    limit_numerator += 1
-    return limit_numerator
+    if fraction:
+        fraction = float(fraction)
+        partial_numerator = fraction * limit_numerator
+        partial_numerator = round(partial_numerator)
+        partial_numerator += 1
+        return partial_numerator
+    else:
+        limit_numerator += 1
+        return limit_numerator
 
-def run_rate_limit_test(self, client, url, form, form_data, follow=False):
+def run_rate_limit_test(self, client, url, form, form_data, follow=False, fraction=''):
     """Run a rate limit test for a post view."""
-    rate_limit_numerator = get_testing_limit_rate()
+    rate_limit_numerator = get_testing_limit_rate(fraction=fraction)
     tries = 0
+    if fraction:
+        print("""
+        Testing rate limiting: Combined test of {fraction} * issues and 
+        {fraction} * notes.""")
+    else:
+        print("""Testing rate limiting.""")
     while tries < rate_limit_numerator:
+        print(f"Trial {tries + 1} of {rate_limit_numerator}.")
         response = self.client.post(
             path=url, form=form, data=form_data, follow=False)
+        print(f"Status Code = {response.status_code}")
         tries += 1
     return response
 
@@ -870,9 +885,81 @@ class TestNoteViewRateLimit(TestCase):
         form_data = {
             'body': """A new note body."""
         }
-        form=CreateIssueForm(form_data)
+        form=None
         response = run_rate_limit_test(self, self.client, url, form, form_data)
         self.assertEqual(response.status_code, 403)
+        self.assertTemplateUsed('anonticket/rate_limit.html')
+
+    def tearDown(self):
+        """Clear Cache"""
+        cache.clear()
+
+@tag('rate-limit-combined')
+class TestNoteIssueCombinedRateLimit(TestCase):
+    """Test that COMBINED rate-limit bucket is working correctly"""
+
+    def setUp(self):
+        """Set up a project, user identifier, and issue in the test database."""
+        # Setup project
+        new_project = Project(gitlab_id=747)
+        # Should fetch gitlab details on save.
+        new_project.save()
+        # Create a user
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        # Create a posted issue.
+        posted_issue = Issue.objects.create (  
+            title = 'A posted issue',
+            description = 'A posted issue description',
+            linked_project = new_project,
+            linked_user = new_user,
+            gitlab_iid = 1,
+            reviewer_status = 'A',
+            posted_to_GitLab = True
+        )
+        self.client=Client()
+        self.new_user = new_user
+        self.project = new_project
+        self.existing_issue = posted_issue
+        self.create_issue_url = reverse('create-issue', args=[new_user])
+        self.create_note_url = reverse('create-note', args= [
+            new_user, new_project.slug, posted_issue.gitlab_iid])
+
+    def test_combined_POST_RATE_LIMIT(self):
+        """Test rate limit decorators for note crate view."""
+        # Run first 1/2 of trials using issue create
+        issue_form_data = {
+            'linked_project': self.project.pk,
+            'title':'A new descriptive issue title',
+            'description': 'Yet another description of the issue.'
+        }
+        issue_form=CreateIssueForm(issue_form_data)
+        issue_response = run_rate_limit_test(
+            self, 
+            self.client, 
+            self.create_issue_url, 
+            form=issue_form, 
+            form_data=issue_form_data,
+            fraction=0.5
+            )
+        # Assert that status code is 200 at 1/2 + 1 tries.
+        # self.assertEqual(issue_response.status_code, 200)
+        print(issue_response.context)
+        # Run second 1/2 of trials using note create
+        note_data = {
+            'body': """A new note body."""
+        }
+        note_response = run_rate_limit_test(
+            self, 
+            self.client, 
+            self.create_note_url, 
+            form=None,
+            form_data=note_data,
+            fraction=0.5, 
+            )
+        # Assert that test now returns 403 forbidden.
+        self.assertEqual(note_response.status_code, 403)
         self.assertTemplateUsed('anonticket/rate_limit.html')
 
     def tearDown(self):
