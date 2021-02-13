@@ -26,8 +26,8 @@ from django.core.cache import cache
 # ----------------------------------------------------------------------
 
 def get_testing_limit_rate(fraction=''):
-    """Returns the number of requests (numerator) from
-    settings.LIMIT_RATE and adds 1 so that rate limiting will fail.)"""
+    """Returns 1 + the number of requests (numerator) from
+    settings.LIMIT_RATE or requests/fraction"""
     limit_rate = settings.LIMIT_RATE
     limit_list = limit_rate.split('/')
     limit_numerator = limit_list[0]
@@ -43,13 +43,13 @@ def get_testing_limit_rate(fraction=''):
         return limit_numerator
 
 def run_rate_limit_test(self, client, url, form, form_data, follow=False, fraction=''):
-    """Run a rate limit test for a post view."""
+    """Run successive rate limit tests based on settings.RATE_LIMIT and fraction."""
     rate_limit_numerator = get_testing_limit_rate(fraction=fraction)
     tries = 0
     if fraction:
-        print("""
-        Testing rate limiting: Combined test of {fraction} * issues and 
-        {fraction} * notes.""")
+        print(f"""
+        Testing rate limiting: Combined test of {rate_limit_numerator} issues and 
+        {rate_limit_numerator} notes.""")
     else:
         print("""Testing rate limiting.""")
     while tries < rate_limit_numerator:
