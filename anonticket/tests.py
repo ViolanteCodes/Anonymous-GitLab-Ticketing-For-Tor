@@ -944,8 +944,7 @@ class TestNoteIssueCombinedRateLimit(TestCase):
             fraction=0.5
             )
         # Assert that status code is 200 at 1/2 + 1 tries.
-        # self.assertEqual(issue_response.status_code, 200)
-        print(issue_response.context)
+        self.assertEqual(issue_response.status_code, 302)
         # Run second 1/2 of trials using note create
         note_data = {
             'body': """A new note body."""
