@@ -300,9 +300,10 @@ def login_view(request):
     # if the LoginForm is filled out, clean data and join the words together 
     # using the forms join_words function (defined in the form.)
     if form.is_valid():
-        results = form.join_words()
+        print('ha')
+        user_identifier = form.cleaned_data['user_identifier']
         # redirect to user-landing view, passing results dictionary as kwarg
-        return redirect('user-landing', user_identifier = results)
+        return redirect('user-landing', user_identifier = user_identifier)
     # if no valid post request, display the form
     else: 
         form = LoginForm
