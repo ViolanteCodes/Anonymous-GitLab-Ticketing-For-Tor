@@ -71,7 +71,7 @@ class LoginForm(forms.Form):
                     Please choose one or the other.""")
             if all_words_filled == False:
                 user_identifier = login_string
-                self.user_identifier = user_identifier
+                self.cleaned_data['user_identifier'] = user_identifier
         
         if string_filled == False:
             if all_words_filled == False:
