@@ -70,7 +70,8 @@ class LoginForm(forms.Form):
                     """It looks like you've filled out both the login words and the login string/phrase fields.
                     Please choose one or the other.""")
             if all_words_filled == False:
-                pass
+                user_identifier = login_string
+                self.user_identifier = user_identifier
         
         if string_filled == False:
             if all_words_filled == False:
