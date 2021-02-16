@@ -305,7 +305,8 @@ def login_view(request):
         return redirect('user-landing', user_identifier = user_identifier)
     # if no valid post request, display the form
     else: 
-        form = LoginForm
+        # form = LoginForm
+        return render (request, 'anonticket/user_login.html', {'form': form})
     return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
 
 @validate_user
