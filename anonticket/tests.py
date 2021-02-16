@@ -1264,8 +1264,8 @@ class TestViewsOtherWithoutDatabase(SimpleTestCase):
 class TestLoginForm(SimpleTestCase):
     """Test the Login Form from forms.py."""
 
-    def test_login_valid_data(self):
-        """Test login form with valid data."""
+    def test_login_valid_data_six_words(self):
+        """Test login form with six valid words."""
         # duo-atlas-hypnotism-curry-creatable-rubble
         form = LoginForm(data = {
             'word_1': 'duo',
@@ -1276,9 +1276,17 @@ class TestLoginForm(SimpleTestCase):
             'word_6': 'rubble',
         })
         self.assertTrue(form.is_valid())
+
+    def test_login_valid_data_login_string(self):
+        """Test login form with a valid string."""
+        # duo-atlas-hypnotism-curry-creatable-rubble
+        form = LoginForm(data = {
+            'login_string': 'duo-atlas-hypnotism-curry-creatable-rubble' ,
+        })
+        self.assertTrue(form.is_valid())
     
-    def test_login_invalid_data(self):
-        """Test login form with invalid data."""
+    def test_login_invalid_data_five_words(self):
+        """Test login form with only five valid words."""
         # duo-atlas-hypnotism-curry-creatable-rubble
         form = LoginForm(data = {
             'word_1': 'duo',
@@ -1286,6 +1294,21 @@ class TestLoginForm(SimpleTestCase):
             'word_3': 'hypnotism',
             'word_4': 'curry',
             'word_5': 'creatable',
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEquals(len(form.errors), 1)
+
+    def test_login_invalid_data_six_words_AND_string(self):
+        """Test login form with six valid words AND login string filled out."""
+        # duo-atlas-hypnotism-curry-creatable-rubble
+        form = LoginForm(data = {
+            'word_1': 'duo',
+            'word_2': 'atlas',
+            'word_3': 'hypnotism',
+            'word_4': 'curry',
+            'word_5': 'creatable',
+            'word_6': 'rubble',
+            'login_string': 'duo-atlas-hypnotism-curry-creatable-rubble'
         })
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.errors), 1)
