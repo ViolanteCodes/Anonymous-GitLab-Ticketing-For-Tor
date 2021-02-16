@@ -1,8 +1,8 @@
 from django import forms
 from django.forms import ModelForm, modelformset_factory, BaseModelFormSet
 from django.conf import settings
-from django.shortcuts import get_object_or_404
-from django.urls import reverse 
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 import gitlab
 import random
 from django.core.exceptions import ValidationError
@@ -47,6 +47,7 @@ class LoginForm(forms.Form):
         # Set two flags for strings and all words filled.
         string_filled = False
         all_words_filled = True
+        any_words = False
         # Grab the login string field
         if cleaned_data.get('login_string') != '':
             login_string = cleaned_data.get('login_string')
@@ -61,21 +62,26 @@ class LoginForm(forms.Form):
             # if any of the words are left blank, flip the flag for all_words_filled.
             if value == '':
                 all_words_filled = False
+            if value != '':
+                any_words = True
 
         if string_filled == True:
-            if all_words_filled == True:
+            if any_words == True:
                 raise ValidationError(
                     """ERROR: It looks like you've filled out both the login words and the login string/phrase fields.
                     Please choose one or the other.""")
-            if all_words_filled == False:
+            else:
                 user_identifier = login_string
                 self.cleaned_data['user_identifier'] = user_identifier
         
         if string_filled == False:
             if all_words_filled == False:
-                raise ValidationError(
-                    """Make sure to fill out either all words of your user identifier above, or paste the string
-                    version of your user identifier below.""")
+                if any_words == True:
+                    raise ValidationError(
+                        """Make sure to fill out either all words of your user identifier above, or paste the string
+                        version of your user identifier below.""")
+                else:
+                    self.cleaned_data['blank'] = True
             else:
                 user_identifier = self.build_code_phrase(cleaned_word_data=cleaned_word_data)
                 self.cleaned_data['user_identifier'] = user_identifier
