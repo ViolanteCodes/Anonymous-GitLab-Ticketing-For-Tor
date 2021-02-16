@@ -58,8 +58,6 @@ class LoginForm(forms.Form):
         for word in word_counter:
             value = cleaned_data.get(word)
             cleaned_word_data.append(value)
-            print('testing: cleaned_word_data')
-            print(cleaned_word_data)
             # if any of the words are left blank, flip the flag for all_words_filled.
             if value == '':
                 all_words_filled = False
