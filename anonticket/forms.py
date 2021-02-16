@@ -65,7 +65,7 @@ class LoginForm(forms.Form):
         if string_filled == True:
             if all_words_filled == True:
                 raise ValidationError(
-                    """It looks like you've filled out both the login words and the login string/phrase fields.
+                    """ERROR: It looks like you've filled out both the login words and the login string/phrase fields.
                     Please choose one or the other.""")
             if all_words_filled == False:
                 user_identifier = login_string
