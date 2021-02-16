@@ -300,9 +300,12 @@ def login_view(request):
     # if the LoginForm is filled out, clean data and join the words together 
     # using the forms join_words function (defined in the form.)
     if form.is_valid():
-        user_identifier = form.cleaned_data['user_identifier']
-        # redirect to user-landing view, passing results dictionary as kwarg
-        return redirect('user-landing', user_identifier = user_identifier)
+        if 'user_identifier' in form.cleaned_data.keys():
+            user_identifier = form.cleaned_data['user_identifier']
+            # redirect to user-landing view, passing results dictionary as kwarg
+            return redirect('user-landing', user_identifier = user_identifier)
+        else:
+            return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
     # if no valid post request, display the form
     else: 
         # form = LoginForm
