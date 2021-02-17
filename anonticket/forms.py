@@ -41,50 +41,11 @@ class LoginForm(forms.Form):
         """Custom clean method for form"""
         # Call the parent method
         cleaned_data = super().clean()
-        # Set two flags for strings and all words filled.
-        string_filled = False
-        all_words_filled = True
-        any_words = False
         # Grab the login string field
         if cleaned_data.get('login_string') != '':
             login_string = cleaned_data.get('login_string')
-            string_filled = True
-        # Now get the individual word login fields - first set up a list called word_counter
-        word_counter = ['word_1', 'word_2', 'word_3', 'word_4', 'word_5', 'word_6']
-        # iterate through the wordlist, matching to cleaned_data and further santizing the input by 
-        # calling .lower() on each word before passing it to a cleaned_word_data dictionary to be joined.
-        cleaned_word_data = []
-        for word in word_counter:
-            value = cleaned_data.get(word)
-            cleaned_word_data.append(value.lower())
-            # if any of the words are left blank, flip the flag for all_words_filled.
-            if value == '':
-                all_words_filled = False
-            # if any word is filled in, flip the flap for any_words.
-            if value != '':
-                any_words = True
-
-        if string_filled == True:
-            if any_words == True:
-                raise ValidationError(
-                    """ERROR: It looks like you've filled out both the login words and the login string/phrase fields.
-                    Please choose one or the other.""")
-            else:
-                user_identifier = self.sanitize_login_string(login_string)
-                self.cleaned_data['user_identifier'] = user_identifier
-        
-        if string_filled == False:
-            if all_words_filled == False:
-                if any_words == True:
-                    raise ValidationError(
-                        """Make sure to fill out either all words of your user identifier above, or paste the string
-                        version of your user identifier below.""")
-                else:
-                    self.cleaned_data['blank'] = True
-            else:
-                user_identifier = self.build_code_phrase(cleaned_word_data=cleaned_word_data)
-                self.cleaned_data['user_identifier'] = user_identifier
-
+            user_identifier = self.sanitize_login_string(login_string)
+            self.cleaned_data['user_identifier'] = user_identifier
 
 # Forms relating to User Objects:
 
