@@ -1487,7 +1487,7 @@ class TestLoginFormAttributes(SimpleTestCase):
         """Test sanitize_login_string method with MULTIPLE mixed 
         separators and bilateral whitespace to strip."""
         form = LoginForm()
-        test_phrase = '  duo-_-atlas- hypnotism-_curry-creatable- rubble '
+        test_phrase = '  duo-_-atlas- hypnotism-_-----curry-creatable- rubble '
         result = form.sanitize_login_string(test_phrase)
         self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
 
