@@ -13,12 +13,6 @@ gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOK
 
 class LoginForm(forms.Form):
     """A form that allows users to enter in their keycodes to login."""
-    word_1 = forms.CharField(max_length=9, required=False)
-    word_2 = forms.CharField(max_length=9, required=False)
-    word_3 = forms.CharField(max_length=9, required=False)
-    word_4 = forms.CharField(max_length=9, required=False)
-    word_5 = forms.CharField(max_length=9, required=False)
-    word_6 = forms.CharField(max_length=9, required=False)
     login_string = forms.CharField(max_length=255, required=False)
     
     def sanitize_login_string(self, login_string):
