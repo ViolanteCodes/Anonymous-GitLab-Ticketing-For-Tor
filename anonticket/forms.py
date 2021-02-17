@@ -44,8 +44,7 @@ class LoginForm(forms.Form):
         """Santizes the login string"""
         #convert to lowercase and strip whitespace
         working = login_string.lower().strip()
-        working = working.replace(' ', '-')
-        working = working.replace('_', '-')
+        working = working.replace('_', '-').replace(',', '-').replace(' ', '-')
         if '--' in working:
             while '--' in working:
                 working = working.replace('--', '-')
