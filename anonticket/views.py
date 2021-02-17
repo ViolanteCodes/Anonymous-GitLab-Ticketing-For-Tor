@@ -308,7 +308,7 @@ def login_view(request):
     # if no valid user_identifier in GET, just display the form
     else: 
         return render (request, 'anonticket/user_login.html', {'form': form})
-    # If the form isn't valid, just render the form.
+    # If everything else fails, just render the form.
     return render (request, 'anonticket/user_login.html', {'form':form})
 
 @validate_user
