@@ -22,7 +22,7 @@ from django.core.cache import cache
 #   (or with coverage) $ coverage run manage.py --tag url.)
 
 # ---------------------CUSTOM TEST FUNCTIONS----------------------------
-# URL Tests using Django SimpleTestCase (no need for database.)
+# Functions used inside of the testing package
 # ----------------------------------------------------------------------
 
 def get_testing_limit_rate(fraction=''):
@@ -60,6 +60,79 @@ def run_rate_limit_test(self, client, url, form, form_data, follow=False, fracti
         tries += 1
     return response
 
+# -----DISCRETE FUNCTION UNIT TESTS (SHARED FUNCTIONS, NON-GITLAB)------
+# Unit tests for the functions inside of views.py in the top section 
+# labelled "Shared Functions - Non Gitlab"
+# ----------------------------------------------------------------------
+@tag('shared-non-gitlab')
+class TestUserIdentifierInDatabase(TestCase):
+    """Tests the user_identifier_in_database function."""
+
+    def setUp(self):
+        new_user = UserIdentifier.objects.create(user_identifier = 
+            'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.new_user = new_user
+
+    def test_user_identifier_in_database_good_user(self):
+        """Tests user_identifier_in_database with known good user."""
+        user_found = user_identifier_in_database(find_user = self.new_user)
+        self.assertTrue(user_found)
+    
+    def test_user_identifier_in_database_bad_user(self):
+        """Tests user_identifier_in_database with known bad user."""
+        user_found = user_identifier_in_database(find_user = 'i-am-a-known-bad-user')
+        self.assertFalse(user_found)
+
+@tag('shared-non-gitlab')
+class TestGetUserAsObject(TestCase):
+    """Tests the get_user_as_object function"""
+
+    def setUp(self):
+        new_user = UserIdentifier.objects.create(user_identifier = 
+            'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.new_user = new_user
+
+    def test_get_user_as_object(self):
+        """Tests user_identifier_in_database with known good user."""
+        user_to_find = UserIdentifier.objects.get(user_identifier = self.new_user)
+        self.assertEqual(user_to_find.user_identifier, 'duo-atlas-hypnotism-curry-creatable-rubble')
+
+@tag('shared-non-gitlab')
+class TestCheckUser(SimpleTestCase):
+    """Test the check_user function."""
+
+    def test_check_user_known_good(self):
+        """Test the check_user function with known good identifier"""
+        user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        test_response = check_user(user_identifier = user_identifier)
+        self.assertTrue(test_response)
+
+    def test_check_user_known_good_uppercase(self):
+        """Test the check_user function with known good identifier with uppercase"""
+        user_identifier = 'duo-Atlas-hypnotism-Curry-creatable-Rubble'
+        test_response = check_user(user_identifier = user_identifier)
+        self.assertTrue(test_response)
+
+    def test_check_user_too_many_words(self):
+        """Test the check_user function with an identifier that is too long."""
+        user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble-relic-skylight-yield-vocalize-gerbil-finalist'
+        test_response = check_user(user_identifier = user_identifier)
+        self.assertFalse(test_response)
+
+    def test_check_user_repeated_words(self):
+        """Test the check_user function with repeated words"""
+        user_identifier = 'duo-atlas-hypnotism-curry-creatable-creatable'
+        test_response = check_user(user_identifier = user_identifier)
+        self.assertFalse(test_response)
+
+    def test_check_user_bad_words(self):
+        """Test the check_user function with repeated words"""
+        user_identifier = 'duo-atlas-hypnotism-curry-creatable-foo'
+        test_response = check_user(user_identifier = user_identifier)
+        self.assertFalse(test_response)
+    
 # ---------------------------URL TESTS----------------------------------
 # URL Tests using Django SimpleTestCase (no need for database.)
 # ----------------------------------------------------------------------
