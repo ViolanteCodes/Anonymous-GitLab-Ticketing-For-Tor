@@ -22,7 +22,7 @@ from django.core.cache import cache
 #   (or with coverage) $ coverage run manage.py --tag url.)
 
 # ---------------------CUSTOM TEST FUNCTIONS----------------------------
-# Functions used inside of the testing package
+# Functions used inside of the testing package during rate-limit tests.
 # ----------------------------------------------------------------------
 
 def get_testing_limit_rate(fraction=''):
@@ -62,7 +62,7 @@ def run_rate_limit_test(self, client, url, form, form_data, follow=False, fracti
 
 # -----DISCRETE FUNCTION UNIT TESTS (SHARED FUNCTIONS, NON-GITLAB)------
 # Unit tests for the functions inside of views.py in the top section 
-# labelled "Shared Functions - Non Gitlab"
+# labelled: "Shared Functions - Non Gitlab"
 # ----------------------------------------------------------------------
 @tag('shared-non-gitlab')
 class TestUserIdentifierInDatabase(TestCase):
