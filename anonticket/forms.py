@@ -21,18 +21,18 @@ class LoginForm(forms.Form):
     word_6 = forms.CharField(max_length=9, required=False)
     login_string = forms.CharField(max_length=255, required=False)
 
-    def join_words(self):
-        """Pull cleaned data from form and join into code_phrase"""
-        word_list = []
-        word_list.append(self.cleaned_data['word_1'])
-        word_list.append(self.cleaned_data['word_2'])
-        word_list.append(self.cleaned_data['word_3'])
-        word_list.append(self.cleaned_data['word_4'])
-        word_list.append(self.cleaned_data['word_5'])
-        word_list.append(self.cleaned_data['word_6'])
-        join_key = '-'
-        code_phrase = join_key.join(word_list)
-        return code_phrase
+    # def join_words(self):
+    #     """Pull cleaned data from form and join into code_phrase"""
+    #     word_list = []
+    #     word_list.append(self.cleaned_data['word_1'])
+    #     word_list.append(self.cleaned_data['word_2'])
+    #     word_list.append(self.cleaned_data['word_3'])
+    #     word_list.append(self.cleaned_data['word_4'])
+    #     word_list.append(self.cleaned_data['word_5'])
+    #     word_list.append(self.cleaned_data['word_6'])
+    #     join_key = '-'
+    #     code_phrase = join_key.join(word_list)
+    #     return code_phrase
     
     def build_code_phrase(self, cleaned_word_data=[]):
         """Join form cleaned data into code_phrase"""
@@ -40,8 +40,16 @@ class LoginForm(forms.Form):
         code_phrase = join_key.join(cleaned_word_data)
         return code_phrase
 
-    def sanitize_login_string(self, string):
+    def sanitize_login_string(self, login_string):
         """Santizes the login string"""
+        #convert to lowercase and strip whitespace
+        working = login_string.lower().strip()
+        working = working.replace(' ', '-')
+        working = working.replace('_', '-')
+        if '--' in working:
+            while '--' in working:
+                working = working.replace('--', '-')
+        return working
 
     def clean(self):
         """Custom clean method for form"""
