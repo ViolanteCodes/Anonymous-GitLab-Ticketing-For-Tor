@@ -217,15 +217,19 @@ def custom_ratelimit_post(
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
 gl_public = gitlab.Gitlab(settings.GITLAB_URL)
 
-def gitlab_get_project(project, lazy=False):
+def gitlab_get_project(project, lazy=False, public=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
-    working_project = gl.projects.get(project, lazy=lazy)
-    return working_project
-
-def gitlab_get_issue(project, issue, lazy_project = False, lazy_issue = False):
+    if public == True:
+        working_project = gl_public.projects.get(project, lazy=lazy)
+        return working_project
+    else:
+        working_project = gl.projects.get(project, lazy=lazy)
+        return working_project
+    
+def gitlab_get_issue(project, issue, lazy_project=False, lazy_issue=False, public=False):
     """Takes two integers and grabs corresponding gitlab issue."""
-    working_project = gitlab_get_project(project, lazy=lazy_project)
+    working_project = gitlab_get_project(project, lazy=lazy_project, public=public)
     working_issue = working_project.issues.get(issue, lazy=lazy_issue)
     return working_issue
 
@@ -470,7 +474,7 @@ class ProjectDetailView(DetailView):
         # Grab the gitlab ID from db and create GL project object with
         # a lazy API call.
         gitlab_id = db_project.gitlab_id
-        gl_project = gitlab_get_project(gitlab_id, lazy=True)
+        gl_project = gitlab_get_project(gitlab_id, lazy=True, public=True)
         # Save the project attributes to context dict.
         context['results'] = {'user_identifier': user_identifier}
         context['page_number'] = page_number
@@ -738,7 +742,7 @@ def issue_detail_view(request, user_identifier, project_slug, gitlab_iid, go_bac
     # Use the gitlab_id from database project to fetch project from gitlab.
     # (Increases security.)
     gitlab_id = database_project.gitlab_id
-    working_project = gitlab_get_project(project=gitlab_id)
+    working_project = gitlab_get_project(project=gitlab_id, public=True)
     results['project'] = working_project.attributes
     go_back_url = reverse('project-detail', args=[user_identifier, project_slug, go_back_number])
     results['go_back_url'] = go_back_url
