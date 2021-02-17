@@ -76,9 +76,9 @@ ul.flex-form {
 .flex-form li {
     flex-basis: 16%;
 }
-.flex-form label {
+/* .flex-form label {
     display: none;
-}
+} */
 button.new-line{
     flex-basis: 1;
 }
