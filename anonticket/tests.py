@@ -1338,13 +1338,33 @@ class TestLoginFormIsValid(SimpleTestCase):
     """Test the is_valid() on Login Form from forms.py, including
     validation errors raised on custom clean method."""
 
+    def test_login_valid_blank(self):
+        """Test login form with no data."""
+        form = LoginForm(data = {
+        })
+        self.assertTrue(form.is_valid())
+
     def test_login_valid_data_six_words(self):
-        """Test login form with six valid words."""
+        """Test login form with six words."""
         # duo-atlas-hypnotism-curry-creatable-rubble
         form = LoginForm(data = {
             'word_1': 'duo',
             'word_2': 'atlas',
             'word_3': 'hypnotism',
+            'word_4': 'curry',
+            'word_5': 'creatable',
+            'word_6': 'rubble',
+        })
+        self.assertTrue(form.is_valid())
+    
+
+    def test_login_valid_data_six_words_random_case(self):
+        """Test login form with six words regardless of case."""
+        # duo-atlas-hypnotism-curry-creatable-rubble
+        form = LoginForm(data = {
+            'word_1': 'DUO',
+            'word_2': 'atlas',
+            'word_3': 'Hypnotism',
             'word_4': 'curry',
             'word_5': 'creatable',
             'word_6': 'rubble',
