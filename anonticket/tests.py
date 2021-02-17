@@ -1333,9 +1333,10 @@ class TestViewsOtherWithoutDatabase(SimpleTestCase):
 # for integration with views, etc., is done in views.py above.
 # ----------------------------------------------------------------------
 
-@tag('login')
-class TestLoginForm(SimpleTestCase):
-    """Test the Login Form from forms.py."""
+@tag('login-form')
+class TestLoginFormIsValid(SimpleTestCase):
+    """Test the is_valid() on Login Form from forms.py, including
+    validation errors raised on custom clean method."""
 
     def test_login_valid_data_six_words(self):
         """Test login form with six valid words."""
