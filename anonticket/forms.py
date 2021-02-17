@@ -84,7 +84,7 @@ class LoginForm(forms.Form):
                     """ERROR: It looks like you've filled out both the login words and the login string/phrase fields.
                     Please choose one or the other.""")
             else:
-                user_identifier = login_string
+                user_identifier = self.sanitize_login_string(login_string)
                 self.cleaned_data['user_identifier'] = user_identifier
         
         if string_filled == False:
