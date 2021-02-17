@@ -22,7 +22,7 @@ from django.core.cache import cache
 #   (or with coverage) $ coverage run manage.py --tag url.)
 
 # ---------------------CUSTOM TEST FUNCTIONS----------------------------
-# URL Tests using Django SimpleTestCase (no need for database.)
+# Functions used inside of the testing package during rate-limit tests.
 # ----------------------------------------------------------------------
 
 def get_testing_limit_rate(fraction=''):
@@ -60,6 +60,79 @@ def run_rate_limit_test(self, client, url, form, form_data, follow=False, fracti
         tries += 1
     return response
 
+# -----DISCRETE FUNCTION UNIT TESTS (SHARED FUNCTIONS, NON-GITLAB)------
+# Unit tests for the functions inside of views.py in the top section 
+# labelled: "Shared Functions - Non Gitlab"
+# ----------------------------------------------------------------------
+@tag('shared-non-gitlab')
+class TestUserIdentifierInDatabase(TestCase):
+    """Tests the user_identifier_in_database function."""
+
+    def setUp(self):
+        new_user = UserIdentifier.objects.create(user_identifier = 
+            'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.new_user = new_user
+
+    def test_user_identifier_in_database_good_user(self):
+        """Tests user_identifier_in_database with known good user."""
+        user_found = user_identifier_in_database(find_user = self.new_user)
+        self.assertTrue(user_found)
+    
+    def test_user_identifier_in_database_bad_user(self):
+        """Tests user_identifier_in_database with known bad user."""
+        user_found = user_identifier_in_database(find_user = 'i-am-a-known-bad-user')
+        self.assertFalse(user_found)
+
+@tag('shared-non-gitlab')
+class TestGetUserAsObject(TestCase):
+    """Tests the get_user_as_object function"""
+
+    def setUp(self):
+        new_user = UserIdentifier.objects.create(user_identifier = 
+            'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.new_user = new_user
+
+    def test_get_user_as_object(self):
+        """Tests user_identifier_in_database with known good user."""
+        user_to_find = UserIdentifier.objects.get(user_identifier = self.new_user)
+        self.assertEqual(user_to_find.user_identifier, 'duo-atlas-hypnotism-curry-creatable-rubble')
+
+@tag('shared-non-gitlab')
+class TestCheckUser(SimpleTestCase):
+    """Test the check_user function."""
+
+    def test_check_user_known_good(self):
+        """Test the check_user function with known good identifier"""
+        user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        test_response = check_user(user_identifier = user_identifier)
+        self.assertTrue(test_response)
+
+    def test_check_user_known_good_uppercase(self):
+        """Test the check_user function with known good identifier with uppercase"""
+        user_identifier = 'duo-Atlas-hypnotism-Curry-creatable-Rubble'
+        test_response = check_user(user_identifier = user_identifier)
+        self.assertTrue(test_response)
+
+    def test_check_user_too_many_words(self):
+        """Test the check_user function with an identifier that is too long."""
+        user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble-relic-skylight-yield-vocalize-gerbil-finalist'
+        test_response = check_user(user_identifier = user_identifier)
+        self.assertFalse(test_response)
+
+    def test_check_user_repeated_words(self):
+        """Test the check_user function with repeated words"""
+        user_identifier = 'duo-atlas-hypnotism-curry-creatable-creatable'
+        test_response = check_user(user_identifier = user_identifier)
+        self.assertFalse(test_response)
+
+    def test_check_user_bad_words(self):
+        """Test the check_user function with repeated words"""
+        user_identifier = 'duo-atlas-hypnotism-curry-creatable-foo'
+        test_response = check_user(user_identifier = user_identifier)
+        self.assertFalse(test_response)
+    
 # ---------------------------URL TESTS----------------------------------
 # URL Tests using Django SimpleTestCase (no need for database.)
 # ----------------------------------------------------------------------
@@ -1260,12 +1333,19 @@ class TestViewsOtherWithoutDatabase(SimpleTestCase):
 # for integration with views, etc., is done in views.py above.
 # ----------------------------------------------------------------------
 
-@tag('login')
-class TestLoginForm(SimpleTestCase):
-    """Test the Login Form from forms.py."""
+@tag('login-form')
+class TestLoginFormIsValid(SimpleTestCase):
+    """Test the is_valid() on Login Form from forms.py, including
+    validation errors raised on custom clean method."""
 
-    def test_login_valid_data(self):
-        """Test login form with valid data."""
+    def test_login_valid_blank(self):
+        """Test login form with no data."""
+        form = LoginForm(data = {
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_login_valid_data_six_words(self):
+        """Test login form with six words."""
         # duo-atlas-hypnotism-curry-creatable-rubble
         form = LoginForm(data = {
             'word_1': 'duo',
@@ -1277,8 +1357,29 @@ class TestLoginForm(SimpleTestCase):
         })
         self.assertTrue(form.is_valid())
     
-    def test_login_invalid_data(self):
-        """Test login form with invalid data."""
+    def test_login_valid_data_six_words_random_case(self):
+        """Test login form with six words regardless of case."""
+        # duo-atlas-hypnotism-curry-creatable-rubble
+        form = LoginForm(data = {
+            'word_1': 'DUO',
+            'word_2': 'atlas',
+            'word_3': 'Hypnotism',
+            'word_4': 'curry',
+            'word_5': 'creatable',
+            'word_6': 'rubble',
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_login_valid_data_login_string(self):
+        """Test login form with a valid string."""
+        # duo-atlas-hypnotism-curry-creatable-rubble
+        form = LoginForm(data = {
+            'login_string': 'duo-atlas-hypnotism-curry-creatable-rubble' ,
+        })
+        self.assertTrue(form.is_valid())
+    
+    def test_login_invalid_data_five_words(self):
+        """Test login form with only five valid words."""
         # duo-atlas-hypnotism-curry-creatable-rubble
         form = LoginForm(data = {
             'word_1': 'duo',
@@ -1289,6 +1390,106 @@ class TestLoginForm(SimpleTestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.errors), 1)
+    
+    def test_login_invalid_data_any_words_AND_string(self):
+        """Test login form with a word and a login string filled out."""
+        # duo-atlas-hypnotism-curry-creatable-rubble
+        form = LoginForm(data = {
+            'word_1': 'duo',
+            'login_string': 'duo-atlas-hypnotism-curry-creatable-rubble'
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEquals(len(form.errors), 1)
+
+    def test_login_invalid_data_six_words_AND_string(self):
+        """Test login form with six valid words AND login string filled out."""
+        # duo-atlas-hypnotism-curry-creatable-rubble
+        form = LoginForm(data = {
+            'word_1': 'duo',
+            'word_2': 'atlas',
+            'word_3': 'hypnotism',
+            'word_4': 'curry',
+            'word_5': 'creatable',
+            'word_6': 'rubble',
+            'login_string': 'duo-atlas-hypnotism-curry-creatable-rubble'
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEquals(len(form.errors), 1)
+
+@tag('login-form')
+class TestLoginFormAttributes(SimpleTestCase):
+    """Test functions of the LoginForm (besides is_valid)"""
+
+    def test_build_code_phrase(self):
+        """Test login form build_code_phrase method."""
+        form = LoginForm()
+        cleaned_word_data = ['word_1', 'word_2', 'word_3']
+        result = form.build_code_phrase(cleaned_word_data)
+        self.assertEqual(result, 'word_1-word_2-word_3')
+
+    def test_sanitize_login_string_all_dash_no_strip(self):
+        """Test sanitize_login_string method with dash 
+        separators and no whitespace to strip."""
+        form = LoginForm()
+        test_phrase = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+
+    def test_sanitize_login_string_all_space_no_strip(self):
+        """Test sanitize_login_string method with space 
+        separators and no whitespace to strip."""
+        form = LoginForm()
+        test_phrase = 'duo atlas hypnotism curry creatable rubble'
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+    
+    def test_sanitize_login_string_all_underscore_no_strip(self):
+        """Test sanitize_login_string method with underscore 
+        separators and no whitespace to strip."""
+        form = LoginForm()
+        test_phrase = 'duo_atlas_hypnotism_curry_creatable_rubble'
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+
+    def test_sanitize_login_string_mixed_separator_no_strip(self):
+        """Test sanitize_login_string method with mixed 
+        separators and no whitespace to strip."""
+        form = LoginForm()
+        test_phrase = 'duo-atlas hypnotism_curry-creatable rubble'
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+
+    def test_sanitize_login_string_all_dash_left_strip(self):
+        """Test sanitize_login_string method with dash 
+        separators and left whitespace to strip."""
+        form = LoginForm()
+        test_phrase = '      duo-atlas-hypnotism-curry-creatable-rubble'
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+
+    def test_sanitize_login_string_all_space_right_strip(self):
+        """Test sanitize_login_string method with space 
+        separators and right whitespace to strip."""
+        form = LoginForm()
+        test_phrase = 'duo atlas hypnotism curry creatable rubble      '
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+    
+    def test_sanitize_login_string_all_underscore_both_strip(self):
+        """Test sanitize_login_string method with underscore 
+        separators and bilateral whitespace to strip."""
+        form = LoginForm()
+        test_phrase = '  duo_atlas_hypnotism_curry_creatable_rubble  '
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+
+    def test_sanitize_login_string_multiple_mixed_separator_both_strip(self):
+        """Test sanitize_login_string method with MULTIPLE mixed 
+        separators and bilateral whitespace to strip."""
+        form = LoginForm()
+        test_phrase = '  duo-_-atlas- hypnotism-_-----curry-creatable-,,,,, rubble '
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
 
 @tag('search_form')
 class TestAnonymousTicketProjectSearchForm(TestCase):

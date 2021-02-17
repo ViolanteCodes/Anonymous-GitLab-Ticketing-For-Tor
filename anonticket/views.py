@@ -70,6 +70,7 @@ def get_linked_notes(UserIdentifier):
 
 def check_user(user_identifier):
     """Check that a user_identifier meets validation requirements."""
+    user_identifier = user_identifier.lower()
     id_to_test = user_identifier.split('-')
     if len(id_to_test) != settings.DICE_ROLLS:
         return False
@@ -95,11 +96,12 @@ def validate_user(view_func):
     """A decorator that calls check_user validator."""
     @functools.wraps(view_func)
     def validate_user_identifier(request, user_identifier, *args, **kwargs):
-        get_user_identifier = check_user(user_identifier)
+        lowercase_user_identifier = user_identifier.lower()
+        get_user_identifier = check_user(lowercase_user_identifier)
         if get_user_identifier == False:
-            return redirect('user-login-error', user_identifier=user_identifier)
+            return redirect('user-login-error', user_identifier=lowercase_user_identifier)
         else:
-            response = view_func(request, user_identifier, *args, **kwargs)
+            response = view_func(request, lowercase_user_identifier, *args, **kwargs)
         return response
     return validate_user_identifier
 
@@ -293,19 +295,22 @@ class CreateIdentifierView(TemplateView):
                 continue
 
 def login_view(request):
-    """Generate a form with fields to allow users to enter their codename. If all
-    fields are filled out, redirect to appropriate user-landing."""
+    """Generate a login form. Note that most processing for this view is in forms.py"""
     results = {}
     form = LoginForm(request.GET)
     # if the LoginForm is filled out, clean data and join the words together 
     # using the forms join_words function (defined in the form.)
     if form.is_valid():
-        results = form.join_words()
-        # redirect to user-landing view, passing results dictionary as kwarg
-        return redirect('user-landing', user_identifier = results)
+        if 'user_identifier' in form.cleaned_data.keys():
+            user_identifier = form.cleaned_data['user_identifier']
+            # redirect to user-landing view, passing results dictionary as kwarg
+            return redirect('user-landing', user_identifier = user_identifier)
+        else:
+            return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
     # if no valid post request, display the form
     else: 
-        form = LoginForm
+        # form = LoginForm
+        return render (request, 'anonticket/user_login.html', {'form': form})
     return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
 
 @validate_user
