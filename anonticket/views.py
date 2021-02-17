@@ -70,6 +70,7 @@ def get_linked_notes(UserIdentifier):
 
 def check_user(user_identifier):
     """Check that a user_identifier meets validation requirements."""
+    user_identifier = user_identifier.lower()
     id_to_test = user_identifier.split('-')
     if len(id_to_test) != settings.DICE_ROLLS:
         return False
@@ -95,11 +96,12 @@ def validate_user(view_func):
     """A decorator that calls check_user validator."""
     @functools.wraps(view_func)
     def validate_user_identifier(request, user_identifier, *args, **kwargs):
-        get_user_identifier = check_user(user_identifier)
+        lowercase_user_identifier = user_identifier.lower()
+        get_user_identifier = check_user(lowercase_user_identifier)
         if get_user_identifier == False:
             return redirect('user-login-error', user_identifier=user_identifier)
         else:
-            response = view_func(request, user_identifier, *args, **kwargs)
+            response = view_func(request, lowercase_user_identifier, *args, **kwargs)
         return response
     return validate_user_identifier
 
