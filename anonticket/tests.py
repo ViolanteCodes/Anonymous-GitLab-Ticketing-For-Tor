@@ -1357,7 +1357,6 @@ class TestLoginFormIsValid(SimpleTestCase):
         })
         self.assertTrue(form.is_valid())
     
-
     def test_login_valid_data_six_words_random_case(self):
         """Test login form with six words regardless of case."""
         # duo-atlas-hypnotism-curry-creatable-rubble
@@ -1416,6 +1415,81 @@ class TestLoginFormIsValid(SimpleTestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.errors), 1)
+
+@tag('login-form')
+class TestLoginFormAttributes(SimpleTestCase):
+    """Test functions of the LoginForm (besides is_valid)"""
+
+    def test_build_code_phrase(self):
+        """Test login form build_code_phrase method."""
+        form = LoginForm()
+        cleaned_word_data = ['word_1', 'word_2', 'word_3']
+        result = form.build_code_phrase(cleaned_word_data)
+        self.assertEqual(result, 'word_1-word_2-word_3')
+
+    def test_sanitize_login_string_all_dash_no_strip(self):
+        """Test sanitize_login_string method with dash 
+        separators and no whitespace to strip."""
+        form = LoginForm()
+        test_phrase = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+
+    def test_sanitize_login_string_all_space_no_strip(self):
+        """Test sanitize_login_string method with space 
+        separators and no whitespace to strip."""
+        form = LoginForm()
+        test_phrase = 'duo atlas hypnotism curry creatable rubble'
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+    
+    def test_sanitize_login_string_all_underscore_no_strip(self):
+        """Test sanitize_login_string method with underscore 
+        separators and no whitespace to strip."""
+        form = LoginForm()
+        test_phrase = 'duo_atlas_hypnotism_curry_creatable_rubble'
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+
+    def test_sanitize_login_string_mixed_separator_no_strip(self):
+        """Test sanitize_login_string method with mixed 
+        separators and no whitespace to strip."""
+        form = LoginForm()
+        test_phrase = 'duo-atlas hypnotism_curry-creatable rubble'
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+
+    def test_sanitize_login_string_all_dash_left_strip(self):
+        """Test sanitize_login_string method with dash 
+        separators and left whitespace to strip."""
+        form = LoginForm()
+        test_phrase = '      duo-atlas-hypnotism-curry-creatable-rubble'
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+
+    def test_sanitize_login_string_all_space_right_strip(self):
+        """Test sanitize_login_string method with space 
+        separators and right whitespace to strip."""
+        form = LoginForm()
+        test_phrase = 'duo atlas hypnotism curry creatable rubble      '
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+    
+    def test_sanitize_login_string_all_underscore_both_strip(self):
+        """Test sanitize_login_string method with underscore 
+        separators and bilateral whitespace to strip."""
+        form = LoginForm()
+        test_phrase = '  duo_atlas_hypnotism_curry_creatable_rubble  '
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
+
+    def test_sanitize_login_string_multiple_mixed_separator_both_strip(self):
+        """Test sanitize_login_string method with MULTIPLE mixed 
+        separators and bilateral whitespace to strip."""
+        form = LoginForm()
+        test_phrase = '  duo-_-atlas- hypnotism-_curry-creatable- rubble '
+        result = form.sanitize_login_string(test_phrase)
+        self.assertEqual(result, 'duo-atlas-hypnotism-curry-creatable-rubble')
 
 @tag('search_form')
 class TestAnonymousTicketProjectSearchForm(TestCase):
