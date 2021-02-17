@@ -1391,6 +1391,16 @@ class TestLoginFormIsValid(SimpleTestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.errors), 1)
+    
+    def test_login_invalid_data_any_words_AND_string(self):
+        """Test login form with a word and a login string filled out."""
+        # duo-atlas-hypnotism-curry-creatable-rubble
+        form = LoginForm(data = {
+            'word_1': 'duo',
+            'login_string': 'duo-atlas-hypnotism-curry-creatable-rubble'
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEquals(len(form.errors), 1)
 
     def test_login_invalid_data_six_words_AND_string(self):
         """Test login form with six valid words AND login string filled out."""
