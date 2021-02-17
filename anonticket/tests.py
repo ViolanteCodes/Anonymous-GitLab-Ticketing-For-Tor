@@ -278,12 +278,7 @@ class TestIdentifierAndLoginViewsWithoutDatabase(SimpleTestCase):
     def test_login_view_GET_with_data(self):
         """Test the response for the login_view with data."""
         response = self.client.get(self.login_url, data={
-            'word_1': 'duo',
-            'word_2': 'atlas',
-            'word_3': 'hypnotism',
-            'word_4': 'curry',
-            'word_5': 'creatable',
-            'word_6': 'rubble',
+            'login_string': self.new_user,
         })
         self.assertEqual(response.status_code, 302)
 
