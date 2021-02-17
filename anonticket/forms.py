@@ -40,6 +40,9 @@ class LoginForm(forms.Form):
         code_phrase = join_key.join(cleaned_word_data)
         return code_phrase
 
+    def sanitize_login_string(self, string):
+        """Santizes the login string"""
+
     def clean(self):
         """Custom clean method for form"""
         # Call the parent method
@@ -54,14 +57,16 @@ class LoginForm(forms.Form):
             string_filled = True
         # Now get the individual word login fields - first set up a list called word_counter
         word_counter = ['word_1', 'word_2', 'word_3', 'word_4', 'word_5', 'word_6']
-        # iterate through the list and save the values to a new list to pass to build code phrase function.
+        # iterate through the wordlist, matching to cleaned_data and further santizing the input by 
+        # calling .lower() on each word before passing it to a cleaned_word_data dictionary to be joined.
         cleaned_word_data = []
         for word in word_counter:
             value = cleaned_data.get(word)
-            cleaned_word_data.append(value)
+            cleaned_word_data.append(value.lower())
             # if any of the words are left blank, flip the flag for all_words_filled.
             if value == '':
                 all_words_filled = False
+            # if any word is filled in, flip the flap for any_words.
             if value != '':
                 any_words = True
 
