@@ -278,12 +278,7 @@ class TestIdentifierAndLoginViewsWithoutDatabase(SimpleTestCase):
     def test_login_view_GET_with_data(self):
         """Test the response for the login_view with data."""
         response = self.client.get(self.login_url, data={
-            'word_1': 'duo',
-            'word_2': 'atlas',
-            'word_3': 'hypnotism',
-            'word_4': 'curry',
-            'word_5': 'creatable',
-            'word_6': 'rubble',
+            'login_string': self.new_user,
         })
         self.assertEqual(response.status_code, 302)
 
@@ -1344,32 +1339,6 @@ class TestLoginFormIsValid(SimpleTestCase):
         })
         self.assertTrue(form.is_valid())
 
-    def test_login_valid_data_six_words(self):
-        """Test login form with six words."""
-        # duo-atlas-hypnotism-curry-creatable-rubble
-        form = LoginForm(data = {
-            'word_1': 'duo',
-            'word_2': 'atlas',
-            'word_3': 'hypnotism',
-            'word_4': 'curry',
-            'word_5': 'creatable',
-            'word_6': 'rubble',
-        })
-        self.assertTrue(form.is_valid())
-    
-    def test_login_valid_data_six_words_random_case(self):
-        """Test login form with six words regardless of case."""
-        # duo-atlas-hypnotism-curry-creatable-rubble
-        form = LoginForm(data = {
-            'word_1': 'DUO',
-            'word_2': 'atlas',
-            'word_3': 'Hypnotism',
-            'word_4': 'curry',
-            'word_5': 'creatable',
-            'word_6': 'rubble',
-        })
-        self.assertTrue(form.is_valid())
-
     def test_login_valid_data_login_string(self):
         """Test login form with a valid string."""
         # duo-atlas-hypnotism-curry-creatable-rubble
@@ -1377,55 +1346,10 @@ class TestLoginFormIsValid(SimpleTestCase):
             'login_string': 'duo-atlas-hypnotism-curry-creatable-rubble' ,
         })
         self.assertTrue(form.is_valid())
-    
-    def test_login_invalid_data_five_words(self):
-        """Test login form with only five valid words."""
-        # duo-atlas-hypnotism-curry-creatable-rubble
-        form = LoginForm(data = {
-            'word_1': 'duo',
-            'word_2': 'atlas',
-            'word_3': 'hypnotism',
-            'word_4': 'curry',
-            'word_5': 'creatable',
-        })
-        self.assertFalse(form.is_valid())
-        self.assertEquals(len(form.errors), 1)
-    
-    def test_login_invalid_data_any_words_AND_string(self):
-        """Test login form with a word and a login string filled out."""
-        # duo-atlas-hypnotism-curry-creatable-rubble
-        form = LoginForm(data = {
-            'word_1': 'duo',
-            'login_string': 'duo-atlas-hypnotism-curry-creatable-rubble'
-        })
-        self.assertFalse(form.is_valid())
-        self.assertEquals(len(form.errors), 1)
-
-    def test_login_invalid_data_six_words_AND_string(self):
-        """Test login form with six valid words AND login string filled out."""
-        # duo-atlas-hypnotism-curry-creatable-rubble
-        form = LoginForm(data = {
-            'word_1': 'duo',
-            'word_2': 'atlas',
-            'word_3': 'hypnotism',
-            'word_4': 'curry',
-            'word_5': 'creatable',
-            'word_6': 'rubble',
-            'login_string': 'duo-atlas-hypnotism-curry-creatable-rubble'
-        })
-        self.assertFalse(form.is_valid())
-        self.assertEquals(len(form.errors), 1)
 
 @tag('login-form')
 class TestLoginFormAttributes(SimpleTestCase):
     """Test functions of the LoginForm (besides is_valid)"""
-
-    def test_build_code_phrase(self):
-        """Test login form build_code_phrase method."""
-        form = LoginForm()
-        cleaned_word_data = ['word_1', 'word_2', 'word_3']
-        result = form.build_code_phrase(cleaned_word_data)
-        self.assertEqual(result, 'word_1-word_2-word_3')
 
     def test_sanitize_login_string_all_dash_no_strip(self):
         """Test sanitize_login_string method with dash 

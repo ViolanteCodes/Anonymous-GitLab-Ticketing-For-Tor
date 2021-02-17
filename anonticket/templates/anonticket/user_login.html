@@ -13,16 +13,18 @@
 {% endblock %}
 <!-- Subheader block sets the subheader -->
 {% block subheader %} 
-  Enter in a User Identifier Code-Phrase
+  Login with Existing User Identifier
 {% endblock %}
 <!-- block content block is where page contents go -->
 {% block content %}
 <!-- Explanation block -->
-<div class="row mb-4">
+<div class="row mb-1">
   <div class="col-12">
     <p class="pr-5">
-      If you've already created a user identifier, you can
-      enter it below to login, or you can <a href="{% url 'create-identifier' %}">create one now.</a>
+      If you've already created a user identifier, enter it and click the button below.
+      You can separate words with commas, spaces, dashes, or underscores.</p>
+    <p class="pr-5">If you don't have a user identifier, 
+      (or want a different one), you can <a href="{% url 'create-identifier' %}">create one now.</a>
     </p>
   </div>
 </div>
@@ -42,65 +44,17 @@
 </div>
 {% endif %}
 <!-- Render login string block -->
-<div class="row">
+<div class="row mb-3">
   <div class="col-12">
-    <div class="">
-      <p>
-     Enter your user identifier and click the button below.
-      You can separate the words with commas, spaces, dashes, or underscores. 
-      </p>
-    </div>
-    <div class="bg-light p-4 flex-form">
+    <div class="bg-light px-4 pt-4 pb-1 flex-form fieldWrapper mb-0">
+    {{ form.login_string.errors}}
     {{ form.login_string}}
+    <label for="{{form.login_string.id_for_label }}" class="text-muted ml-2 small">
+      Enter your user identifier above.</label>
     </div>
   </div>
 </div>
-<!-- Render words fields
-<div class="row mt-2">
-  <div class="col-12">
-    <div class="mt-4">
-      <p class="">
-      Option 2: Enter the words of your user identifier below
-      to login. Put one word in each box. You can use tab to navigate from one box to the next.
-      </p>
-    </div>
-    <ul class="bg-light p-4 flex-form">
-      <li>
-        {{ form.word_1.errors}}
-        {{ form.word_1 }}
-        {{ form.word_1.label_tag}}
-      </li>
-      <li>
-        {{ form.word_2.errors}}
-        {{ form.word_2 }}
-        {{ form.word_2.label_tag}}
-      </li>
-      <li>
-        {{ form.word_3.errors}}
-        {{ form.word_3 }}
-        {{ form.word_3.label_tag}}
-      </li>
-      <li>
-        {{ form.word_4.errors}}
-        {{ form.word_4 }}
-        {{ form.word_4.label_tag}}
-      </li>
-      <li>
-        {{ form.word_5.errors}}
-        {{ form.word_5 }}
-        {{ form.word_5.label_tag}}
-      </li>
-      <li>
-        {{ form.word_6.errors}}
-        {{ form.word_6 }}
-        {{ form.word_6.label_tag}}
-      </li>
-    </ul>
-  </div> -->
-<!-- </div> -->
-<!-- Render login button block -->
- <div>
-    <button type="submit" class="btn btn-lg btn-primary mr-2 mt-3 new-line">Login With This Identifier</button>
-  </div>
+<div>
+  <button type="submit" class="btn btn-lg btn-primary mr-2 mt-3 new-line">Login With This Identifier</button>
 </div>
 {% endblock %}

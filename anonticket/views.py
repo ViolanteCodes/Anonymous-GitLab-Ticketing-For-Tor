@@ -296,22 +296,20 @@ class CreateIdentifierView(TemplateView):
 
 def login_view(request):
     """Generate a login form. Note that most processing for this view is in forms.py"""
-    results = {}
     form = LoginForm(request.GET)
-    # if the LoginForm is filled out, clean data and join the words together 
-    # using the forms join_words function (defined in the form.)
     if form.is_valid():
+        # if there is a user_identifier in the form keys (sanitized login_string field):
         if 'user_identifier' in form.cleaned_data.keys():
             user_identifier = form.cleaned_data['user_identifier']
-            # redirect to user-landing view, passing results dictionary as kwarg
+            # redirect to user-landing view, passing user_identifier to url
             return redirect('user-landing', user_identifier = user_identifier)
         else:
-            return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
-    # if no valid post request, display the form
+            return render (request, 'anonticket/user_login.html', {'form':form})
+    # if no valid user_identifier in GET, just display the form
     else: 
-        # form = LoginForm
         return render (request, 'anonticket/user_login.html', {'form': form})
-    return render (request, 'anonticket/user_login.html', {'form':form, 'results': results})
+    # If everything else fails, just render the form.
+    return render (request, 'anonticket/user_login.html', {'form':form})
 
 @validate_user
 def user_landing_view(request, user_identifier):
