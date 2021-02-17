@@ -295,8 +295,7 @@ class CreateIdentifierView(TemplateView):
                 continue
 
 def login_view(request):
-    """Generate a form with fields to allow users to enter their codename. If all
-    fields are filled out, redirect to appropriate user-landing."""
+    """Generate a login form. Note that most processing for this view is in forms.py"""
     results = {}
     form = LoginForm(request.GET)
     # if the LoginForm is filled out, clean data and join the words together 
