@@ -217,12 +217,16 @@ def custom_ratelimit_post(
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
 gl_public = gitlab.Gitlab(settings.GITLAB_URL)
 
-def gitlab_get_project(project, lazy=False):
+def gitlab_get_project(project, lazy=False, public=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
-    working_project = gl.projects.get(project, lazy=lazy)
-    return working_project
-
+    if public == True:
+        working_project = gl_public.projects.get(project, lazy=lazy)
+        return working_project
+    else:
+        working_project = gl.projects.get(project, lazy=lazy)
+        return working_project
+    
 def gitlab_get_issue(project, issue, lazy_project = False, lazy_issue = False):
     """Takes two integers and grabs corresponding gitlab issue."""
     working_project = gitlab_get_project(project, lazy=lazy_project)
