@@ -99,7 +99,7 @@ def validate_user(view_func):
         lowercase_user_identifier = user_identifier.lower()
         get_user_identifier = check_user(lowercase_user_identifier)
         if get_user_identifier == False:
-            return redirect('user-login-error', user_identifier=user_identifier)
+            return redirect('user-login-error', user_identifier=lowercase_user_identifier)
         else:
             response = view_func(request, lowercase_user_identifier, *args, **kwargs)
         return response
