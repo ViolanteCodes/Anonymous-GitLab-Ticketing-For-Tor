@@ -227,7 +227,7 @@ def gitlab_get_project(project, lazy=False, public=False):
         gl_object = gl
     # Fetch project with lazy == lazy.
     working_project = gl_object.projects.get(project, lazy=lazy)
-        return working_project
+    return working_project
     
 def gitlab_get_issue(project, issue, lazy_project=False, lazy_issue=False, public=False):
     """Takes two integers and grabs corresponding gitlab issue."""
