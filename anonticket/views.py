@@ -235,9 +235,10 @@ def gitlab_get_issue(project, issue, lazy_project=False, lazy_issue=False, publi
     working_issue = working_project.issues.get(issue, lazy=lazy_issue)
     return working_issue
 
-def gitlab_get_notes_list(project, issue):
+def gitlab_get_notes_list(project, issue, lazy_project=False, lazy_issue=False, public=False):
     """Grabs the notes list for a specific issue."""
-    working_issue = gitlab_get_issue(project, issue)
+    working_issue = gitlab_get_issue(
+        project, issue, lazy_project=lazy_project, lazy_issues=lazy_issue, public=public)
     notes_list = working_issue.notes.list()
     return notes_list
 
