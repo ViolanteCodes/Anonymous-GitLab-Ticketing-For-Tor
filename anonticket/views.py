@@ -221,10 +221,10 @@ def gitlab_get_project(project, lazy=False, public=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
     if public == True:
-        working_project = gl_public.projects.get(project, lazy=lazy)
-        return working_project
+        gl_object = gl_public
     else:
-        working_project = gl.projects.get(project, lazy=lazy)
+        gl_object = gl
+    working_project = gl_object.projects.get(project, lazy=lazy)
         return working_project
     
 def gitlab_get_issue(project, issue, lazy_project=False, lazy_issue=False, public=False):
