@@ -214,16 +214,18 @@ def custom_ratelimit_post(
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
 # ----------------------------------------------------------------------
-gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
-gl_public = gitlab.Gitlab(settings.GITLAB_URL)
+gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN, timeout=1)
+gl_public = gitlab.Gitlab(settings.GITLAB_URL, timeout=1)
 
 def gitlab_get_project(project, lazy=False, public=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
+    # choose the appropriate gl_object based on public API or token
     if public == True:
         gl_object = gl_public
     else:
         gl_object = gl
+    # Fetch project with lazy == lazy.
     working_project = gl_object.projects.get(project, lazy=lazy)
         return working_project
     
