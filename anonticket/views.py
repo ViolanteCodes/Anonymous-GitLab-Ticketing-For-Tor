@@ -228,7 +228,6 @@ def gitlab_get_project(project, public=False):
         gl_object = gl_public
     else:
         gl_object = gl
-    # Fetch project with lazy == lazy.
     try:
         working_project = gl_object.projects.get(project)
     except ConnectTimeout:
@@ -484,9 +483,9 @@ class ProjectDetailView(DetailView):
             slug=project_slug
         )
         # Grab the gitlab ID from db and create GL project object with
-        # a lazy API call.
+        # a public API call.
         gitlab_id = db_project.gitlab_id
-        gl_project = gitlab_get_project(gitlab_id, lazy=True, public=True)
+        gl_project = gitlab_get_project(gitlab_id, public=True)
         # Save the project attributes to context dict.
         context['results'] = {'user_identifier': user_identifier}
         context['page_number'] = page_number
@@ -512,7 +511,7 @@ class ProjectDetailView(DetailView):
         result_dict = {}
         result_dict['issues']={}
         #grab issues for current page from gitlab
-        issues_list = gl_project.issues.list(page=current_page, state=issue_state, lazy=True)
+        issues_list = gl_project.issues.list(page=current_page, state=issue_state)
         # generate detail_links that will return to current page.
         for issue in issues_list:
             detail_url = reverse('issue-detail-view-go-back', args=[
