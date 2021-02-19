@@ -133,11 +133,17 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Gitlab Settings for python-gitlab/gitlab API
+
 # SECURITY WARNING: GitLab credentials.
 GITLAB_URL = config('GITLAB_URL', default='')
 GITLAB_SECRET_TOKEN = config('GITLAB_SECRET_TOKEN', default='')
+# ACCOUNTS_SECRET_TOKEN is for GitlabAccountCreation
 GITLAB_ACCOUNTS_SECRET_TOKEN = config('GITLAB_ACCOUNTS_SECRET_TOKEN', default='')
-GITLAB_TIMEOUT = config('GITLAB_TIMEOUT', default=10)
+
+# Set amount of seconds before timeout when making GitLab API calls
+GITLAB_TIMEOUT = config('GITLAB_TIMEOUT', default=10, cast=int)
+# Timeout URL used for testing GL bot 
+TIMEOUT_URL = config('TIMEOUT_URL', default='')
 
 # Configuration settings for Django Ratelimit
 MAIN_RATE_GROUP = config('MAIN_RATE_GROUP', default='')
