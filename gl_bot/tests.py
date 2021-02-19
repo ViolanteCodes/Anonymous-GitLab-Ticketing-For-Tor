@@ -107,4 +107,14 @@ class TestGitLabBotBasic(SimpleTestCase):
             self.assertEqual(note.name, "GitLab API call failed.")
             self.assertEqual(note.attributes['id'],9999999)
 
+class TestGitlabTimeoutProjectDetailView(TestCase):
+    """Test that ProjectDetailView displays the mock GL object
+    when GitLab connection times out."""
+    pass
+
+class TestGitlabTimeoutIssueDetailView(TestCase):
+    """Test that the issue_detail_view displays the mock GL object
+    datal when GitLab connection times out."""
+    pass
+
 
