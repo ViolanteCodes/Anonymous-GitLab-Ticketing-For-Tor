@@ -17,12 +17,14 @@ from django.contrib.auth.decorators import user_passes_test
 from django.views.generic import (
     TemplateView, DetailView, ListView, CreateView, FormView, UpdateView)
 from django.contrib.admin.views.decorators import staff_member_required
+# Imported for Django-Ratelimeit
 from ratelimit.decorators import ratelimit
 from functools import wraps
 from ratelimit import UNSAFE
 from ratelimit.exceptions import Ratelimited
 from ratelimit.core import is_ratelimited
-from requests.exceptions import ConnectTimeout
+# Import needed for fail-gracefully on Gitlab Timeout
+from requests.exceptions import ConnectTimeout, ConnectionError
 
 # ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
 # Functions that need to be accessed from within multiple views go here,
@@ -47,10 +49,8 @@ def user_identifier_in_database(find_user):
     # Try to find the user in the database.
     try:
         user_to_find = UserIdentifier.objects.get(user_identifier=find_user)
-        # if found, update the user_found message
         user_found = True
     except:
-        # if user is not found, return user_not_found message
         user_found = False
     return user_found
 
@@ -215,10 +215,17 @@ def custom_ratelimit_post(
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
 # ----------------------------------------------------------------------
-from anonticket.gitlabdown import GitlabDownIssue, GitlabDownObject, GitlabDownProject, GitlabDownNote
+from anonticket.gitlabdown import (
+    GitlabDownObject, 
+    GitlabDownProject, 
+    GitlabDownIssue,
+    GitlabDownNote
+    )
+# Make gitlab objects
+
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN, timeout=1)
 gl_public = gitlab.Gitlab(settings.GITLAB_URL, timeout=1)
-gl_gitlab_down = GitlabDownObject
+gl_gitlab_down = GitlabDownObject()
 
 def gitlab_get_project(project, public=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
@@ -230,8 +237,8 @@ def gitlab_get_project(project, public=False):
         gl_object = gl
     try:
         working_project = gl_object.projects.get(project)
-    except ConnectTimeout:
-        working_project = gl_gitlab_down.projects.get(1)
+    except (ConnectTimeout, ConnectionError):
+        working_project = gl_gitlab_down.projects.get(project)
     return working_project
     
 def gitlab_get_issue(project, issue, public=False):
@@ -239,14 +246,13 @@ def gitlab_get_issue(project, issue, public=False):
     working_project = gitlab_get_project(project, public=public)
     try:
         working_issue = working_project.issues.get(issue)
-    except:
-        working_issue = gl_gitlab_down.projects.issues.get(1)
+    except (ConnectTimeout, ConnectionError):
+        working_issue = gl_gitlab_down.projects.issues.get(issue)
     return working_issue
 
 def gitlab_get_notes_list(project, issue, public=False):
     """Grabs the notes list for a specific issue."""
-    working_issue = gitlab_get_issue(
-        project, issue, public=public)
+    working_issue = gitlab_get_issue(project, issue, public=public)
     notes_list = working_issue.notes.list()
     return notes_list
 
