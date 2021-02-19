@@ -146,22 +146,3 @@ class GitlabDownNote:
         notes_list = []
         notes_list.append(self)
         return notes_list
-
-gl_real = gitlab.Gitlab('https://abjklejsoiejs.org', private_token='yP1V1PyY7baf6AjxeKJ8', timeout=1)
-gl_fake = GitlabDownObject()
-
-def get_project():
-    try:
-        project = gl_real.projects.get(1)
-    except ConnectTimeout:
-        project = gl_fake.projects.get(1)
-    return project
-
-project = get_project()
-print(project.attributes)
-issue = project.issues.get(1)
-print(issue)
-issues_list = project.issues.list()
-print(issues_list)
-notes = issue.notes.list()
-print(notes)
