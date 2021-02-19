@@ -12,23 +12,25 @@
 
 {% block h3 %}
 {% if object %}
-<!-- Close out the h3 block from extended template to make smaller text on top first. -->
-</h3>
-<div class="row justify-content-between">
-    <p class="col-auto mb-0 small pb-0 pt-0">{{object.name_with_namespace}} (Project # {{object.gitlab_id}})</p>
-    <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right">
-      <a href="{{object.url}}" class="btn btn-sm btn-outline-primary mb-1 ml-4 px-1 py-0" target="__blank">
-        View this project on Gitlab
-      </a>
+  <!-- Close out the h3 block from extended template to make smaller text on top first. -->
+  </h3>
+  {% if gitlab_project.id != 'NA' %}
+  <div class="row justify-content-between">
+      <p class="col-auto mb-0 small pb-0 pt-0">{{object.name_with_namespace}} (Project # {{object.gitlab_id}})</p>
+      <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right">
+        <a href="{{object.url}}" class="btn btn-sm btn-outline-primary mb-1 ml-4 px-1 py-0" target="__blank">
+          View this project on Gitlab
+        </a>
+      </p>
+  </div>
+    <hr class="mt-0">
+    <!-- Make a true header -->
+    <h4>{{object.name}}</h4>
+    <!--Mimic commit/branch/tags/files/storage data.-->
+    <p class="small">
+      {{object.description}}
     </p>
-</div>
-  <hr class="mt-0">
-  <!-- Make a true header -->
-  <h4>{{object.name}}</h4>
-  <!--Mimic commit/branch/tags/files/storage data.-->
-  <p class="small">
-    {{object.description}}
-  </p>
+  {% endif %}
 {% else %}
     Project Not Found
 {% endif %}
@@ -39,36 +41,41 @@
 
 {% block content %}
 <!-- Create the user-actions block -->
-<div class="row">
-  <div class="col-12">
-    <p>
-      You can either
-      {% url 'create-issue' results.user_identifier as create_url %}
-      <a href="{{create_url}}">create a new issue</a>
-      or 
-      {% url 'user-landing' results.user_identifier as go_back_url %}
-      <a href="{{go_back_url}}">go back to your landing page.</a>
-    </p>
+{% if gitlab_project.id != 'NA' %}
+  <div class="row">
+    <div class="col-12">
+      <p>
+        You can either
+        {% url 'create-issue' results.user_identifier as create_url %}
+        <a href="{{create_url}}">create a new issue</a>
+        or 
+        {% url 'user-landing' results.user_identifier as go_back_url %}
+        <a href="{{go_back_url}}">go back to your landing page.</a>
+      </p>
+    </div>
   </div>
-</div>
-
+{% endif %}
 <!-- Create the Issues List Block For Open Issues-->
 <div class="row">
   <div class="col-12 mt-5">
-    <h4 class="text-primary"> Open Issues 
-      {% if open_issues.total_issues %}
-        <span class="badge badge-primary">{{open_issues.total_issues}} Total</span>
-      {% endif %}
-      <!-- Create New Issue badge link -->
-      <a href="{{create_url}}" class="badge btn btn-outline-primary ml-2">
-        Create New
-      </a>
-    </h4> 
+    <!-- Add a gitlab_project.id != NA call in case gitlab down -->
+    {% if gitlab_project.id != 'NA' %}
+      <h4 class="text-primary"> Open Issues
+          {% if open_issues.total_issues %}
+            <span class="badge badge-primary">{{open_issues.total_issues}} Total</span>
+          {% endif %}
+          <!-- Create New Issue badge link -->
+          <a href="{{create_url}}" class="badge btn btn-outline-primary ml-2">
+            Create New
+          </a>
+      </h4>
+    {% endif %} 
     {% if open_issues.issues %}
       <table class="table table-sm mt-3">
         {% for issue, detail_url in open_issues.issues.items %}
           <tr>
             <td>
+            {% if issue.created_at %}
               <a href="{{detail_url}}"><strong>{{issue.title}}</strong></a><br>
               # {{issue.iid}} | Opened {{issue.created_at|pretty_datetime}} by {{issue.author.username}}.
               {% if issue.milestone.title %}
@@ -79,7 +86,12 @@
                   <span class="badge-pill badge-primary ml-1 small">{{label}}</span>
                 {% endfor %}
               {% endif %}
+            {% else %}
+              <p class="p-3"><strong>{{issue.title}}</strong><p>
+              <p class="p-3"><em>{{issue.attributes.description}}</em></p>
+            {% endif %}
             </td>
+            {% if issue.created_at %}
             <td class="text-right small" style="width:25%">
               {% if issue.assignee.name %}
                 Assigned to {{issue.assignee.name}}.
@@ -91,6 +103,7 @@
               </span><br>
               Updated {{issue.updated_at|pretty_datetime}}
             </td>
+            {% endif %}
           </tr>
         {% endfor %}
       </table>
@@ -99,193 +112,208 @@
     {% endif %}
   </div>
 </div>
-<!-- Render the Pagination Block -->
-<div class="row px-3">
-  <div class="col-12 bg-light p-2">
-    <nav aria-label="...">
-      <ul class="pagination m-0 p-0 justify-content-center">
-        <!-- Make the previous button -->
-        {% if open_issues.prev_url %}
-          <li class="page-item">
-            <a href="{{open_issues.prev_url}}" class="page-link">Previous</a>
-          </li>
-        {% else %}
-          <li class="page-item-disabled">
-            <span class="page-link">Previous</span>
-          </li> 
-        {% endif %}
-        <!-- Make first link if called for -->
-        {% if open_issues.first_url %}
-          <li class="page-item">
-            <a href="{{open_issues.first_url}}" class="page-link">1</a>
-          </li>
-          <li class="page-item-disabled">
-            <span class="page-link text-muted">...</span></a>
-          </li>
-        {% endif %}
-        <!-- Make the previous links -->
-        {% if open_issues.prev_pages %}
-          {% for page_number, url in open_issues.prev_pages.items %}
+
+{% if gitlab_project.id != 'NA' %}
+  <!-- Render the Pagination Block -->
+  <div class="row px-3">
+    <div class="col-12 bg-light p-2">
+      <nav aria-label="...">
+        <ul class="pagination m-0 p-0 justify-content-center">
+          <!-- Make the previous button -->
+          {% if open_issues.prev_url %}
             <li class="page-item">
-              <a href="{{url}}" class="page-link">{{page_number}}</a>
+              <a href="{{open_issues.prev_url}}" class="page-link">Previous</a>
             </li>
-          {% endfor %}
-        {% endif %}
-        <!-- Make the current page indicator -->
-        <li class="page-item active">
-          <span class="page-link">
-            {{page_number}}
-          </span>
-        </li>
-        <!-- Make the next links -->
-        {% if open_issues.post_pages %}
-          {% for page_number, url in open_issues.post_pages.items %}
+          {% else %}
+            <li class="page-item-disabled">
+              <span class="page-link">Previous</span>
+            </li> 
+          {% endif %}
+          <!-- Make first link if called for -->
+          {% if open_issues.first_url %}
             <li class="page-item">
-              <a href="{{url}}" class="page-link">{{page_number}}</a>
+              <a href="{{open_issues.first_url}}" class="page-link">1</a>
             </li>
-          {% endfor %}
-        {% endif %}
-        <!-- Make last link if called for -->
-        {% if open_issues.last_page %}
+            <li class="page-item-disabled">
+              <span class="page-link text-muted">...</span></a>
+            </li>
+          {% endif %}
+          <!-- Make the previous links -->
+          {% if open_issues.prev_pages %}
+            {% for page_number, url in open_issues.prev_pages.items %}
+              <li class="page-item">
+                <a href="{{url}}" class="page-link">{{page_number}}</a>
+              </li>
+            {% endfor %}
+          {% endif %}
+          <!-- Make the current page indicator -->
+          <li class="page-item active">
+            <span class="page-link">
+              {{page_number}}
+            </span>
+          </li>
+          <!-- Make the next links -->
+          {% if open_issues.post_pages %}
+            {% for page_number, url in open_issues.post_pages.items %}
+              <li class="page-item">
+                <a href="{{url}}" class="page-link">{{page_number}}</a>
+              </li>
+            {% endfor %}
+          {% endif %}
+          <!-- Make last link if called for -->
+          {% if open_issues.last_page %}
+            <li class="page-item-disabled">
+              <span class="page-link text-muted">...</span>
+            </li>
+            <li class="page-item">
+              <a href="{{open_issues.last_page.url}}" class="page-link">
+                {{open_issues.last_page.page_number}}
+              </a>
+            </li>
+          {% endif %}
+          <!-- Make the next button -->
+          {% if open_issues.next_url %}
+            <li class="page-item">
+              <a href="{{open_issues.next_url}}" class="page-link">
+                  Next
+              </a>
+            </li>
+          {% else %}
           <li class="page-item-disabled">
-            <span class="page-link text-muted">...</span>
+            <span class="page-link">Next</span>
           </li>
-          <li class="page-item">
-            <a href="{{open_issues.last_page.url}}" class="page-link">
-              {{open_issues.last_page.page_number}}
-            </a>
-          </li>
-        {% endif %}
-        <!-- Make the next button -->
-        {% if open_issues.next_url %}
-          <li class="page-item">
-            <a href="{{open_issues.next_url}}" class="page-link">
-                Next
-            </a>
-          </li>
-        {% else %}
-        <li class="page-item-disabled">
-          <span class="page-link">Next</span>
-        </li>
-        {% endif %}
-      </ul>
-    </nav>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
   </div>
-</div>
-
-<!-- Create the Issues List Block for closed issues-->
-<div class="row mt-5">
-  <div class="col-12">
-    <h4 class="text-primary">Closed Issues:
-    {% if closed_issues.total_issues %}
-    <span class="badge badge-primary">{{closed_issues.total_issues}} Total</span>
-    {% endif %}
-    </h4>
-    {% if closed_issues.issues %}
-      <table class="table table-sm mt-3">
-        {% for issue, detail_url in closed_issues.issues.items %}
-          <tr>
-            <td>
-              <a href="{{detail_url}}"><strong>{{issue.title}}</strong></a><br>
-              # {{issue.iid}} | Opened {{issue.created_at|pretty_datetime}} by {{issue.author.username}}.
-              {% if issue.milestone.title %}
-                <span class="badge">Milestone: {{issue.milestone.title}}</span>
-              {% endif %}
-              {% if issue.labels %}
-                {% for label in issue.labels %}
-                  <span class="badge-pill badge-primary ml-1 small">{{label}}</span>
-                {% endfor %}
-              {% endif %}
-            </td>
-            <td class="text-right small" style="width:25%">
-              CLOSED
-              <span class="ml-2">
-                (<a href="{{detail_url}}">{{issue.user_notes_count}} Notes</a>)
-              </span><br>
-              Updated {{issue.updated_at|pretty_datetime}}
-            </td>
-          </tr>
-        {% endfor %}
-      </table>
-    {% else %}
-    <p class="ml-3 text-muted"> No closed issues at this time. </p>      
-    {% endif %}
-  </div>
-</div>
-
-<!-- Render the Pagination Block -->
-<div class="row px-3">
-  <div class="col-12 bg-light p-2">
-    <nav aria-label="...">
-      <ul class="pagination m-0 p-0 justify-content-center">
-        <!-- Make the previous button -->
-        {% if closed_issues.prev_url %}
-          <li class="page-item">
-            <a href="{{closed_issues.prev_url}}" class="page-link">Previous</a>
-          </li>
-        {% else %}
-          <li class="page-item-disabled">
-            <span class="page-link">Previous</span>
-          </li> 
-        {% endif %}
-        <!-- Make first link if called for -->
-        {% if closed_issues.first_url %}
-          <li class="page-item">
-            <a href="{{closed_issues.first_url}}" class="page-link">1</a>
-          </li>
-          <li class="page-item-disabled">
-            <span class="page-link text-muted">...</span></a>
-          </li>
-        {% endif %}
-        <!-- Make the previous links -->
-        {% if closed_issues.prev_pages %}
-          {% for page_number, url in closed_issues.prev_pages.items %}
-            <li class="page-item">
-              <a href="{{url}}" class="page-link">{{page_number}}</a>
-            </li>
+{% endif %}
+  <!-- Create the Issues List Block for closed issues-->
+{% if gitlab_project.id != 'NA' %}
+  <div class="row mt-5">
+    <div class="col-12">
+      <h4 class="text-primary">Closed Issues:
+      {% if closed_issues.total_issues %}
+      <span class="badge badge-primary">{{closed_issues.total_issues}} Total</span>
+      {% endif %}
+      </h4>
+      {% if closed_issues.issues %}
+        <table class="table table-sm mt-3">
+          {% for issue, detail_url in closed_issues.issues.items %}
+            <tr>
+              <td>
+                <a href="{{detail_url}}"><strong>{{issue.title}}</strong></a><br>
+                # {{issue.iid}} | Opened {{issue.created_at|pretty_datetime}} by {{issue.author.username}}.
+                {% if issue.milestone.title %}
+                  <span class="badge">Milestone: {{issue.milestone.title}}</span>
+                {% endif %}
+                {% if issue.labels %}
+                  {% for label in issue.labels %}
+                    <span class="badge-pill badge-primary ml-1 small">{{label}}</span>
+                  {% endfor %}
+                {% endif %}
+              </td>
+              <td class="text-right small" style="width:25%">
+                CLOSED
+                <span class="ml-2">
+                  (<a href="{{detail_url}}">{{issue.user_notes_count}} Notes</a>)
+                </span><br>
+                Updated {{issue.updated_at|pretty_datetime}}
+              </td>
+            </tr>
           {% endfor %}
-        {% endif %}
-        <!-- Make the current page indicator -->
-        <li class="page-item active">
-          <span class="page-link">
-            {{page_number}}
-          </span>
-        </li>
-        <!-- Make the next links -->
-        {% if closed_issues.post_pages %}
-          {% for page_number, url in closed_issues.post_pages.items %}
-            <li class="page-item">
-              <a href="{{url}}" class="page-link">{{page_number}}</a>
-            </li>
-          {% endfor %}
-        {% endif %}
-        <!-- Make last link if called for -->
-        {% if closed_issues.last_page %}
-          <li class="page-item-disabled">
-            <span class="page-link text-muted">...</span>
-          </li>
-          <li class="page-item">
-            <a href="{{closed_issues.last_page.url}}" class="page-link">
-              {{closed_issues.last_page.page_number}}
-            </a>
-          </li>
-        {% endif %}
-        <!-- Make the next button -->
-        {% if closed_issues.next_url %}
-          <li class="page-item">
-            <a href="{{closed_issues.next_url}}" class="page-link">
-                Next
-            </a>
-          </li>
-        {% else %}
-        <li class="page-item-disabled">
-          <span class="page-link">Next</span>
-        </li>
-        {% endif %}
-      </ul>
-    </nav>
+        </table>
+      {% else %}
+      <p class="ml-3 text-muted"> No closed issues at this time. </p>      
+      {% endif %}
+    </div>
   </div>
-</div>
-
-
+{% endif %}
+  <!-- Render the Pagination Block -->
+{% if gitlab_project.id != 'NA' %}
+  <div class="row px-3">
+    <div class="col-12 bg-light p-2">
+      <nav aria-label="...">
+        <ul class="pagination m-0 p-0 justify-content-center">
+          <!-- Make the previous button -->
+          {% if closed_issues.prev_url %}
+            <li class="page-item">
+              <a href="{{closed_issues.prev_url}}" class="page-link">Previous</a>
+            </li>
+          {% else %}
+            <li class="page-item-disabled">
+              <span class="page-link">Previous</span>
+            </li> 
+          {% endif %}
+          <!-- Make first link if called for -->
+          {% if closed_issues.first_url %}
+            <li class="page-item">
+              <a href="{{closed_issues.first_url}}" class="page-link">1</a>
+            </li>
+            <li class="page-item-disabled">
+              <span class="page-link text-muted">...</span></a>
+            </li>
+          {% endif %}
+          <!-- Make the previous links -->
+          {% if closed_issues.prev_pages %}
+            {% for page_number, url in closed_issues.prev_pages.items %}
+              <li class="page-item">
+                <a href="{{url}}" class="page-link">{{page_number}}</a>
+              </li>
+            {% endfor %}
+          {% endif %}
+          <!-- Make the current page indicator -->
+          <li class="page-item active">
+            <span class="page-link">
+              {{page_number}}
+            </span>
+          </li>
+          <!-- Make the next links -->
+          {% if closed_issues.post_pages %}
+            {% for page_number, url in closed_issues.post_pages.items %}
+              <li class="page-item">
+                <a href="{{url}}" class="page-link">{{page_number}}</a>
+              </li>
+            {% endfor %}
+          {% endif %}
+          <!-- Make last link if called for -->
+          {% if closed_issues.last_page %}
+            <li class="page-item-disabled">
+              <span class="page-link text-muted">...</span>
+            </li>
+            <li class="page-item">
+              <a href="{{closed_issues.last_page.url}}" class="page-link">
+                {{closed_issues.last_page.page_number}}
+              </a>
+            </li>
+          {% endif %}
+          <!-- Make the next button -->
+          {% if closed_issues.next_url %}
+            <li class="page-item">
+              <a href="{{closed_issues.next_url}}" class="page-link">
+                  Next
+              </a>
+            </li>
+          {% else %}
+          <li class="page-item-disabled">
+            <span class="page-link">Next</span>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+{% endif %}
+{% if gitlab_project.id == 'NA' %}
+  <!-- Render this block in case of gitlab down (gitlab_project.id == NA) -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <p>
+          {% url 'user-landing' results.user_identifier as go_back_url %}
+          Sorry for the inconvenience. Please click <a href="{{go_back_url}}">
+          here to go back to your landing page</a>.
+        </p>
+      </div>
+    </div>
+{% endif %}
 {% endblock %}
