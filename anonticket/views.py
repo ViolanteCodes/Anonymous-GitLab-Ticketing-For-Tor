@@ -22,6 +22,7 @@ from functools import wraps
 from ratelimit import UNSAFE
 from ratelimit.exceptions import Ratelimited
 from ratelimit.core import is_ratelimited
+from requests.exceptions import ConnectTimeout
 
 # ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
 # Functions that need to be accessed from within multiple views go here,
@@ -214,10 +215,12 @@ def custom_ratelimit_post(
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
 # ----------------------------------------------------------------------
+from anonticket.gitlabdown import GitlabDownIssue, GitlabDownObject, GitlabDownProject, GitlabDownNote
 gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN, timeout=1)
 gl_public = gitlab.Gitlab(settings.GITLAB_URL, timeout=1)
+gl_gitlab_down = GitlabDownObject
 
-def gitlab_get_project(project, lazy=False, public=False):
+def gitlab_get_project(project, public=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
     # choose the appropriate gl_object based on public API or token
@@ -226,19 +229,25 @@ def gitlab_get_project(project, lazy=False, public=False):
     else:
         gl_object = gl
     # Fetch project with lazy == lazy.
-    working_project = gl_object.projects.get(project, lazy=lazy)
+    try:
+        working_project = gl_object.projects.get(project)
+    except ConnectTimeout:
+        working_project = gl_gitlab_down.projects.get(1)
     return working_project
     
-def gitlab_get_issue(project, issue, lazy_project=False, lazy_issue=False, public=False):
+def gitlab_get_issue(project, issue, public=False):
     """Takes two integers and grabs corresponding gitlab issue."""
-    working_project = gitlab_get_project(project, lazy=lazy_project, public=public)
-    working_issue = working_project.issues.get(issue, lazy=lazy_issue)
+    working_project = gitlab_get_project(project, public=public)
+    try:
+        working_issue = working_project.issues.get(issue)
+    except:
+        working_issue = gl_gitlab_down.projects.issues.get(1)
     return working_issue
 
-def gitlab_get_notes_list(project, issue, lazy_project=False, lazy_issue=False, public=False):
+def gitlab_get_notes_list(project, issue, public=False):
     """Grabs the notes list for a specific issue."""
     working_issue = gitlab_get_issue(
-        project, issue, lazy_project=lazy_project, lazy_issues=lazy_issue, public=public)
+        project, issue, public=public)
     notes_list = working_issue.notes.list()
     return notes_list
 
@@ -743,7 +752,6 @@ def issue_detail_view(request, user_identifier, project_slug, gitlab_iid, go_bac
     database_project = get_object_or_404(Project, slug=project_slug)
     results['user_identifier']=user_identifier
     # Use the gitlab_id from database project to fetch project from gitlab.
-    # (Increases security.)
     gitlab_id = database_project.gitlab_id
     working_project = gitlab_get_project(project=gitlab_id, public=True)
     results['project'] = working_project.attributes
