@@ -1,14 +1,19 @@
 """Tests specific to Gitlab bot and Gitlab Fail Gracefully"""
 
 from django.conf import settings
-from django.test import SimpleTestCase, Client, tag
+from django.test import SimpleTestCase, Client, tag, override_settings
 from test_plus.test import TestCase, CBVTestCase
 from django.urls import reverse, resolve
-# from django.views.generic import TemplateView, DetailView, CreateView, UpdateView
 from django.core.cache import cache
+from anonticket.models import Project, Issue, Note
+from anonticket.views import ProjectDetailView
+# Import gitlab and relevant gl_bot functions.
+import gitlab
 from gl_bot.gitlabdown import (
-    GitlabDownObject, GitlabDownProject, GitlabDownIssue, GitlabDownNote
-)
+    GitlabDownObject, GitlabDownProject, GitlabDownIssue, GitlabDownNote)
+from requests.exceptions import ConnectTimeout, ConnectionError
+
+# import get functions from view
 
 # Note: If you run tests with --tag prefix, you can test a small suite
 # of tests with one of the tags below (registered with '@tag'.)
@@ -106,15 +111,3 @@ class TestGitLabBotBasic(SimpleTestCase):
         for note in test_notes_list:
             self.assertEqual(note.name, "GitLab API call failed.")
             self.assertEqual(note.attributes['id'],9999999)
-
-class TestGitlabTimeoutProjectDetailView(TestCase):
-    """Test that ProjectDetailView displays the mock GL object
-    when GitLab connection times out."""
-    pass
-
-class TestGitlabTimeoutIssueDetailView(TestCase):
-    """Test that the issue_detail_view displays the mock GL object
-    datal when GitLab connection times out."""
-    pass
-
-

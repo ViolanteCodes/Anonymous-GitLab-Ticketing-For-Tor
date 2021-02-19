@@ -226,38 +226,50 @@ from gl_bot.gitlabdown import (
 # gl = gitlab.Gitlab(
 #     settings.GITLAB_URL, 
 #     private_token=settings.GITLAB_SECRET_TOKEN, 
-#     timeout=settings.GITLAB_TIMEOUT)
-gl_public = gitlab.Gitlab(
-    settings.GITLAB_URL, timeout=settings.GITLAB_TIMEOUT)
-gl_gitlab_down = GitlabDownObject()
+# #     timeout=settings.GITLAB_TIMEOUT)
+# gl_public = gitlab.Gitlab(
+#     settings.GITLAB_URL, timeout=settings.GITLAB_TIMEOUT)
+# gl_gitlab_down = GitlabDownObject()
 
 def gitlab_get_project(project, public=False, testing=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
+    # Pull timeout value from settings
+    timeout = settings.GITLAB_TIMEOUT
+    # if testing = true, swap URLs
     if testing == True:
         gitlab_url = settings.TIMEOUT_URL
     else:
         gitlab_url = settings.GITLAB_URL
+    # If public == True, create without token.
     if public == True:
-        gl_object = gl_public
+        gl = gitlab.Gitlab(gitlab_url, timeout=timeout)
     else:
-        gl_object = gl
+        gl = gitlab.Gitlab(
+            gitlab_url, 
+            private_token = settings.GITLAB_SECRET_TOKEN, 
+            timeout=timeout)
+    # Try to get project, if fails, swap to GitlabDownObject.
     try:
-        working_project = gl_object.projects.get(project)
+        working_project = gl.projects.get(project)
     except (ConnectTimeout, ConnectionError):
-        working_project = gl_gitlab_down.projects.get(project)
+        gl = GitLabDownObject()
+        working_project = gl.projects.get(project)
     return working_project
     
-def gitlab_get_issue(project, issue, public=False):
+def gitlab_get_issue(project, issue, public=False, testing=False):
     """Takes two integers and grabs corresponding gitlab issue."""
-    working_project = gitlab_get_project(project, public=public)
+    working_project = gitlab_get_project(
+        project, public=public, testing=testing)
     try:
         working_issue = working_project.issues.get(issue)
     except (ConnectTimeout, ConnectionError):
-        working_issue = gl_gitlab_down.projects.issues.get(issue)
+        gl = GitLabDownObject()
+        project = gl.projects.get(project)
+        working_issue = project.issues.get(issue)
     return working_issue
 
-def gitlab_get_notes_list(project, issue, public=False):
+def gitlab_get_notes_list(project, issue, public=False, testing=False):
     """Grabs the notes list for a specific issue."""
     working_issue = gitlab_get_issue(project, issue, public=public)
     notes_list = working_issue.notes.list()
