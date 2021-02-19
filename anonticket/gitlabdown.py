@@ -1,11 +1,4 @@
-import requests
-import urllib
-import socket
-import gitlab
-
-# import urllib3
-# from urllib3.exceptions import ConnectionError, TimeoutError
-from requests.exceptions import ConnectTimeout 
+"""Dummy GitLab Objects to use if the GitLab call times out."""
 
 class GitlabDownObject:
     """A mocked version of the Gitlab Object for when Gitlab is down."""
@@ -17,22 +10,22 @@ class GitlabDownProject:
     def __init__(self):
         self.name = 'Gitlab Timed Out'
         self.attributes = {
-            'created_at': '2020-12-01T17:19:24.061Z',
+            'created_at': '',
             'description': 'A mock project that displays when GitLab calls time out.',
             'id': 'NA',
-            'last_activity_at': '2020-12-15T21:45:42.934Z',
+            'last_activity_at': '',
             'name': 'GitLab Timed Out',
-            'name_with_namespace': 'The Tor Project / Anon-Ticket',
+            'name_with_namespace': '',
             'namespace': {   'avatar_url': None,
                             'full_path': 'tpo/tpa',
-                            'id': 480,
+                            'id': NA,
                             'kind': 'group',
                             'name': 'TPA',
-                            'parent_id': 268,
+                            'parent_id': NA,
                             'path': 'tpa',
                             'web_url': 'https://gitlab.torproject.org/groups/tpo/tpa'},
             'tag_list': [],
-            'web_url': 'https://gitlab.torproject.org/tpo/tpa/anon-ticket',
+            'web_url': '',
         }
         self.issues = GitlabDownIssue()
 
@@ -143,3 +136,6 @@ class GitlabDownNote:
         notes_list = []
         notes_list.append(self)
         return notes_list
+
+    def __str__(self):
+        return self.name
