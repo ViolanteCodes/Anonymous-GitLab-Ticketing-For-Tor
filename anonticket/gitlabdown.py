@@ -19,7 +19,7 @@ class GitlabDownProject:
         self.attributes = {
             'created_at': '2020-12-01T17:19:24.061Z',
             'description': 'A mock project that displays when GitLab calls time out.',
-            'id': 404,
+            'id': 'NA',
             'last_activity_at': '2020-12-15T21:45:42.934Z',
             'name': 'GitLab Timed Out',
             'name_with_namespace': 'The Tor Project / Anon-Ticket',
@@ -77,11 +77,11 @@ class GitlabDownIssue:
             'id': '',
             'iid': '',
             'labels': [],
-            'milestone': {  'created_at': '2020-12-02T15:36:29.028Z',
+            'milestone': {  'created_at': '',
                             'description': 'A fake milestone',
                             'title': 'GITLAB TIMED OUT',
-                            'updated_at': '2020-12-09T17:29:00.536Z',
-                            'web_url': 'https://gitlab.torproject.org/groups/tpo/-/milestones/19'},
+                            'updated_at': '',
+                            'web_url': ''},
             'project_id': '',
             'state': 'opened',
             'title': """OH NO! IF YOU'RE SEEING THIS, SOMETHING WENT WRONG!""",
@@ -129,12 +129,6 @@ class GitlabDownNote:
     def __init__(self):
         self.name = 'GitLab API call failed.'
         self.attributes = {
-            'author': {  'avatar_url': None,
-                        'id': 748,
-                        'name': 'MariaV',
-                        'state': 'active',
-                        'username': 'MariaV',
-                        'web_url': 'https://gitlab.torproject.org/MariaV'},
             'body': """***If you're seeing this note, it means that the call 
                 to the gitlab API timed out.***""",
             'created_at': '',
