@@ -21,7 +21,7 @@
       ({{results.project.id}}) / issues / #{{results.issue.iid}}
     </p>
     <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right">
-      {% if results.issue.create_at %}
+      {% if results.issue.created_at %}
       Created {{results.issue.created_at|pretty_datetime}} by @{{results.issue.author.username}}
       {% else %}
       {% endif %}
@@ -95,9 +95,12 @@
 {% url 'user-landing' results.user_identifier as go_back_url %}
 <div>
   <p>
-    You can <a href="{{go_back_url}}">go back to your landing page</a> or
+    You can <a href="{{go_back_url}}">go back to your landing page</a>
+    {% if results.issue.updated_at%} 
+    or
     <!-- New_note_link is generated in views.py. -->
     <a href="{{results.new_note_link}}">create a new note</a> for this issue.
+    {% else %}.{% endif %}
   </p>
 </div>
 
