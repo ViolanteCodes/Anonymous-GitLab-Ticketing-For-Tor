@@ -413,7 +413,7 @@ class TestProjectDetailViewPagination(TestCase):
         tor_project = Project(gitlab_id=426)
         tor_project.save()
         self.tor_project = tor_project
-        self.gl_project = gl_public.projects.get(426, lazy=True)
+        self.gl_project = gl_public.projects.get(426)
         self.open_issues_metadata = self.get_issues_metadata('opened')
         self.closed_issues_metadata = self.get_issues_metadata('closed')
         # Get metadata for open issues, including total and pages
