@@ -138,6 +138,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 GITLAB_URL = config('GITLAB_URL', default='')
 GITLAB_SECRET_TOKEN = config('GITLAB_SECRET_TOKEN', default='')
 GITLAB_ACCOUNTS_SECRET_TOKEN = config('GITLAB_ACCOUNTS_SECRET_TOKEN', default='')
+GITLAB_TIMEOUT = config('GITLAB_TIMEOUT', default=10)
 
 # Configuration settings for Django Ratelimit
 MAIN_RATE_GROUP = config('MAIN_RATE_GROUP', default='')
