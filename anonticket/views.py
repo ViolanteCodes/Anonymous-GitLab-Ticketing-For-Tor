@@ -223,8 +223,12 @@ from anonticket.gitlabdown import (
     )
 # Make gitlab objects
 
-gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN, timeout=1)
-gl_public = gitlab.Gitlab(settings.GITLAB_URL, timeout=1)
+gl = gitlab.Gitlab(
+    settings.GITLAB_URL, 
+    private_token=settings.GITLAB_SECRET_TOKEN, 
+    timeout=settings.GITLAB_TIMEOUT)
+gl_public = gitlab.Gitlab(
+    settings.GITLAB_URL, timeout=settings.GITLAB_TIMEOUT)
 gl_gitlab_down = GitlabDownObject()
 
 def gitlab_get_project(project, public=False):
