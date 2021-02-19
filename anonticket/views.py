@@ -223,18 +223,21 @@ from gl_bot.gitlabdown import (
     )
 # Make gitlab objects
 
-gl = gitlab.Gitlab(
-    settings.GITLAB_URL, 
-    private_token=settings.GITLAB_SECRET_TOKEN, 
-    timeout=settings.GITLAB_TIMEOUT)
+# gl = gitlab.Gitlab(
+#     settings.GITLAB_URL, 
+#     private_token=settings.GITLAB_SECRET_TOKEN, 
+#     timeout=settings.GITLAB_TIMEOUT)
 gl_public = gitlab.Gitlab(
     settings.GITLAB_URL, timeout=settings.GITLAB_TIMEOUT)
 gl_gitlab_down = GitlabDownObject()
 
-def gitlab_get_project(project, public=False):
+def gitlab_get_project(project, public=False, testing=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
-    # choose the appropriate gl_object based on public API or token
+    if testing == True:
+        gitlab_url = settings.TIMEOUT_URL
+    else:
+        gitlab_url = settings.GITLAB_URL
     if public == True:
         gl_object = gl_public
     else:
