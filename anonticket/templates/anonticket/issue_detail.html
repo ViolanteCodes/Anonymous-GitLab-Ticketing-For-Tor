@@ -124,14 +124,14 @@
     <div class="col-12 p-2">
       <div class="card mb-2">
         <div class="card-body">
+          {% if note.author %}
           <p class="card-text text-muted">
-            {% if note.author %}
             {{note.noteable_type|title}} 
             note by @{{note.author.username}}, 
             Created: {{note.created_at|pretty_datetime}}, 
             Last Updated: {{note.updated_at|pretty_datetime}}
-            {% else %}{% endif %}
           </p>
+          {% else %}{% endif %}
           <p class="card-text">{{note.body|markdownify}}</p>
         </div>
       </div>
