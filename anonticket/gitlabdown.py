@@ -45,10 +45,7 @@ class GitlabDownProject:
 class GitlabDownIssue:
     """A mocked version of a GitLab issue for when GitLab is down."""
     def __init__(self):
-        self.title = """OH NO! IF YOU'RE SEEING THIS, SOMETHING WENT WRONG! This 
-        is a dummy issue generated when the call to the Gitlab API times out.
-        The most likely culprit is that GitLab is currently down, which means we 
-        can't communicate with the API. Please try again later!"""
+        self.title = """OH NO! IF YOU'RE SEEING THIS, SOMETHING WENT WRONG!"""
         self.iid = 99999
         self.attributes = {
             'assignee': {
@@ -70,7 +67,7 @@ class GitlabDownIssue:
                             'web_url': 'https://gitlab.torproject.org/MariaV'},
             'confidential': False,
             'created_at': '',
-            'description': """***This issue is generated when the call to the GitLab API times out.
+            'description': """***This message is generated when the call to the GitLab API times out.
                 The most likely culprit is that either GitLab or its API is currently down. 
                 Please try again later!***""",
             'due_date': None,
