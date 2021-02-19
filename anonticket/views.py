@@ -221,15 +221,6 @@ from gl_bot.gitlabdown import (
     GitlabDownIssue,
     GitlabDownNote
     )
-# Make gitlab objects
-
-# gl = gitlab.Gitlab(
-#     settings.GITLAB_URL, 
-#     private_token=settings.GITLAB_SECRET_TOKEN, 
-# #     timeout=settings.GITLAB_TIMEOUT)
-# gl_public = gitlab.Gitlab(
-#     settings.GITLAB_URL, timeout=settings.GITLAB_TIMEOUT)
-# gl_gitlab_down = GitlabDownObject()
 
 def gitlab_get_project(project, public=False, testing=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
@@ -271,7 +262,8 @@ def gitlab_get_issue(project, issue, public=False, testing=False):
 
 def gitlab_get_notes_list(project, issue, public=False, testing=False):
     """Grabs the notes list for a specific issue."""
-    working_issue = gitlab_get_issue(project, issue, public=public)
+    working_issue = gitlab_get_issue(
+        project, issue, public=public, testing=testing)
     notes_list = working_issue.notes.list()
     return notes_list
 
