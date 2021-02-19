@@ -215,7 +215,7 @@ def custom_ratelimit_post(
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
 # ----------------------------------------------------------------------
-from anonticket.gitlabdown import (
+from gl_bot.gitlabdown import (
     GitlabDownObject, 
     GitlabDownProject, 
     GitlabDownIssue,
