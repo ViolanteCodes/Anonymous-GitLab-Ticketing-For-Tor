@@ -15,21 +15,38 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 from django.core.cache import cache
 
-# NOTE: Tests of views relating to when GitLab is down ('fail gracefully')
+#--------------------------TESTING NOTES -----------------------------
+# LOCATIONS:
+#
+# Tests of views relating to when GitLab is down ('fail gracefully')
 # are in gl_bot > tests.py; however, these do not need to be called 
 # separately. Django will run all properly configured test.py files when 
 # tests are called with manage.py test (with or without 'coverage run' prefix.)
 #
-# Note: If you run tests with --tag prefix, you can test a small suite
+# COVERAGE:
+#
+# To get coverage report through python-coverage, run the following:
+#
+# $ coverage erase
+# $ coverage run manage.py test
+# $ coverage html ****OR**** coverage report
+#
+# "coverage report" generates a report in terminal. "coverage html"
+# generates an easy to parse html report in html_cov > index.html
+
+# PREFIXES: 
+#
+# If you run tests with --tag prefix, you can test a small suite
 # of tests with one of the tags below (registered with '@tag'.)
 #   Examples:
 #   $ python manage.py test --tag url 
 #   (or with coverage) $ coverage run manage.py --tag url.)
-#
+
 #---------------------------------------------------------------------
-# TABLE OF CONTENTS:
+# ----------------------TABLE OF CONTENTS:----------------------------
 #---------------------------------------------------------------------
 # (Names in "" refer to views.py)
+#
 # 1.0: Custom Test Functions
 # 2.0: Discrete Function Unit Tests ("Shared Functions, Non-Gitlab")
 # 3.0: URL Tests
