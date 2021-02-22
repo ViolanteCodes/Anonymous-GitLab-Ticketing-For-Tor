@@ -46,6 +46,8 @@ from django.core.cache import cache
 # ----------------------TABLE OF CONTENTS:----------------------------
 #---------------------------------------------------------------------
 # (Names in "" refer to views.py)
+# Quickly drop down to a test battery with CTRL+F, then the number, 
+# e.g. To find "Custom Test Functions": CTRL + F, "1.0"
 #
 # 1.0: Custom Test Functions
 # 2.0: Discrete Function Unit Tests ("Shared Functions, Non-Gitlab")
@@ -1359,7 +1361,7 @@ class TestViewsOtherWithoutDatabase(SimpleTestCase):
             self.assertIn(word, test_get_context['user_identifier_string'])
         self.assertNotIn('user_found', test_get_context.keys())
 
-# --------------------------FORM TESTS----------------------------------
+# ------------------------5.0--FORM TESTS--------------------------------
 # Tests for forms.py: basic tests to see that form_is_valid(). Testing
 # for integration with views, etc., is done in views.py above.
 # ----------------------------------------------------------------------
@@ -1511,7 +1513,7 @@ class TestCreateIssueForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.errors), 3)
 
-# ---------------------MODERATOR PORTAL TESTS---------------------------
+# -----------------6.0----MODERATOR PORTAL TESTS------------------------
 # Tests for views, etc. associated with the moderator panel.
 # ----------------------------------------------------------------------
 
@@ -1802,7 +1804,7 @@ class TestModeratorViews(TestCase):
         self.assertEqual(
             updated_issue.description, "An updated issue description")
 
-# --------------------------OTHER TESTS---------------------------------
+# ---------------------7.0-----OTHER TESTS------------------------------
 # Tests for filters, custom template tags, etc.
 # ----------------------------------------------------------------------
 
