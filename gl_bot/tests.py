@@ -133,10 +133,12 @@ class TestGitlabBotProjectViewGet(TestCase):
         self.new_user = new_user
         self.project_detail_view_url = reverse('project-detail', args=[
             self.new_user, self.tor_project.slug, 1])
-    
+        self.issue_detail_view_url = reverse('issue-detail-view-go-back', args=[
+            self.new_user, self.tor_project.slug, 1, 1])
+
     @patch("django.conf.settings.GITLAB_URL", settings.TIMEOUT_URL)
-    def test_project_detail_GET(self):
-        """Test the project detail view with patched data."""
+    def test_project_detail_view_GET_patched(self):
+        """Test the project detail view with patched gitlab URL."""
         response = self.get(self.project_detail_view_url)
         self.response_200()
         # Assert object in context is tor object from database.
@@ -160,4 +162,30 @@ class TestGitlabBotProjectViewGet(TestCase):
         self.assertEqual(len(self.context['open_issues']['issues'].keys()), 1)
         for item in issue_object_key:
             self.assertEqual(item.title, "OH NO! IF YOU'RE SEEING THIS, SOMETHING WENT WRONG!")
+        
+    @patch("django.conf.settings.GITLAB_URL", settings.TIMEOUT_URL)
+    def test_issue_detail_view_go_back_GET_patched(self):
+        """Test the issue detail view with patched gitlab URL."""
+        response = self.get(self.issue_detail_view_url)
+        self.response_200()
+        # Assert project has been passed as 'project' to context dict.
+        # Assert object in context is tor object from database.
+        self.assertInContext('results')
+        # Assert glbot project object in results dict
+        self.assertEqual(
+            self.context['results']['project']['description'],
+            "A mock project that displays when GitLab calls time out.")
+        # Assert glbot issue object in results dict
+        self.assertEqual(
+            self.context['results']['issue']['title'],
+            "OH NO! IF YOU'RE SEEING THIS, SOMETHING WENT WRONG!")
+        # Assert that a notes list was returned, that it has a single
+        # note in it, and that the note body starts with the correct
+        # string.
+        self.assertEqual(
+            len(self.context['results']['notes']), 1)
+        notes_list = self.context['results']['notes']
+        for note in notes_list:
+            self.assertIn("""***If you're seeing this note""", note['body'])  
+
 
