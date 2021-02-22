@@ -26,7 +26,9 @@ from ratelimit.core import is_ratelimited
 # Import needed for fail-gracefully on Gitlab Timeout
 from requests.exceptions import ConnectTimeout, ConnectionError
 
-# ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
+# TABLE OF CONTENTS PENDING #
+
+# -----------1.0: SHARED FUNCTIONS, NON GITLAB--------------------------
 # Functions that need to be accessed from within multiple views go here,
 # with the exception of gitlab functions, which are below.
 # ----------------------------------------------------------------------
@@ -87,7 +89,7 @@ def check_user(user_identifier):
         return False
     else:
         return True
-# --------------------DECORATORS AND MIXINS-----------------------------
+# ----------------2.0: DECORATORS AND MIXINS-----------------------------
 # Django decorators wrap functions (such as views) in other functions. 
 # Mixins perform a similar function for class based views. 
 # Decorates for rate-limiting are below in RATE-LIMITING SETTINGS.
@@ -472,9 +474,12 @@ class GitlabAccountRequestCreateView(
 class CannotCreateObjectView(PassUserIdentifierMixin, TemplateView):
     """"""
     template_name = 'anonticket/cannot_create.html'
+
 # -------------------------PROJECT VIEWS----------------------------------
-# Views related to creating/looking up issues.
-# ----------------------------------------------------------------------
+# Views related to creating/looking up issues. Note that tests for when
+# GitLab is down are in the gl_bot tests.py file, but will run at the same
+# time with python manage.py test.
+# ------------------------------------------------------------------------
 
 @method_decorator(validate_user, name='dispatch')
 class ProjectListView(PassUserIdentifierMixin, ListView):
