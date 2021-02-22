@@ -15,13 +15,32 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 from django.core.cache import cache
 
+# NOTE: Tests of views relating to when GitLab is down ('fail gracefully')
+# are in gl_bot > tests.py; however, these do not need to be called 
+# separately. Django will run all properly configured test.py files when 
+# tests are called with manage.py test (with or without 'coverage run' prefix.)
+#
 # Note: If you run tests with --tag prefix, you can test a small suite
 # of tests with one of the tags below (registered with '@tag'.)
 #   Examples:
 #   $ python manage.py test --tag url 
 #   (or with coverage) $ coverage run manage.py --tag url.)
+#
+#---------------------------------------------------------------------
+# TABLE OF CONTENTS:
+#---------------------------------------------------------------------
+# (Names in "" refer to views.py)
+# 1.0: Custom Test Functions
+# 2.0: Discrete Function Unit Tests ("Shared Functions, Non-Gitlab")
+# 3.0: URL Tests
+# 4.0: View Tests
+# 5.0: Form Tests
+# 6.0: Moderator Panel Tests
+# 7.0: Other Tests, e.g. custom template tags, filters, etc.
+# OTHER: Tests related to gitlabbot in gl_bot/tests.py
 
-# ---------------------CUSTOM TEST FUNCTIONS----------------------------
+
+# -------------------1.0:CUSTOM TEST FUNCTIONS--------------------------
 # Functions used inside of the testing package during rate-limit tests.
 # ----------------------------------------------------------------------
 
@@ -60,7 +79,7 @@ def run_rate_limit_test(self, client, url, form, form_data, follow=False, fracti
         tries += 1
     return response
 
-# -----DISCRETE FUNCTION UNIT TESTS (SHARED FUNCTIONS, NON-GITLAB)------
+# ---2.0:DISCRETE FUNCTION UNIT TESTS (SHARED FUNCTIONS, NON-GITLAB)----
 # Unit tests for the functions inside of views.py in the top section 
 # labelled: "Shared Functions - Non Gitlab"
 # ----------------------------------------------------------------------
@@ -133,7 +152,7 @@ class TestCheckUser(SimpleTestCase):
         test_response = check_user(user_identifier = user_identifier)
         self.assertFalse(test_response)
     
-# ---------------------------URL TESTS----------------------------------
+# ------------------------3.0 URL TESTS----------------------------------
 # URL Tests using Django SimpleTestCase (no need for database.)
 # ----------------------------------------------------------------------
 
@@ -237,7 +256,7 @@ class TestUrls(SimpleTestCase):
         url = reverse('mod-update-note', args=[1])
         self.assertEqual(resolve(url).func.view_class, ModeratorNoteUpdateView)
 
-# --------------------------VIEW TESTS----------------------------------
+# ---------------------4.0 -VIEW TESTS----------------------------------
 # Tests for views: (generally for status = 200, template correct,
 # although some POST views also test for redirects, etc.
 # ----------------------------------------------------------------------
