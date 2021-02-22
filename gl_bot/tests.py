@@ -117,7 +117,7 @@ class TestGitLabBotBasic(SimpleTestCase):
 
 @tag('gitlab-bot-views')
 class TestGitlabBotProjectViewGet(TestCase):
-    """Test Project View when url is patched"""
+    """Test that GitLabDown Object is called when data is mocked"""
 
     def setUp(self):
         """Set Up Test"""
@@ -129,14 +129,35 @@ class TestGitlabBotProjectViewGet(TestCase):
         new_user = UserIdentifier.objects.create(
             user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
         )
+        self.client = Client()
         self.new_user = new_user
-        self.client=Client()
         self.project_detail_view_url = reverse('project-detail', args=[
             self.new_user, self.tor_project.slug, 1])
     
     @patch("django.conf.settings.GITLAB_URL", settings.TIMEOUT_URL)
     def test_project_detail_GET(self):
         """Test the project detail view with patched data."""
-        print(self.tor_project.name)
-        response = self.client.get(self.project_detail_view_url)
-        print(response.context)
+        response = self.get(self.project_detail_view_url)
+        self.response_200()
+        # Assert object in context is tor object from database.
+        self.assertInContext('object')
+        self.assertEqual(self.context['object'], self.tor_project)
+        # Assert total pages and total issues = 1 (Test Generator)
+        self.assertEqual(self.context['open_issues']['total_pages'], 1)
+        self.assertEqual(self.context['open_issues']['total_issues'], 1)
+        # Assert context dict is built correctly
+        self.assertInContext('page_number')
+        self.assertEqual(self.context['page_number'], 1)
+        self.assertInContext('gitlab_project')
+        # Assert the project in context dict is the gitlab Project
+        self.assertEqual(
+            self.context['gitlab_project']['description'],
+            "A mock project that displays when GitLab calls time out."
+            )
+        # Assert the open issues dict has one object inside of it, and that
+        # It is the mock issue.
+        issue_object_key = self.context['open_issues']['issues'].keys()
+        self.assertEqual(len(self.context['open_issues']['issues'].keys()), 1)
+        for item in issue_object_key:
+            self.assertEqual(item.title, "OH NO! IF YOU'RE SEEING THIS, SOMETHING WENT WRONG!")
+
