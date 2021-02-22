@@ -247,10 +247,9 @@ def gitlab_get_project(project, public=False):
         working_project = gl.projects.get(project)
     return working_project
     
-def gitlab_get_issue(project, issue, public=False, testing=False):
+def gitlab_get_issue(project, issue, public=False):
     """Takes two integers and grabs corresponding gitlab issue."""
-    working_project = gitlab_get_project(
-        project, public=public, testing=testing)
+    working_project = gitlab_get_project(project, public=public)
     try:
         working_issue = working_project.issues.get(issue)
     except (ConnectTimeout, ConnectionError):
@@ -260,10 +259,9 @@ def gitlab_get_issue(project, issue, public=False, testing=False):
         working_issue = project.issues.get(issue)
     return working_issue
 
-def gitlab_get_notes_list(project, issue, public=False, testing=False):
+def gitlab_get_notes_list(project, issue, public=False):
     """Grabs the notes list for a specific issue."""
-    working_issue = gitlab_get_issue(
-        project, issue, public=public, testing=testing)
+    working_issue = gitlab_get_issue(project, issue, public=public)
     notes_list = working_issue.notes.list()
     return notes_list
 
