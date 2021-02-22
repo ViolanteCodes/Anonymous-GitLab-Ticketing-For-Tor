@@ -15,17 +15,23 @@
   </h3>
   <div class="row justify-content-between">
     <p class="col-auto mb-0 small pb-0 pt-0">
+      {% if results.issue.created_at %}
       <a href="{{results.go_back_url}}">
         {{results.project.name_with_namespace}}
       </a> 
       ({{results.project.id}}) / issues / #{{results.issue.iid}}
+      {% endif %}
     </p>
     <p class="col-auto text-muted small mb-0 pb-0 pt-0 text-right">
+      {% if results.issue.created_at %}
       Created {{results.issue.created_at|pretty_datetime}} by @{{results.issue.author.username}}
+      {% else %}
+      {% endif %}
     </p>
   </div>
   <hr class="mb-0 mt-0">
   <div class="row justify-content-between">
+    {% if results.issue.created_at %}
     <div class="col-auto">
       <p class="mb-0 small pb-0 pt-0">
       {% if results.issue.milestone.title %}
@@ -49,6 +55,7 @@
         <a class="btn btn-sm btn-primary bg success ml-2 px-1 py-0" href="{{results.new_note_link}}">New Note</a> 
       </p>
     </div>
+    {% endif %}
   </div>
   <div class="row  mt-5">
     <div class="col-12">
@@ -75,7 +82,7 @@
 {% block content %}
 
 <!-- Issue Summary Block -->
-{% if results.issue %}
+{% if results.issue.updated_at %}
   <div class="row mt-3">
     <div class="col-12">
       <h4 class="card-title">Issue Summary</h4>
@@ -86,14 +93,18 @@
       </ul>
     </div>
   </div>
+{% else %}
 {% endif %}
 <!-- Generate a Back to Landing URL Link -->
 {% url 'user-landing' results.user_identifier as go_back_url %}
 <div>
   <p>
-    You can <a href="{{go_back_url}}">go back to your landing page</a> or
+    You can <a href="{{go_back_url}}">go back to your landing page</a>
+    {% if results.issue.updated_at%} 
+    or
     <!-- New_note_link is generated in views.py. -->
     <a href="{{results.new_note_link}}">create a new note</a> for this issue.
+    {% else %}.{% endif %}
   </p>
 </div>
 
@@ -101,7 +112,7 @@
 <!-- Note Header Block -->
 <div class="row mt-5">
   <div class="col-12 p-2">
-    <h4 class="card-title">Project Notes</h4>
+    <h4 class="card-title">Issue Notes</h4>
   </div>
 </div>
 
@@ -113,10 +124,14 @@
     <div class="col-12 p-2">
       <div class="card mb-2">
         <div class="card-body">
-          <p class="card-text text-muted">{{note.noteable_type|title}} 
+          {% if note.author %}
+          <p class="card-text text-muted">
+            {{note.noteable_type|title}} 
             note by @{{note.author.username}}, 
             Created: {{note.created_at|pretty_datetime}}, 
-            Last Updated: {{note.updated_at|pretty_datetime}}</p>
+            Last Updated: {{note.updated_at|pretty_datetime}}
+          </p>
+          {% else %}{% endif %}
           <p class="card-text">{{note.body|markdownify}}</p>
         </div>
       </div>

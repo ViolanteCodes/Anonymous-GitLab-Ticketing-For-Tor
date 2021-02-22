@@ -15,13 +15,51 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 from django.core.cache import cache
 
-# Note: If you run tests with --tag prefix, you can test a small suite
+#--------------------------TESTING NOTES -----------------------------
+# LOCATIONS:
+#
+# Tests of views relating to when GitLab is down ('fail gracefully')
+# are in gl_bot > tests.py; however, these do not need to be called 
+# separately. Django will run all properly configured test.py files when 
+# tests are called with manage.py test (with or without 'coverage run' prefix.)
+#
+# COVERAGE:
+#
+# To get coverage report through python-coverage, run the following:
+#
+# $ coverage erase
+# $ coverage run manage.py test
+# $ coverage html ****OR**** coverage report
+#
+# "coverage report" generates a report in terminal. "coverage html"
+# generates an easy to parse html report in html_cov > index.html
+
+# PREFIXES: 
+#
+# If you run tests with --tag prefix, you can test a small suite
 # of tests with one of the tags below (registered with '@tag'.)
 #   Examples:
 #   $ python manage.py test --tag url 
 #   (or with coverage) $ coverage run manage.py --tag url.)
 
-# ---------------------CUSTOM TEST FUNCTIONS----------------------------
+#---------------------------------------------------------------------
+# ----------------------TABLE OF CONTENTS:----------------------------
+#---------------------------------------------------------------------
+# (Names in "" refer to views.py)
+# Quickly drop down to a test battery with CTRL+F, then the number, 
+# e.g. To find "Custom Test Functions": CTRL + F, "1.0"
+#
+# 1.0: Custom Test Functions
+# 2.0: Discrete Function Unit Tests ("Shared Functions, Non-Gitlab")
+# 3.0: URL Tests
+# 4.0: View Tests
+# 5.0: Form Tests
+# 6.0: Moderator Panel Tests
+# 7.0: Other Tests, e.g. custom template tags, filters, etc.
+# OTHER: Tests related to gitlabbot in gl_bot/tests.py
+
+
+# -------------------1.0:CUSTOM TEST FUNCTIONS--------------------------
 # Functions used inside of the testing package during rate-limit tests.
 # ----------------------------------------------------------------------
 
@@ -60,7 +98,7 @@ def run_rate_limit_test(self, client, url, form, form_data, follow=False, fracti
         tries += 1
     return response
 
-# -----DISCRETE FUNCTION UNIT TESTS (SHARED FUNCTIONS, NON-GITLAB)------
+# ---2.0:DISCRETE FUNCTION UNIT TESTS (SHARED FUNCTIONS, NON-GITLAB)----
 # Unit tests for the functions inside of views.py in the top section 
 # labelled: "Shared Functions - Non Gitlab"
 # ----------------------------------------------------------------------
@@ -133,7 +171,7 @@ class TestCheckUser(SimpleTestCase):
         test_response = check_user(user_identifier = user_identifier)
         self.assertFalse(test_response)
     
-# ---------------------------URL TESTS----------------------------------
+# ------------------------3.0 URL TESTS----------------------------------
 # URL Tests using Django SimpleTestCase (no need for database.)
 # ----------------------------------------------------------------------
 
@@ -237,7 +275,7 @@ class TestUrls(SimpleTestCase):
         url = reverse('mod-update-note', args=[1])
         self.assertEqual(resolve(url).func.view_class, ModeratorNoteUpdateView)
 
-# --------------------------VIEW TESTS----------------------------------
+# ---------------------4.0 -VIEW TESTS----------------------------------
 # Tests for views: (generally for status = 200, template correct,
 # although some POST views also test for redirects, etc.
 # ----------------------------------------------------------------------
@@ -413,7 +451,7 @@ class TestProjectDetailViewPagination(TestCase):
         tor_project = Project(gitlab_id=426)
         tor_project.save()
         self.tor_project = tor_project
-        self.gl_project = gl_public.projects.get(426, lazy=True)
+        self.gl_project = gitlab_get_project(426, public=True)
         self.open_issues_metadata = self.get_issues_metadata('opened')
         self.closed_issues_metadata = self.get_issues_metadata('closed')
         # Get metadata for open issues, including total and pages
@@ -1323,7 +1361,7 @@ class TestViewsOtherWithoutDatabase(SimpleTestCase):
             self.assertIn(word, test_get_context['user_identifier_string'])
         self.assertNotIn('user_found', test_get_context.keys())
 
-# --------------------------FORM TESTS----------------------------------
+# ------------------------5.0--FORM TESTS--------------------------------
 # Tests for forms.py: basic tests to see that form_is_valid(). Testing
 # for integration with views, etc., is done in views.py above.
 # ----------------------------------------------------------------------
@@ -1475,7 +1513,7 @@ class TestCreateIssueForm(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEquals(len(form.errors), 3)
 
-# ---------------------MODERATOR PORTAL TESTS---------------------------
+# -----------------6.0----MODERATOR PORTAL TESTS------------------------
 # Tests for views, etc. associated with the moderator panel.
 # ----------------------------------------------------------------------
 
@@ -1766,7 +1804,7 @@ class TestModeratorViews(TestCase):
         self.assertEqual(
             updated_issue.description, "An updated issue description")
 
-# --------------------------OTHER TESTS---------------------------------
+# ---------------------7.0-----OTHER TESTS------------------------------
 # Tests for filters, custom template tags, etc.
 # ----------------------------------------------------------------------
 

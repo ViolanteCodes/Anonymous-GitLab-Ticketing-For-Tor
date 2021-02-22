@@ -17,13 +17,18 @@ from django.contrib.auth.decorators import user_passes_test
 from django.views.generic import (
     TemplateView, DetailView, ListView, CreateView, FormView, UpdateView)
 from django.contrib.admin.views.decorators import staff_member_required
+# Imported for Django-Ratelimeit
 from ratelimit.decorators import ratelimit
 from functools import wraps
 from ratelimit import UNSAFE
 from ratelimit.exceptions import Ratelimited
 from ratelimit.core import is_ratelimited
+# Import needed for fail-gracefully on Gitlab Timeout
+from requests.exceptions import ConnectTimeout, ConnectionError
 
-# ---------------SHARED FUNCTIONS, NON GITLAB---------------------------
+# TABLE OF CONTENTS PENDING #
+
+# -----------1.0: SHARED FUNCTIONS, NON GITLAB--------------------------
 # Functions that need to be accessed from within multiple views go here,
 # with the exception of gitlab functions, which are below.
 # ----------------------------------------------------------------------
@@ -46,10 +51,8 @@ def user_identifier_in_database(find_user):
     # Try to find the user in the database.
     try:
         user_to_find = UserIdentifier.objects.get(user_identifier=find_user)
-        # if found, update the user_found message
         user_found = True
     except:
-        # if user is not found, return user_not_found message
         user_found = False
     return user_found
 
@@ -86,7 +89,7 @@ def check_user(user_identifier):
         return False
     else:
         return True
-# --------------------DECORATORS AND MIXINS-----------------------------
+# ----------------2.0: DECORATORS AND MIXINS-----------------------------
 # Django decorators wrap functions (such as views) in other functions. 
 # Mixins perform a similar function for class based views. 
 # Decorates for rate-limiting are below in RATE-LIMITING SETTINGS.
@@ -214,28 +217,53 @@ def custom_ratelimit_post(
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
 # ----------------------------------------------------------------------
-gl = gitlab.Gitlab(settings.GITLAB_URL, private_token=settings.GITLAB_SECRET_TOKEN)
-gl_public = gitlab.Gitlab(settings.GITLAB_URL)
+# from gl_bot.gitlabdown import (
+#     GitlabDownObject, 
+#     GitlabDownProject, 
+#     GitlabDownIssue,
+#     GitlabDownNote
+#     )
 
-def gitlab_get_project(project, lazy=False, public=False):
+def gitlab_get_project(project, public=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
+    from gl_bot.gitlabdown import GitlabDownObject
+    # Pull timeout value from settings
+    timeout = settings.GITLAB_TIMEOUT
+    # if testing = true, swap URLs
+    gitlab_url = settings.GITLAB_URL
+    # If public == True, create without token.
     if public == True:
-        working_project = gl_public.projects.get(project, lazy=lazy)
-        return working_project
+        gl = gitlab.Gitlab(gitlab_url, timeout=timeout)
     else:
-        working_project = gl.projects.get(project, lazy=lazy)
-        return working_project
+        gl = gitlab.Gitlab(
+            gitlab_url, 
+            private_token = settings.GITLAB_SECRET_TOKEN, 
+            timeout=timeout)
+    # Try to get project, if fails, swap to GitlabDownObject.
+    try:
+        working_project = gl.projects.get(project)
+    except (ConnectTimeout, ConnectionError):
+        from gl_bot.gitlabdown import GitlabDownObject
+        gl = GitlabDownObject()
+        working_project = gl.projects.get(project)
+    return working_project
     
-def gitlab_get_issue(project, issue, lazy_project=False, lazy_issue=False, public=False):
+def gitlab_get_issue(project, issue, public=False):
     """Takes two integers and grabs corresponding gitlab issue."""
-    working_project = gitlab_get_project(project, lazy=lazy_project, public=public)
-    working_issue = working_project.issues.get(issue, lazy=lazy_issue)
+    working_project = gitlab_get_project(project, public=public)
+    try:
+        working_issue = working_project.issues.get(issue)
+    except (ConnectTimeout, ConnectionError):
+        from gl_bot.gitlabdown import GitlabDownObject
+        gl = GitLabDownObject()
+        project = gl.projects.get(project)
+        working_issue = project.issues.get(issue)
     return working_issue
 
-def gitlab_get_notes_list(project, issue):
+def gitlab_get_notes_list(project, issue, public=False):
     """Grabs the notes list for a specific issue."""
-    working_issue = gitlab_get_issue(project, issue)
+    working_issue = gitlab_get_issue(project, issue, public=public)
     notes_list = working_issue.notes.list()
     return notes_list
 
@@ -446,9 +474,12 @@ class GitlabAccountRequestCreateView(
 class CannotCreateObjectView(PassUserIdentifierMixin, TemplateView):
     """"""
     template_name = 'anonticket/cannot_create.html'
+
 # -------------------------PROJECT VIEWS----------------------------------
-# Views related to creating/looking up issues.
-# ----------------------------------------------------------------------
+# Views related to creating/looking up issues. Note that tests for when
+# GitLab is down are in the gl_bot tests.py file, but will run at the same
+# time with python manage.py test.
+# ------------------------------------------------------------------------
 
 @method_decorator(validate_user, name='dispatch')
 class ProjectListView(PassUserIdentifierMixin, ListView):
@@ -472,9 +503,9 @@ class ProjectDetailView(DetailView):
             slug=project_slug
         )
         # Grab the gitlab ID from db and create GL project object with
-        # a lazy API call.
+        # a public API call.
         gitlab_id = db_project.gitlab_id
-        gl_project = gitlab_get_project(gitlab_id, lazy=True, public=True)
+        gl_project = gitlab_get_project(gitlab_id, public=True)
         # Save the project attributes to context dict.
         context['results'] = {'user_identifier': user_identifier}
         context['page_number'] = page_number
@@ -500,7 +531,7 @@ class ProjectDetailView(DetailView):
         result_dict = {}
         result_dict['issues']={}
         #grab issues for current page from gitlab
-        issues_list = gl_project.issues.list(page=current_page, state=issue_state, lazy=True)
+        issues_list = gl_project.issues.list(page=current_page, state=issue_state)
         # generate detail_links that will return to current page.
         for issue in issues_list:
             detail_url = reverse('issue-detail-view-go-back', args=[
@@ -740,7 +771,6 @@ def issue_detail_view(request, user_identifier, project_slug, gitlab_iid, go_bac
     database_project = get_object_or_404(Project, slug=project_slug)
     results['user_identifier']=user_identifier
     # Use the gitlab_id from database project to fetch project from gitlab.
-    # (Increases security.)
     gitlab_id = database_project.gitlab_id
     working_project = gitlab_get_project(project=gitlab_id, public=True)
     results['project'] = working_project.attributes
