@@ -5,13 +5,16 @@ from django.test import SimpleTestCase, Client, tag, override_settings
 from test_plus.test import TestCase, CBVTestCase
 from django.urls import reverse, resolve
 from django.core.cache import cache
-from anonticket.models import Project, Issue, Note
+from anonticket.models import Project, Issue, Note, UserIdentifier
 from anonticket.views import ProjectDetailView
+# Import necessary functions from views
+from anonticket.views import gitlab_get_project
 # Import gitlab and relevant gl_bot functions.
 import gitlab
 from gl_bot.gitlabdown import (
     GitlabDownObject, GitlabDownProject, GitlabDownIssue, GitlabDownNote)
 from requests.exceptions import ConnectTimeout, ConnectionError
+from unittest.mock import patch
 
 # import get functions from view
 
@@ -111,3 +114,29 @@ class TestGitLabBotBasic(SimpleTestCase):
         for note in test_notes_list:
             self.assertEqual(note.name, "GitLab API call failed.")
             self.assertEqual(note.attributes['id'],9999999)
+
+@tag('gitlab-bot-views')
+class TestGitlabBotProjectViewGet(TestCase):
+    """Test Project View when url is patched"""
+
+    def setUp(self):
+        """Set Up Test"""
+        tor_project = Project(gitlab_id=426)
+        tor_project.save()
+        self.tor_project = tor_project
+        gl_project = gitlab_get_project(426, public=True)
+        self.gl_project = gl_project
+        new_user = UserIdentifier.objects.create(
+            user_identifier = 'duo-atlas-hypnotism-curry-creatable-rubble'
+        )
+        self.new_user = new_user
+        self.client=Client()
+        self.project_detail_view_url = reverse('project-detail', args=[
+            self.new_user, self.tor_project.slug, 1])
+    
+    @patch("django.conf.settings.GITLAB_URL", settings.TIMEOUT_URL)
+    def test_project_detail_GET(self):
+        """Test the project detail view with patched data."""
+        print(self.tor_project.name)
+        response = self.client.get(self.project_detail_view_url)
+        print(response.context)
