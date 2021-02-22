@@ -215,23 +215,21 @@ def custom_ratelimit_post(
 # ------------------SHARED FUNCTIONS, GITLAB---------------------------
 # Easy to parse version of GitLab-Python functions.
 # ----------------------------------------------------------------------
-from gl_bot.gitlabdown import (
-    GitlabDownObject, 
-    GitlabDownProject, 
-    GitlabDownIssue,
-    GitlabDownNote
-    )
+# from gl_bot.gitlabdown import (
+#     GitlabDownObject, 
+#     GitlabDownProject, 
+#     GitlabDownIssue,
+#     GitlabDownNote
+#     )
 
-def gitlab_get_project(project, public=False, testing=False):
+def gitlab_get_project(project, public=False):
     """Takes an integer, and grabs a gitlab project where gitlab_id
     matches the integer."""
+    from gl_bot.gitlabdown import GitlabDownObject
     # Pull timeout value from settings
     timeout = settings.GITLAB_TIMEOUT
     # if testing = true, swap URLs
-    if testing == True:
-        gitlab_url = settings.TIMEOUT_URL
-    else:
-        gitlab_url = settings.GITLAB_URL
+    gitlab_url = settings.GITLAB_URL
     # If public == True, create without token.
     if public == True:
         gl = gitlab.Gitlab(gitlab_url, timeout=timeout)
@@ -244,7 +242,8 @@ def gitlab_get_project(project, public=False, testing=False):
     try:
         working_project = gl.projects.get(project)
     except (ConnectTimeout, ConnectionError):
-        gl = GitLabDownObject()
+        from gl_bot.gitlabdown import GitlabDownObject
+        gl = GitlabDownObject()
         working_project = gl.projects.get(project)
     return working_project
     
@@ -255,6 +254,7 @@ def gitlab_get_issue(project, issue, public=False, testing=False):
     try:
         working_issue = working_project.issues.get(issue)
     except (ConnectTimeout, ConnectionError):
+        from gl_bot.gitlabdown import GitlabDownObject
         gl = GitLabDownObject()
         project = gl.projects.get(project)
         working_issue = project.issues.get(issue)
