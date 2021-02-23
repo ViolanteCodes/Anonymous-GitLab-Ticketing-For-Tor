@@ -1118,7 +1118,7 @@ class TestGitlabAccountRequestViews(TestCase):
         with no user_string in URL path."""
         form_data = {
             'username': 'test_username_number_one',
-            'email' : 'test@test.com',
+            'email' : 'test_one@test.com',
             'reason' : "I can't wait to collaborate with TOR!",
         }
         response = self.client.post(self.gitlab_url_no_user, form_data)
@@ -1127,7 +1127,7 @@ class TestGitlabAccountRequestViews(TestCase):
         self.assertTemplateUsed('anonticket/create_issue_success.html')
         new_gl_request = GitlabAccountRequest.objects.get(
             username='test_username_number_one')
-        self.assertEqual(new_gl_request.email, 'test@test.com')
+        self.assertEqual(new_gl_request.email, 'test_one@test.com')
         self.assertEqual(
             new_gl_request.reason, "I can't wait to collaborate with TOR!")
 
@@ -1173,7 +1173,7 @@ class TestGitlabAccountRequestViews(TestCase):
         with a user that does NOT have a current database entry."""
         form_data = {
             'username': 'test_username_number_two',
-            'email' : 'test@test.com',
+            'email' : 'test_two@test.com',
             'reason' : "I can't wait to collaborate with TOR!",
         }
         success_url_new_user = reverse(
@@ -1185,7 +1185,7 @@ class TestGitlabAccountRequestViews(TestCase):
         self.assertTemplateUsed('anonticket/create_issue_success.html')
         new_gl_request = GitlabAccountRequest.objects.get(
             username='test_username_number_two')
-        self.assertEqual(new_gl_request.email, 'test@test.com')
+        self.assertEqual(new_gl_request.email, 'test_two@test.com')
         self.assertEqual(
             new_gl_request.reason, "I can't wait to collaborate with TOR!")
 
@@ -1195,7 +1195,7 @@ class TestGitlabAccountRequestViews(TestCase):
         current GitlabAccountRequests."""
         form_data = {
             'username': 'test_username_number_three',
-            'email' : 'test@test.com',
+            'email' : 'test_three@test.com',
             'reason' : "I can't wait to collaborate with TOR!",
         }
         success_url_current_user = reverse(
@@ -1207,7 +1207,7 @@ class TestGitlabAccountRequestViews(TestCase):
         self.assertTemplateUsed('anonticket/create_issue_success.html')
         new_gl_request = GitlabAccountRequest.objects.get(
             username="test_username_number_three")
-        self.assertEqual(new_gl_request.email, 'test@test.com')
+        self.assertEqual(new_gl_request.email, 'test_three@test.com')
         self.assertEqual(
             new_gl_request.reason, "I can't wait to collaborate with TOR!")
 
@@ -1219,12 +1219,12 @@ class TestGitlabAccountRequestViews(TestCase):
             username='test_username_number_four',
             linked_user=self.working_user, 
             reviewer_status='R',
-            email='test@test.com',
+            email='test_four@test.com',
             reason="""I can't wait to collaborate with TOR!"""  
         )
         form_data = {
             'username': 'test_username_number_five',
-            'email' : 'test@test.com',
+            'email' : 'test_five@test.com',
             'reason' : "I can't wait to collaborate with TOR!",
         }
         success_url_current_user = reverse(
@@ -1236,7 +1236,7 @@ class TestGitlabAccountRequestViews(TestCase):
         self.assertTemplateUsed('anonticket/create_issue_success.html')
         new_gl_request = GitlabAccountRequest.objects.get(
             username="test_username_number_five")
-        self.assertEqual(new_gl_request.email, 'test@test.com')
+        self.assertEqual(new_gl_request.email, 'test_five@test.com')
         self.assertEqual(
             new_gl_request.reason, "I can't wait to collaborate with TOR!")
 
@@ -1248,12 +1248,12 @@ class TestGitlabAccountRequestViews(TestCase):
             username='test_username_number_six',
             linked_user=self.working_user, 
             reviewer_status='P',
-            email='test@test.com',
+            email='test_sit@test.com',
             reason="""I can't wait to collaborate with TOR!"""  
         )
         form_data = {
             'username': 'test_username_number_seven',
-            'email' : 'test@test.com',
+            'email' : 'test_seven@test.com',
             'reason' : "I can't wait to collaborate with TOR!",
         }
         failure_url_current_user = reverse(
