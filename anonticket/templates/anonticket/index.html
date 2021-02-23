@@ -18,16 +18,23 @@
       If you want to be able to check the status of your ticket later,
       record your identifier in a safe place. You can also bookmark the 
       landing page after logging in.
-      </p>
+    </p>
+    <p class="pr-5">
+     (Anon-Ticket is only for anonymous note and bug reporting. If you'd like
+     to collaborate with Tor in other ways, you can also <a href="{% url 'create-gitlab-no-user' %)"">
+      request an account on Tor's GitLab</a>).
+    </p>
   </div>
 </div>
-<div class="row">
+<div class="row mt-2">
   <div class="col-12 mt-4">
     <a href="{% url 'create-identifier' %}" class="btn btn-large btn-primary mr-4">
-      CREATE NEW IDENTIFIER</a>
+      CREATE IDENTIFIER</a>
     </a>
-    <a href="{% url 'login' %}" class="btn btn-large btn-primary mr-2">
+    <a href="{% url 'login' %}" class="btn btn-large btn-primary mr-4">
      LOGIN WITH PREVIOUS IDENTIFIER</a>
+    <a href="{% url 'create-gitlab-no-user' %}" class="btn btn-large btn-primary mr-2">
+      REQUEST GITLAB ACCOUNT</a>
   </div>
 </div>
 {% endblock %}
