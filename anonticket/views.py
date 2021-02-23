@@ -420,6 +420,8 @@ class UserLoginErrorView(TemplateView):
     """A generic landing page if a username doesn't pass validation tests."""
     template_name = 'anonticket/user_login_error.html'
 
+@method_decorator(custom_ratelimit_ip(), name='post')
+@method_decorator(custom_ratelimit_post(), name='post')
 class GitlabAccountRequestCreateView(
     PassUserIdentifierMixin, CreateView):
     """A view for users to create gitlab account requests."""
