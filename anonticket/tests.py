@@ -985,7 +985,7 @@ class TestNoteViewRateLimit(TestCase):
         self.issue = posted_issue
         
     def test_note_create_view_POST_RATE_LIMIT(self):
-        """Test rate limit decorators for note crate view."""
+        """Test rate limit decorators for note create view."""
         url = reverse('create-note', args=[
             self.new_user, self.project.slug, self.issue.gitlab_iid])
         form_data = {
@@ -1286,6 +1286,44 @@ class TestGitlabAccountRequestViews(TestCase):
         try_to_get_new_request = GitlabAccountRequest.objects.filter(
             username='test_username_number_eight')
         self.assertEqual(len(try_to_get_new_request), 0)
+
+@tag('gitlab-rate-limit')
+class TestGitlabAccountRateLimitNoUser(TestCase):
+    """Test that rate-limiting is working properly as applied to
+    GitLab User Account Requests."""
+
+    def setUp(self):
+        """Setup URLS for successive ratelimit calls."""
+        # Setup project
+        gitlab_url_no_user = reverse('create-gitlab-no-user')
+        success_url_no_user = reverse('created-no-user')
+        self.gitlab_url = gitlab_url_no_user
+        self.success_url = success_url_no_user
+        self.form_data_counter = 1
+    
+    def increment_form_data(self):
+        """Auto increment form data username and email so that
+        each form will be unique for rate limit trials."""
+        form_data = {
+            'username': f"username_number_{self.form_data_counter}",
+            'email' : f"email_{self.form_data_counter}@testmail.com",
+            'reason' : "I can't wait to collaborate with TOR!",
+        }
+        self.form_data_counter += 1
+        return form_data
+
+    def test_create_account_request_POST_no_user_RATE_LIMIT(self):
+        """Test rate limit decorators on GitLabAccountRequest Post."""
+        url = self.gitlab_url
+        form_data = self.increment_form_data()
+        form = None
+        response = run_rate_limit_test(self, self.client, url, form, form_data)
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateUsed('anonticket/rate_limit.html')
+
+        def tearDown(self):
+            """Clear Cache"""
+            cache.clear()
 
 @tag('other_with_db')
 class TestViewsOtherWithDatabase(TestCase):
