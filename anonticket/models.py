@@ -286,7 +286,7 @@ class GitlabAccountRequest(models.Model):
             print("Error: {}".format(e))
     
     def save(self, *args, **kwargs):
-        if self.reviewer_status == 'A' and self.posted_to_GitLab == False:
+        if self.reviewer_status == 'A' and self.approved_to_GitLab == False:
             try:
                 self.approve_request()
             except Exception as e:
