@@ -63,16 +63,16 @@ from django.core.cache import cache
 # Functions used inside of the testing package during rate-limit tests.
 # ----------------------------------------------------------------------
 
-def get_testing_limit_rate(fraction=''):
+def get_testing_limit_rate(decimal=''):
     """Returns 1 + the number of requests (numerator) from
-    settings.LIMIT_RATE or requests/fraction"""
+    settings.LIMIT_RATE or requests/decimal"""
     limit_rate = settings.LIMIT_RATE
     limit_list = limit_rate.split('/')
     limit_numerator = limit_list[0]
     limit_numerator = int(limit_numerator)
-    if fraction:
-        fraction = float(fraction)
-        partial_numerator = fraction * limit_numerator
+    if decimal:
+        decimal = float(decimal)
+        partial_numerator = decimal * limit_numerator
         partial_numerator = round(partial_numerator)
         partial_numerator += 1
         return partial_numerator
@@ -80,11 +80,11 @@ def get_testing_limit_rate(fraction=''):
         limit_numerator += 1
         return limit_numerator
 
-def run_rate_limit_test(self, client, url, form, form_data, follow=False, fraction=''):
-    """Run successive rate limit tests based on settings.RATE_LIMIT and fraction."""
-    rate_limit_numerator = get_testing_limit_rate(fraction=fraction)
+def run_rate_limit_test(self, client, url, form, form_data, follow=False, decimal=''):
+    """Run successive rate limit tests based on settings.RATE_LIMIT and decimal."""
+    rate_limit_numerator = get_testing_limit_rate(decimal=decimal)
     tries = 0
-    if fraction:
+    if decimal:
         print(f"""
         Testing rate limiting: Combined test of {rate_limit_numerator} issues and 
         {rate_limit_numerator} notes.""")
@@ -1047,7 +1047,7 @@ class TestNoteIssueCombinedRateLimit(TestCase):
             self.create_issue_url, 
             form=issue_form, 
             form_data=issue_form_data,
-            fraction=0.5
+            decimal=0.5
             )
         # Assert that status code is 200 at 1/2 + 1 tries.
         self.assertEqual(issue_response.status_code, 302)
@@ -1061,7 +1061,7 @@ class TestNoteIssueCombinedRateLimit(TestCase):
             self.create_note_url, 
             form=None,
             form_data=note_data,
-            fraction=0.5, 
+            decimal=0.5, 
             )
         # Assert that test now returns 403 forbidden.
         self.assertEqual(note_response.status_code, 403)
