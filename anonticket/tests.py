@@ -1321,9 +1321,9 @@ class TestGitlabAccountRateLimitNoUser(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertTemplateUsed('anonticket/rate_limit.html')
 
-        def tearDown(self):
-            """Clear Cache"""
-            cache.clear()
+    def tearDown(self):
+        """Clear Cache"""
+        cache.clear()
 
 @tag('other_with_db')
 class TestViewsOtherWithDatabase(TestCase):
