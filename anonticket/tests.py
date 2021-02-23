@@ -65,7 +65,7 @@ from django.core.cache import cache
 
 def get_testing_limit_rate(decimal=''):
     """Returns 1 + the number of requests (numerator) from
-    settings.LIMIT_RATE or requests/decimal"""
+    settings.LIMIT_RATE or requests multipled by decimal proportion"""
     limit_rate = settings.LIMIT_RATE
     limit_list = limit_rate.split('/')
     limit_numerator = limit_list[0]
@@ -80,8 +80,10 @@ def get_testing_limit_rate(decimal=''):
         limit_numerator += 1
         return limit_numerator
 
-def run_rate_limit_test(self, client, url, form, form_data, follow=False, decimal=''):
-    """Run successive rate limit tests based on settings.RATE_LIMIT and decimal."""
+def run_rate_limit_test(
+    self, client, url, form, form_data, follow=False, decimal=''):
+    """Run successive rate limit tests based on 
+    settings.RATE_LIMIT and decimal proportion."""
     rate_limit_numerator = get_testing_limit_rate(decimal=decimal)
     tries = 0
     if decimal:
