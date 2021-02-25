@@ -231,7 +231,9 @@ class GitlabAccountRequest(models.Model):
         hyphens(-).""",
         validators=[check_if_user_in_gitlab]
         )
-    email = models.EmailField()
+    email = models.EmailField(
+        unique = True,
+        )
     reason = models.CharField(
         max_length=256, 
         help_text = """Please explain why you want to collaborate with the 
@@ -284,7 +286,7 @@ class GitlabAccountRequest(models.Model):
             print("Error: {}".format(e))
     
     def save(self, *args, **kwargs):
-        if self.reviewer_status == 'A' and self.posted_to_GitLab == False:
+        if self.reviewer_status == 'A' and self.approved_to_GitLab == False:
             try:
                 self.approve_request()
             except Exception as e:

@@ -63,16 +63,16 @@ from django.core.cache import cache
 # Functions used inside of the testing package during rate-limit tests.
 # ----------------------------------------------------------------------
 
-def get_testing_limit_rate(fraction=''):
+def get_testing_limit_rate(decimal=''):
     """Returns 1 + the number of requests (numerator) from
-    settings.LIMIT_RATE or requests/fraction"""
+    settings.LIMIT_RATE or requests multipled by decimal proportion"""
     limit_rate = settings.LIMIT_RATE
     limit_list = limit_rate.split('/')
     limit_numerator = limit_list[0]
     limit_numerator = int(limit_numerator)
-    if fraction:
-        fraction = float(fraction)
-        partial_numerator = fraction * limit_numerator
+    if decimal:
+        decimal = float(decimal)
+        partial_numerator = decimal * limit_numerator
         partial_numerator = round(partial_numerator)
         partial_numerator += 1
         return partial_numerator
@@ -80,11 +80,13 @@ def get_testing_limit_rate(fraction=''):
         limit_numerator += 1
         return limit_numerator
 
-def run_rate_limit_test(self, client, url, form, form_data, follow=False, fraction=''):
-    """Run successive rate limit tests based on settings.RATE_LIMIT and fraction."""
-    rate_limit_numerator = get_testing_limit_rate(fraction=fraction)
+def run_rate_limit_test(
+    self, client, url, form, form_data, follow=False, decimal=''):
+    """Run successive rate limit tests based on 
+    settings.RATE_LIMIT and decimal proportion."""
+    rate_limit_numerator = get_testing_limit_rate(decimal=decimal)
     tries = 0
-    if fraction:
+    if decimal:
         print(f"""
         Testing rate limiting: Combined test of {rate_limit_numerator} issues and 
         {rate_limit_numerator} notes.""")
@@ -985,7 +987,7 @@ class TestNoteViewRateLimit(TestCase):
         self.issue = posted_issue
         
     def test_note_create_view_POST_RATE_LIMIT(self):
-        """Test rate limit decorators for note crate view."""
+        """Test rate limit decorators for note create view."""
         url = reverse('create-note', args=[
             self.new_user, self.project.slug, self.issue.gitlab_iid])
         form_data = {
@@ -1047,7 +1049,7 @@ class TestNoteIssueCombinedRateLimit(TestCase):
             self.create_issue_url, 
             form=issue_form, 
             form_data=issue_form_data,
-            fraction=0.5
+            decimal=0.5
             )
         # Assert that status code is 200 at 1/2 + 1 tries.
         self.assertEqual(issue_response.status_code, 302)
@@ -1061,7 +1063,7 @@ class TestNoteIssueCombinedRateLimit(TestCase):
             self.create_note_url, 
             form=None,
             form_data=note_data,
-            fraction=0.5, 
+            decimal=0.5, 
             )
         # Assert that test now returns 403 forbidden.
         self.assertEqual(note_response.status_code, 403)
@@ -1116,7 +1118,7 @@ class TestGitlabAccountRequestViews(TestCase):
         with no user_string in URL path."""
         form_data = {
             'username': 'test_username_number_one',
-            'email' : 'test@test.com',
+            'email' : 'test_one@test.com',
             'reason' : "I can't wait to collaborate with TOR!",
         }
         response = self.client.post(self.gitlab_url_no_user, form_data)
@@ -1125,7 +1127,7 @@ class TestGitlabAccountRequestViews(TestCase):
         self.assertTemplateUsed('anonticket/create_issue_success.html')
         new_gl_request = GitlabAccountRequest.objects.get(
             username='test_username_number_one')
-        self.assertEqual(new_gl_request.email, 'test@test.com')
+        self.assertEqual(new_gl_request.email, 'test_one@test.com')
         self.assertEqual(
             new_gl_request.reason, "I can't wait to collaborate with TOR!")
 
@@ -1171,7 +1173,7 @@ class TestGitlabAccountRequestViews(TestCase):
         with a user that does NOT have a current database entry."""
         form_data = {
             'username': 'test_username_number_two',
-            'email' : 'test@test.com',
+            'email' : 'test_two@test.com',
             'reason' : "I can't wait to collaborate with TOR!",
         }
         success_url_new_user = reverse(
@@ -1183,7 +1185,7 @@ class TestGitlabAccountRequestViews(TestCase):
         self.assertTemplateUsed('anonticket/create_issue_success.html')
         new_gl_request = GitlabAccountRequest.objects.get(
             username='test_username_number_two')
-        self.assertEqual(new_gl_request.email, 'test@test.com')
+        self.assertEqual(new_gl_request.email, 'test_two@test.com')
         self.assertEqual(
             new_gl_request.reason, "I can't wait to collaborate with TOR!")
 
@@ -1193,7 +1195,7 @@ class TestGitlabAccountRequestViews(TestCase):
         current GitlabAccountRequests."""
         form_data = {
             'username': 'test_username_number_three',
-            'email' : 'test@test.com',
+            'email' : 'test_three@test.com',
             'reason' : "I can't wait to collaborate with TOR!",
         }
         success_url_current_user = reverse(
@@ -1205,7 +1207,7 @@ class TestGitlabAccountRequestViews(TestCase):
         self.assertTemplateUsed('anonticket/create_issue_success.html')
         new_gl_request = GitlabAccountRequest.objects.get(
             username="test_username_number_three")
-        self.assertEqual(new_gl_request.email, 'test@test.com')
+        self.assertEqual(new_gl_request.email, 'test_three@test.com')
         self.assertEqual(
             new_gl_request.reason, "I can't wait to collaborate with TOR!")
 
@@ -1217,12 +1219,12 @@ class TestGitlabAccountRequestViews(TestCase):
             username='test_username_number_four',
             linked_user=self.working_user, 
             reviewer_status='R',
-            email='test@test.com',
+            email='test_four@test.com',
             reason="""I can't wait to collaborate with TOR!"""  
         )
         form_data = {
             'username': 'test_username_number_five',
-            'email' : 'test@test.com',
+            'email' : 'test_five@test.com',
             'reason' : "I can't wait to collaborate with TOR!",
         }
         success_url_current_user = reverse(
@@ -1234,7 +1236,7 @@ class TestGitlabAccountRequestViews(TestCase):
         self.assertTemplateUsed('anonticket/create_issue_success.html')
         new_gl_request = GitlabAccountRequest.objects.get(
             username="test_username_number_five")
-        self.assertEqual(new_gl_request.email, 'test@test.com')
+        self.assertEqual(new_gl_request.email, 'test_five@test.com')
         self.assertEqual(
             new_gl_request.reason, "I can't wait to collaborate with TOR!")
 
@@ -1246,12 +1248,12 @@ class TestGitlabAccountRequestViews(TestCase):
             username='test_username_number_six',
             linked_user=self.working_user, 
             reviewer_status='P',
-            email='test@test.com',
+            email='test_sit@test.com',
             reason="""I can't wait to collaborate with TOR!"""  
         )
         form_data = {
             'username': 'test_username_number_seven',
-            'email' : 'test@test.com',
+            'email' : 'test_seven@test.com',
             'reason' : "I can't wait to collaborate with TOR!",
         }
         failure_url_current_user = reverse(
@@ -1286,6 +1288,44 @@ class TestGitlabAccountRequestViews(TestCase):
         try_to_get_new_request = GitlabAccountRequest.objects.filter(
             username='test_username_number_eight')
         self.assertEqual(len(try_to_get_new_request), 0)
+
+@tag('gitlab-rate-limit')
+class TestGitlabAccountRateLimitNoUser(TestCase):
+    """Test that rate-limiting is working properly as applied to
+    GitLab User Account Requests."""
+
+    def setUp(self):
+        """Setup URLS for successive ratelimit calls."""
+        # Setup project
+        gitlab_url_no_user = reverse('create-gitlab-no-user')
+        success_url_no_user = reverse('created-no-user')
+        self.gitlab_url = gitlab_url_no_user
+        self.success_url = success_url_no_user
+        self.form_data_counter = 1
+    
+    def increment_form_data(self):
+        """Auto increment form data username and email so that
+        each form will be unique for rate limit trials."""
+        form_data = {
+            'username': f"username_number_{self.form_data_counter}",
+            'email' : f"email_{self.form_data_counter}@testmail.com",
+            'reason' : "I can't wait to collaborate with TOR!",
+        }
+        self.form_data_counter += 1
+        return form_data
+
+    def test_create_account_request_POST_no_user_RATE_LIMIT(self):
+        """Test rate limit decorators on GitLabAccountRequest Post."""
+        url = self.gitlab_url
+        form_data = self.increment_form_data()
+        form = None
+        response = run_rate_limit_test(self, self.client, url, form, form_data)
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateUsed('anonticket/rate_limit.html')
+
+    def tearDown(self):
+        """Clear Cache"""
+        cache.clear()
 
 @tag('other_with_db')
 class TestViewsOtherWithDatabase(TestCase):
