@@ -16,15 +16,18 @@ anonymous ticket ... to Anon-Ticket ... via [Anon-Ticket](https://anonticket.oni
 ## Table of Contents:
 
 1. Intro and Setup
+
     - 1.1 Quickstart
     - 1.2 Project Aim and Use
 
 2. Notes for Admins
+
     - 2.1 Fast Project Add From Gitlab
     - 2.2 Programmatic Groups and Permissions
     - 2.3 Adding Moderators and Account Approvers
 
 3. Project Structure and Function:
+
     - 3.1 Folder Layout
     - 3.2 Anon-Ticket Request-Response in a Nutshell
     - 3.3 Models
@@ -33,6 +36,7 @@ anonymous ticket ... to Anon-Ticket ... via [Anon-Ticket](https://anonticket.oni
     - 3.6 Templates
 
 4. Packages
+
     - 4.1 General notes
     - 4.2 Python-Decouple
     - 4.3 Python-Gitlab
@@ -42,6 +46,7 @@ anonymous ticket ... to Anon-Ticket ... via [Anon-Ticket](https://anonticket.oni
     - 4.7 Python Coverage
 
 5. Tests
+
     - 5.0 Running Tests
     - 5.1 Tagged Tests
     - 5.2 Run with Coverage
