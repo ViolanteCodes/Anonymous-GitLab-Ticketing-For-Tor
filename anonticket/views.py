@@ -420,6 +420,7 @@ class UserLoginErrorView(TemplateView):
     """A generic landing page if a username doesn't pass validation tests."""
     template_name = 'anonticket/user_login_error.html'
 
+@method_decorator(custom_ratelimit_ip(), name='post')
 @method_decorator(custom_ratelimit_post(), name='post')
 class GitlabAccountRequestCreateView(
     PassUserIdentifierMixin, CreateView):
@@ -714,6 +715,7 @@ class ProjectDetailView(DetailView):
 
 @validate_user
 @custom_ratelimit_post()
+@custom_ratelimit_ip()
 def create_issue_view(request, user_identifier, *args):
     """View that allows a user to create an issue. Pulls the user_identifier
     from the URL path and tries to pull that UserIdentifier from database, 
